@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view></router-view>  
+    <!-- 哈哈哈 -->
     <!-- <div class="momo">hhhhhhh</div> -->
     <!-- App.vue的只会渲染一级子组件 -->
     <!-- Router-view也被称为路由的出口 -->
