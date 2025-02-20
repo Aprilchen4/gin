@@ -22,3 +22,5 @@ app.use(router)
 // 将整个 Vue 应用（即 app）挂载到页面上一个特定的 DOM 元素中，
 // 通常是 index.html 中的一个 div 元素
 app.mount('#app')
+
+

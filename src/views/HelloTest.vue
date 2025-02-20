@@ -1,9 +1,10 @@
 <template>
-    <div class = 'mapp'>hello world</div>
+    <div class="mode">hello test</div>
 </template>
 
 <style>
-.map{
-    color: rgb(255, 0, 136);
+.mode{
+    font-weight: bold;
+    color:rgb(255, 0, 140)
 }
 </style>

@@ -74,7 +74,7 @@
           <div class="icon-link">
             <!-- 颜色写在上一行里面，不行 -->
             <a href = "https://www.gin-vue-admin.com/"><el-icon color = "#150202"><Document /></el-icon></a>
-            <a href = "https://support.qq.com/product/371961"><el-icon color = "#150202"><Umbrella /></el-icon></a>
+            <a href = "https://support.qq.com/product/371961"><el-icon color = "#150202"><Service /></el-icon></a>
             <a href = "https://github.com/flipped-aurora/gin-vue-admin"><el-icon color = "#150202"><Present /></el-icon></a>
             <a href = "https://space.bilibili.com/322210472"><el-icon color = "#150202"><Microphone/></el-icon></a>
           </div>

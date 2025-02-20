@@ -21,6 +21,11 @@ const routes = [
         name: 'test',
         component: () => import('@/views/HelloTest.vue'),
       },
+      {
+        path: '/tab',
+        name: 'tab',
+        component: () => import('@/views/TabMenu.vue'),
+      },
     ]
   },
 ];
