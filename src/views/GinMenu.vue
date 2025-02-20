@@ -29,10 +29,10 @@
             </el-tooltip>
             <el-tooltip content="系统设置">
                 <el-button class="icon"  @click="ToggleDrawer"><el-icon><Setting /></el-icon></el-button> 
-                <el-drawer v-model="drawer" title="I am the title" :with-header="false">
-                    <span>Hi there!</span>
-                </el-drawer>
             </el-tooltip>
+            <el-drawer v-model="drawer" title="I am the title" :with-header="false">
+                    <el-button color="pink">Smart!</el-button>
+            </el-drawer>
             <el-tooltip content="刷新">
                 <el-button class="icon" @click="refresh"><el-icon><Refresh /></el-icon></el-button>
             </el-tooltip>
@@ -73,20 +73,37 @@
                             <a href = "https://www.gin-vue-admin.com/" class="web" target="_blank"><el-icon><Discount /></el-icon>官方网站</a>
                         </template>
                     </el-sub-menu>
-                    <el-sub-menu index="2">
+                    <el-sub-menu index="2" @click="addTab(editableTabsValue)">
                         <template #title><el-icon><Odometer /></el-icon>仪表盘</template>
                     </el-sub-menu>
                     <el-sub-menu index="3">
                         <template #title><el-icon><user/></el-icon>超级管理员</template>
-                            <el-menu-item index="1-1"><el-icon><UserFilled /></el-icon>角色管理</el-menu-item>
-                            <el-menu-item index="3-2"><el-icon><Document /></el-icon>菜单管理</el-menu-item>
+                            <el-menu-item index="1-1" @click="addTab(editableTabsValue)"><el-icon><UserFilled /></el-icon>角色管理</el-menu-item>
+                            <el-menu-item index="3-2" @click="addTab(editableTabsValue)"><el-icon><Document /></el-icon>菜单管理</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-scrollbar>
             <!-- 布局容器，注意组件名称 -->
             <el-container>
+                <!-- 标签页 -->
                 <el-header>
-                    <router-view></router-view>   
+                    <el-tabs
+                    v-model="editableTabsValue"
+                    type="card"
+                    class="demo-tabs"
+                    closable
+                    @tab-remove="removeTab"
+                    >
+                    <!-- <el-tab-pane>每个选项卡页面 -->
+                    <el-tab-pane
+                        v-for="item in editableTabs"
+                        :key="item.name"
+                        :label="item.title"
+                        :name="item.name"
+                    >
+                        {{ item.content }}
+                    </el-tab-pane>
+                    </el-tabs>
                 </el-header>
                 <el-main></el-main>
             </el-container>
@@ -96,7 +113,7 @@
 
 // 一定要有setup,否则会提示函数未定义
 <!-- Action catch((action:Action)）只能用在ts里面 -->
-<script scope setup>
+<script setup>
 
 import { ElMessageBox,ElDrawer} from 'element-plus'
 import { ElButton} from 'element-plus'
@@ -135,7 +152,7 @@ const pump = () => {
 // drawer 是一个布尔值，用于控制 <el-drawer> 的显示和隐藏。
 // 当 drawer 为 true 时，<el-drawer> 会显示。当 drawer 为 false 时，<el-drawer> 会隐藏。
 // JavaScript 中，大部分情况下分号是可选的;
-const drawer = ref(true);
+const drawer = ref(false);
 console.log(drawer.value);
 
 function ToggleDrawer(){
@@ -156,6 +173,47 @@ const mode = ref("dayTime")
 const toggleMode = (newMode) => {
     mode.value = newMode
 }
+
+// 标签页
+  const editableTabsValue = ref('2')
+  const editableTabs = ref([
+    {
+      title: '首页',
+      name: '1',
+      content: '',
+    },
+  ])
+
+//   标签页增减
+let tabIndex = 2
+const addTab = () => {
+    // ++tabIndex 是一个自增运算符,它会先将 tabIndex 的值加 1,然后返回增加后的值。
+    const newTabName = `${++tabIndex}`
+    editableTabs.value.push({
+      title: 'New Tab',
+      name: newTabName,
+      content: 'New Tab content',
+    })
+    editableTabsValue.value = newTabName
+  }
+  const removeTab = (targetName) => {
+    const tabs = editableTabs.value
+    let activeName = editableTabsValue.value
+    if (activeName === targetName) {
+      tabs.forEach((tab, index) => {
+        if (tab.name === targetName) {
+          const nextTab = tabs[index + 1] || tabs[index - 1]
+          if (nextTab) {
+            activeName = nextTab.name
+          }
+        }
+      })
+    }
+  
+    editableTabsValue.value = activeName
+    editableTabs.value = tabs.filter((tab) => tab.name !== targetName)
+  }
+  
 </script>
 
 
@@ -202,13 +260,10 @@ const toggleMode = (newMode) => {
     height: 30px;
     border-radius: 50%;
     border-color: none; 
+    margin-left: 12px;
     background-color: #f5f5f500; 
 }
 
-/* 视频教程图标和右侧距离设置 */
-.iconSpace{
-    margin-right: 12px;
-}
 
 .Icon{
     margin-left:12px;

@@ -4,6 +4,7 @@
         add tab
       </el-button>
     </div>
+    <!-- <el-tabs>一个选项卡组件,用于管理多个选项卡页面 -->
     <el-tabs
       v-model="editableTabsValue"
       type="card"
@@ -11,6 +12,7 @@
       closable
       @tab-remove="removeTab"
     >
+    <!-- <el-tab-pane>每个选项卡页面 -->
       <el-tab-pane
         v-for="item in editableTabs"
         :key="item.name"
@@ -32,16 +34,6 @@
     {
       title: '首页',
       name: '1',
-      content: '',
-    },
-    {
-      title: '仪表盘',
-      name: '2',
-      content: '',
-    },
-    {
-      title: '角色管理',
-      name: '3',
       content: '',
     },
   ])
