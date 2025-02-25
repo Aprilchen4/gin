@@ -36,8 +36,8 @@ service.interceptors.request.use(
       // }
 
     // 如何从 localStorage 中获取 token，并将其添加到请求头中
-    const token = localStorage.getItem('token');
-  
+  const token = localStorage.getItem('userToken')? localStorage.getItem('userToken'): null
+
 
     //在后续请求中将token放在请求头里发送,这样后端才能验证你的token
     config.headers = {
@@ -48,7 +48,7 @@ service.interceptors.request.use(
       // 完全可以将 x-token 改成 Authorization，只要后端能够正确解析 Authorization 头部中的 Bearer Token
       // Bearer 是身份验证方案,动态插入字符串；
        
-      'x-token':`Bearer ${token}`,
+      'x-token':`${token}`,
       'x-user-id': ''
     }
     // 在修改完 config 后，必须返回 config 对象，执行config函数，否则请求将无法正常发送。

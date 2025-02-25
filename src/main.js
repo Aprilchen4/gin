@@ -7,6 +7,7 @@ import App from './App.vue' //全局的
 import router from './api/router' //main.js是全局注册，在app.vue是引用；
 // import Vue from 'vue' Vue 3 项目不需要import Vue from 'vue'也可以正常运行
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import store from './store'
 
 const app = createApp(App)
 
@@ -18,6 +19,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 // 路由
 app.use(router)
+
+// Vuex全局状态管理
+app.use(store)
 
 // 将整个 Vue 应用（即 app）挂载到页面上一个特定的 DOM 元素中，
 // 通常是 index.html 中的一个 div 元素

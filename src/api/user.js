@@ -15,7 +15,7 @@ export function getlogin(data){
     });
 }
 
-export function getMenu(){
+export function getMenu(){//这里没有参数，所以调用时不要加参数
   console.log("hhh");
     return request({
         url:'/menu/getMenu',

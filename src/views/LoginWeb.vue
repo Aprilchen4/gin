@@ -89,7 +89,7 @@
     import { ElInput, ElButton} from 'element-plus'
     // import VerifyCode from '@/components/VerifyCode.vue'
     import { ref } from 'vue'
-    import { getCode, getlogin } from '@/api/user'
+    import { getCode, getlogin,getMenu } from '@/api/user'
     //import { router } from '@/api/router'
 
     // useRouter 只能在 setup 函数或 <script setup> 中使用，是一个局部工具函数
@@ -157,6 +157,9 @@
             // response.token 是响应对象中的一个字段，表示用户的身份验证令牌（Token）
             // 注意这里respons.token无返回值；数据结构
             localStorage.setItem('userToken', response.data.token);
+
+              const menuResponse = await getMenu();  // 将 token 作为参数传递给 getMenu
+              console.log('菜单数据:', menuResponse);  // 打印菜单数据
   
             return true; // 登录成功
 

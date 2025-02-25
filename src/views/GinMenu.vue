@@ -3,7 +3,8 @@
         <div class="top-left">
             <el-image class='logo' :src="require('@/assets/logo1.png')"></el-image>
             <div class="title">Gin-Vue-Admin</div>
-            <!-- <router-view></router-view>  -->
+            <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
+            <el-input class='titleInput' v-model="activeTab"></el-input>
         </div>
         <div class="top-right">
             <!-- 右侧第一个按钮 -->
@@ -61,51 +62,19 @@
     <div class="bottom">
         <!-- 布局容器 -->
         <el-container>
-        <!-- 滚动条 -->
-            <el-scrollbar height="400px">
-                <!-- 侧边栏 -->
-                <el-menu class="bottom-left">
-                    <!-- index 属性代表了这个子菜单在整个菜单结构中的唯一标识。 -->
-                    <!-- 通过设置不同的 index 值,我们可以告诉 Element Plus 这个子菜单属于哪个层级  -->
-                    <el-sub-menu index ="1">
-                        <!--#title 表示要自定义 <el-sub-menu> 组件的标题部分。包含图标和链接，不可缺少 -->
-                        <template #title>
-                            <a href = "https://www.gin-vue-admin.com/" class="web" target="_blank"><el-icon><Discount /></el-icon>官方网站</a>
-                        </template>
-                    </el-sub-menu>
-                    <el-sub-menu index="2" @click="addTab(editableTabsValue)">
-                        <template #title><el-icon><Odometer /></el-icon>仪表盘</template>
-                    </el-sub-menu>
-                    <el-sub-menu index="3">
-                        <template #title><el-icon><user/></el-icon>超级管理员</template>
-                            <el-menu-item index="1-1" @click="addTab(editableTabsValue)"><el-icon><UserFilled /></el-icon>角色管理</el-menu-item>
-                            <el-menu-item index="3-2" @click="addTab(editableTabsValue)"><el-icon><Document /></el-icon>菜单管理</el-menu-item>
-                    </el-sub-menu>
-                </el-menu>
-            </el-scrollbar>
+            <SideMenu/>
+            <MenuItems/>
             <!-- 布局容器，注意组件名称 -->
             <el-container>
-                <!-- 标签页 -->
+                 <!-- v-for是为每个标签页渲染一个组件  -->
                 <el-header>
-                    <el-tabs
-                    v-model="editableTabsValue"
-                    type="card"
-                    class="demo-tabs"
-                    closable
-                    @tab-remove="removeTab"
-                    >
-                    <!-- <el-tab-pane>每个选项卡页面 -->
-                    <el-tab-pane
-                        v-for="item in editableTabs"
-                        :key="item.name"
-                        :label="item.title"
-                        :name="item.name"
-                    >
-                        {{ item.content }}
-                    </el-tab-pane>
-                    </el-tabs>
+                    <TabMenu/>
                 </el-header>
-                <el-main></el-main>
+                <!-- 标签页 -->
+
+                <el-main>
+                    <!-- <router-view></router-view> -->
+                </el-main>
             </el-container>
         </el-container>
     </div>
@@ -119,7 +88,9 @@ import { ElMessageBox,ElDrawer} from 'element-plus'
 import { ElButton} from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
+import SideMenu from "@/views/SideMenu.vue"
+import MenuItems from "@/views/MenuItems.vue"
+import TabMenu from '@/views/TabMenu.vue'
 
 
 // 搜索弹窗
@@ -175,45 +146,12 @@ const toggleMode = (newMode) => {
 }
 
 // 标签页
-  const editableTabsValue = ref('2')
-  const editableTabs = ref([
-    {
-      title: '首页',
-      name: '1',
-      content: '',
-    },
-  ])
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-//   标签页增减
-let tabIndex = 2
-const addTab = () => {
-    // ++tabIndex 是一个自增运算符,它会先将 tabIndex 的值加 1,然后返回增加后的值。
-    const newTabName = `${++tabIndex}`
-    editableTabs.value.push({
-      title: 'New Tab',
-      name: newTabName,
-      content: 'New Tab content',
-    })
-    editableTabsValue.value = newTabName
-  }
-  const removeTab = (targetName) => {
-    const tabs = editableTabs.value
-    let activeName = editableTabsValue.value
-    if (activeName === targetName) {
-      tabs.forEach((tab, index) => {
-        if (tab.name === targetName) {
-          const nextTab = tabs[index + 1] || tabs[index - 1]
-          if (nextTab) {
-            activeName = nextTab.name
-          }
-        }
-      })
-    }
-  
-    editableTabsValue.value = activeName
-    editableTabs.value = tabs.filter((tab) => tab.name !== targetName)
-  }
-  
+const store = useStore();
+// const activeMenu = computed(() => store.state.activeMenu);
+const activeTab = computed(() => store.state.activeTab);
 </script>
 
 
@@ -247,6 +185,11 @@ const addTab = () => {
     font-weight: bold;
 }
 
+.titleInput{
+    margin-left: 5px;
+    border-color: transparent;
+    width:100px;
+}
 .top-right{
     left: 920px;
     display: inline-flex;
@@ -282,6 +225,7 @@ const addTab = () => {
 .username{
     font-family: 'Microsoft YaHei', sans-serif;
     margin-left: 12px;
+    border: none;
 }
 
 .bottom{
