@@ -1,12 +1,15 @@
 <template>
-    <!-- 绑定唯一标识 -->
+    <!-- v-model 属性是用来绑定当前激活的标签页。 -->
     <el-tabs
-      v-model="editableTabsValue"
+      v-model="activeMenu"
       type="card"
       class="demo-tabs"
+      :default-active="activeMenu" 
       closable
-      @tab-remove="removeTab"
+      @tab-remove="deleteTab"
+      @tab-click="TabClick"
     >
+    <!--  :default-active用于设置 el-tabs 初始化时默认选中的标签页 ;  v-model用于动态切换-->
     <!-- 这里key的逻辑，代表列表内元素对象的唯一标识tabIndex -->
      <!-- editableTabs是数组，item是数值里面的元素 -->
       <el-tab-pane
@@ -14,6 +17,7 @@
         :key="item.name"
         :label="item.title"
         :name="item.name"
+        closable
       >
         {{ item.content }}
       </el-tab-pane>
@@ -22,71 +26,89 @@
   
   <script setup>
 
-import {ref,watchEffect } from 'vue'
+import {watchEffect } from 'vue'
 import { computed } from 'vue';
 import { useStore } from 'vuex';
+// import {state} from '@/store/index'
 
 const store = useStore();
 const tabs = computed(()=>store.state.tabs);
+// 还是得导入，不然无法读取vuex的状态
+const activeMenu = computed(() => store.state.activeMenu);
 
 
-//   let tabIndex = 2 //1
-  const editableTabsValue = ref('2') //2,初始化为字符串 '2'，tab栏选中的标签索引，是列表里元素(对象)的唯一标识
-//console.log(editableTabsValue.value) 只在页面加载时执行一次
-//  监测切换标签页时，editableTabsValue.value的变化
+// tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
+const TabClick = (tab) => {
+  console.log('Tab Select Event Triggered',tab); // 检查事件是否触发
+  const activeMenu = tab.props.label //表示访问 tab 对象的 props 属性中的 label值,建是属性的名称，属性是键值对；
+  console.log('Updated Active Menu:', activeMenu); 
+  store.dispatch('updateActiveMenu', activeMenu); // 必须加，这句保证在切换标签页时动态更新菜单和抬头
+}
+
+// SideMenu组件切换、新增都会调用watchEffect函数监测，新增打印的是新增之后的；
+// delete函数也会调用watchEffect，打印的是delete之后的；；
   watchEffect(() => {
-  console.log('editableTabsValue changed:', editableTabsValue.value)
+  console.log('editableTabsValue changed:', activeMenu.value)//这里也是操作后端
+  console.log('监测标签页的tabs',tabs.value)//放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
 })
 
-//   const tabs = ref([
-//     {
-//       title: '首页',
-//       name: '1',
-//       content: 'Tab 1 content',
-//     },
-//     {
-//       title: 'Tab 2',
-//       name: '2',
-//       content: 'Tab 2 content',
-//     },
-//   ])
 
-// //   .push是数值的语法，新增实际上是增加列表里的对象，对象名称是响应式全局变量
-//   const addTab = () => {
-//     const newTabName = `${++tabIndex}`// 1
-//     tabs.value.push({
-//       title: 'New Tab',
-//       name: newTabName,
-//       content: 'New Tab content',                                                                                   
-//     })
-//     editableTabsValue.value = newTabName // 2,使用模板字符串`${++tabIndex}`将 tabIndex 的新值 3 转换为字符串,并赋值给 editableTabsValue.value。
-//   }
+// tab-remove 事件会返回一个参数,这个参数是一个对象,包含了以下属性:name: 被关闭的标签页的名称 label: 被关闭的标签页的标签文本。 index: 被关闭的标签页的索引位置。
+// 移除指定的 Tab。如果移除的是当前选中的 Tab，自动切换到下一个或上一个 Tab。
+  const deleteTab = (targetName) => {
+    console.log('传入的目标数据',targetName)
+    console.log('删除前选中的内容',activeMenu)
+    console.log('删除前的tabs',tabs.value)
 
-//   移除指定的 Tab。如果移除的是当前选中的 Tab，自动切换到下一个或上一个 Tab。
-  const removeTab = (targetName) => {
-    const tabValue = tabs.value //获取当前所有的 Tab 数据。tabs 是一个数组，每个元素是一个 Tab 对象
-    let activeName = editableTabsValue.value //唯一标识符：activeName是获取当前选中的 Tab 的 name，editableTabsValue 是一个响应式对象，存储了当前选中的 Tab 的 name
-    if (activeName === targetName) { //判断当前选中的 activeName是否是要移除的 targetName。
-        tabValue.forEach((tab, index) => {
-        if (tab.name === targetName) {//遍历 tabs，可以找到要移除的 Tab 的位置（index）
-          const nextTab = tabs[index + 1] || tabs[index - 1]//如果当前 Tab 是最后一个，则切换到上一个 Tab。如果当前 Tab 是第一个，则切换到下一个 Tab。
+    // const tabValue = tabs.value //获取当前所有的 Tab 数据。tabs 是一个数组，每个元素是一个 Tab 对象
+   tabs.value.forEach((tab, index) => {
+        if (tab.title === targetName) {//遍历 tabs，可以找到要移除的 Tab 的位置（index）
+          
+         // 写法一
+          // tabs.value = tabs.value.filter((tab) => tab.title !== targetName)//从 tabs 中移除 name 等于 targetName 的 Tab，更新 editableTabs，filter 方法会返回一个新的数组： 
+
+         //写法二
+          // state.tabs = state.tabs.filter((tab) => tab.title !== targetName);
+
+        // 写法三
+          // const newTabs = [...tabs.value];
+          // newTabs.splice(index, 1);
+          // tabs.value = newTabs;
+          
+        // 写法四
+          store.commit('removeTab', targetName);//直接mutation--commit，同步修改
+          // store.dispatch('removeTab', targetName)//actions-dispatch-mutation--commit,异步修改
+
+          // store.dispatch('updateActiveTab',tabs)  //前三种写法加这句无法删除,state的数据修改，只能mutaion或者action里面的函数修改
+          // store.commit('updateActiveTab',tabs) // 同理
+
+          // 删除后的index发生了变化；
+          // 当删除一个元素时，数组中剩余元素的索引会自动调整，以保持连续的索引。
+          console.log("可选数组f",tabs.value[index])
+          console.log("可选数组b",tabs.value[index-1])
+          const nextTab = tabs.value[index] || tabs.value[index - 1]// ||：逻辑或运算符，如果左边的值为 undefined 或 null，则返回右边的值。
           if (nextTab) {//如果存在 nextTab，则将 activeName 更新为 nextTab 的 name。
-            activeName = nextTab.name//更新当前选中的
+            // 包括activemenu也是需要通过mutations修改，不能直接赋值；
+            // activeMenu.value = nextTab.title//更新当前选中的标签页
+            
+            // store.dispatch('updateNextTab', nextTab);//可以 
+            store.commit('SetnextTab',nextTab)
+            
+            // store.commit('setActiveMenu',activeMenu)这一句和store.commit('SetnextTab',nextTab)是一个意思；
+            console.log('选中的内容',activeMenu)//这里不对
+            console.log('删除后的tabs',tabs.value)//是数组，没问题
           }
-        }
-      })
-    }
+      }
+  })
+  //Vuex 就会去执行名为 'updateActiveTab' 的 action
+}
+</script>
   
-    editableTabsValue.value = activeName//当前选中的
-    tabs.value = tabValue.filter((tab) => tab.name !== targetName)//从 tabs 中移除 name 等于 targetName 的 Tab，更新 editableTabs，filter 方法会返回一个新的数组：
-  }
-  </script>
-  
-  <style>
-  .demo-tabs > .el-tabs__content {
-    padding: 32px;
-    color: #6b778c;
-    font-size: 32px;
-    font-weight: 600;
+  <style scoped>
+  :deep(.el-tabs__item.is-active) {
+  color: #409EFF; /* 文字颜色为蓝色 */
+  background-color: #E6F7FF; /* 背景色为浅蓝色 */
+  border-color: #409EFF; /* 边框颜色为蓝色 */
+  font-weight: bold;
   }
   </style>

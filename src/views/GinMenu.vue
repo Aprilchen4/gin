@@ -4,7 +4,7 @@
             <el-image class='logo' :src="require('@/assets/logo1.png')"></el-image>
             <div class="title">Gin-Vue-Admin</div>
             <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
-            <el-input class='titleInput' v-model="activeTab"></el-input>
+            <el-input class='titleInput' v-model="activeMenu"></el-input>
         </div>
         <div class="top-right">
             <!-- 右侧第一个按钮 -->
@@ -63,7 +63,6 @@
         <!-- 布局容器 -->
         <el-container>
             <SideMenu/>
-            <MenuItems/>
             <!-- 布局容器，注意组件名称 -->
             <el-container>
                  <!-- v-for是为每个标签页渲染一个组件  -->
@@ -89,7 +88,6 @@ import { ElButton} from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SideMenu from "@/views/SideMenu.vue"
-import MenuItems from "@/views/MenuItems.vue"
 import TabMenu from '@/views/TabMenu.vue'
 
 
@@ -150,8 +148,9 @@ import { computed } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
-// const activeMenu = computed(() => store.state.activeMenu);
-const activeTab = computed(() => store.state.activeTab);
+// 还是得导入，不然无法读取vuex的状态
+const activeMenu = computed(() => store.state.activeMenu);
+// const activeTab = computed(() => store.state.activeTab);
 </script>
 
 

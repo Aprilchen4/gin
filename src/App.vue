@@ -24,6 +24,6 @@ export default {
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   margin-top: 0px;
-  /* 这里的margin-top直接影响登录页面的上边距，离谱 */
+  /* 这里的margin-top直接影响登录页面的上边距，离谱  */
 }
 </style>

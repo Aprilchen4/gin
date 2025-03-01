@@ -9,76 +9,98 @@ import { createStore } from 'vuex'
 const store = createStore({
     state: {
       activeMenu: '仪表盘',  // 当前选中的菜单项
-      activeTab: '',   // 当前选中的标签
-    //   editableTabsValue:'2',
+      nextTab:'',
+    //   activeTab: '',   // 当前选中的标签
+
       tabs: [ {
         title: '首页',
         name: '1',
         content: 'Tab 1 content',
-      },]         // 存储标签页的内容
+      },]   // 存储标签页的内容
+
     },
 
-// 使用 mapGetters 映射 Vuex Store 中的 getters 到组件的计算属性中
-// 将 Vuex Store 中的 `doubleCount` 映射到组件的 `doubleCount` 计算属性
-    // getters: {
-    //     doubleName(state) {
-    //         return state.userName
-    // },
-    // },
+    // state的衍生状态
+    getters:{
+        getActiveMenu(state){
+            return state.activeMenu;
+        },
+    },
 
-// actions 来处理异步操作
-// 每个 action 都是一个函数，接收一个 context 对象作为参数，
-// context 包含 commit、state、getters 等方法。
-// 1、可以包含异步操作（如 API 请求）。2、通过 dispatch 方法触发。
-// 当调用 dispatch('increment') 时，action 会触发 commit('increment')，从而调用 mutation 修改状态。
+// actions 来处理异步操作(如api请求），通过dispatch触发,dispatch;
+// 每个 action 都是一个函数，接收一个 context 对象作为参数，context 包含 commit、state、getters 等方法。
     actions: {
-        updateActiveMenu({ commit }, menu) {
-        commit('setActiveMenu', menu);
+        updateActiveMenu({ commit }, activeMenu) {
+        commit('setActiveMenu',activeMenu);
         },
-        updateActiveTab({ commit }, tab) {
-        commit('setActiveTab', tab);
+
+        updateActiveTab({ commit }, tabs) {
+        commit('setActiveTab', tabs);
         },
-        // updateEditableTabsValue({ commit },  editableTabsValue) {
-        //     commit('setEditableTabsValu', editableTabsValue);
-        //     },
-        addNewTab({ commit }, tab) {
-        commit('addTab', tab);
+
+        // 多余了，这里只需要同步修改；
+        updateNextTab({ commit }, nextTab) {
+            commit('SetnextTab', nextTab);
         },
-        removeTab({ commit }, tabIndex) {
-        commit('removeTab', tabIndex);
-        }
+  
+        addNewTab({ commit }, activeMenu) {
+        commit('addTab',activeMenu);
+        },
+   
+        removeTab({ commit }, targetName) {
+        commit('removeTab', targetName);
+        },
     },
+    // action和dispatch的关系
+        // store.dispatch('updateActiveMenu', activeMenu); 
+        // 'updateActiveMenu' 是要触发的 action 的名称。
+        // activeMenu 是要传给 action 的参数。
+   
+
     // actions 和 mutations 的关系
-        // actions 负责处理逻辑（可以是异步的），然后通过 commit 调用 mutations。
+        // actions 负责处理逻辑（可以是异步的），然后通过 commit 调用 mutations（commit 是 Vuex 提供的一个方法，用于调用 mutation）。
         // mutations 负责直接修改状态（必须是同步的）。
     
+
     // 协作流程：
         // 组件通过 dispatch 调用 action。
         // action 执行逻辑（如异步请求），然后通过 commit 调用 mutation。
-        // mutation 修改状态。
+        // mutation 同步修改状态。
         // 状态更新后，视图自动重新渲染。
 
-// mutations 用于修改状态的同步操作
+    // 参数相关
+        // dispatch（”action 的名称“，payload：传递给 action 的数据（可选））
+        // action（‘context’，payload：通过 dispatch 传递的数据。）
+        // commit（”mutation 的名称“，payload：传递给 mutation 的数据（可选））
+        // mutation（state，payload：通过 dispatch 传递的数据。），mutation 接收 state 和 payload，并修改状态
+
+// mutations 用于修改状态的同步操作，commit;
 // 每个 mutation 都是一个函数，接收 state 作为第一个参数，用于直接修改状态。
-// 1、必须是同步的。2、通过 commit 方法触发。
-// 当调用 commit('increment') 时，state.count 的值会增加 1
     mutations: {
-        setActiveMenu(state, menu) {
-        state.activeMenu = menu;
+        setActiveMenu(state, activeMenu) {
+        state.activeMenu = activeMenu;
         },
-        setActiveTab(state, tab) {
-        state.activeTab = tab;
+
+        setActiveTab(state, tabs) {
+        state.tabs = tabs;
         },
-        // setEditableTabsValue(state, editableTabsValue) {
-        //     state.editableTabsValue = editableTabsValue;
-        //     },
-        addTab(state, tab) {
-        state.tabs.push(tab);
+  
+        addTab(state,activeMenu) {
+        state.tabs.push({
+            title: activeMenu,
+            name: activeMenu,
+            content: 'new tab content',
+            });
         },
-        removeTab(state, tabIndex) {
-        state.tabs.splice(tabIndex, 1);
-        }
+
+        SetnextTab(state, nextTab) {
+            state.activeMenu =nextTab.title;
+        },
+
+        removeTab(state, targetName) {
+            state.tabs = state.tabs.filter((tab) => tab.title !== targetName);
+          },
     },
-});
+})
 
 export default store

@@ -1,8 +1,9 @@
 <template>
 <!-- 滚动条 -->
     <el-scrollbar height="400px">
-        <el-menu class="bottom-left" :default-active="0" @select="handleMenuSelect">
-            <nav-menu :navMenus=" sideData.values"></nav-menu>
+        <el-menu class="bottom-left" :default-active="activeMenu"  @select="handleMenuSelect" @open="MenuOpenEvent">
+            <!-- 递归组件，把遍历的值传回子组件，完成递归调用 -->
+            <MenuItems :navMenus=" sideData.values"/>
         </el-menu>      
     </el-scrollbar>
     <!-- 布局容器，注意组件名称 -->
@@ -12,66 +13,58 @@
 // 侧边栏相关,编写一个递归函数，将扁平数据转换为树形结构
 import { getMenu } from '@/api/user'
 import {reactive} from 'vue'
-// import NavMenu from './NavMenu.vue'
+import MenuItems from "@/views/MenuItems.vue"
 
 // const sideData = reactive([]);
 const sideData = reactive({
   values: []  // 初始化 values 数组
 });
 
+// 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
 getMenu().then(a => {
         console.log('侧边栏数据:',a.data.menus)
         sideData.values = a.data.menus// 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-        console.log('数据信息', sideData.values)//这里是异步函数
+        console.log('数据信息', sideData.values)//这里是异步函数,
         })
 
-
-
-
-
-
-
-
-
-
-
+const MenuOpenEvent = (key,keyPath) => {
+  console.log('Menu Open Event Triggered', key, keyPath)
+}
 
 
 // 标签页相关
 import { computed } from 'vue';
 import { useStore } from 'vuex';
-import { ref } from 'vue'
+// import { ref } from 'vue'
 
 const store = useStore();
-// const activeMenu = computed(() => store.state.activeMenu);
-
-console.log('tab is:',store.state.activeTab)
+const activeMenu = computed(() => store.state.activeMenu);
 const tabs = computed(()=>store.state.tabs);// 获取 Vuex 中的状态
-const tab =  computed(()=>store.state.tab)
-// const editableTabsValue = computed(()=>store.state.editableTabsValue);
-
-let tabIndex = 2 //1
-const editableTabsValue = ref('2')
 
 
-const handleMenuSelect = (menu) => {
-  console.log('Menu Select Event Triggered'); // 检查事件是否触发
-  store.dispatch('updateActiveMenu', menu); // 更新当前选中的菜单
-  console.log('Selected Menu:', menu);// 检查 menu 是否正确
-  // addTab(menu);触发标签页更新
-  const newTabName = `${++tabIndex}`
-  tabs.value.push({
-      title: `${menu}`,
-      name: newTabName,
-      content: 'New Tab content',                                                                                   
-    })
+// activeMenu 实际上是 el-menu 组件的 @select 事件的第一个参数，即当前选中菜单项的 index 值,通常是菜单的唯一标识，如菜单名字或路径;
+const handleMenuSelect = (activeMenu) => {
+  console.log('Menu Select Event Triggered',activeMenu); // 检查事件是否触发
+  store.dispatch('updateActiveMenu', activeMenu); // 必须要写，vuex更新,标签页动态绑定;
 
-    if (!tabs.value.some(tab => tab.name === menu)) {
-    store.dispatch('addNewTab', tab);
-    store.dispatch('updateActiveTab', menu);
+// 切换已有、新增时会调用watchEffect函数监测切换标签页
+  if (tabs.value.some((tab)=>tab.title===activeMenu)){
+    console.log('Tab already exists:', activeMenu);
+    console.log('已有菜单tabs',tabs.value)
+  }else{
+    store.commit('addTab',activeMenu)
+
+  // 关于tabs的修改需要通过mutation函数完成，而不能直接修改tabs.value，因为这样做会导致 Vue 无法检测到数据的变化，从而无法触发视图的更新。
+  // 正确的做法是使用 Vuex 的 mutation 函数来修改 tabs 的值。mutation 函数是 Vuex 中用于修改状态的唯一方法，它必须是同步的。
+    //   tabs.value.push({
+    //   title: activeMenu,
+    //   name: activeMenu,
+    //   content: 'new tab content',                                                                                   
+    // })
+    console.log('New Tab added:', activeMenu);
+    console.log('新增菜单tabs',tabs.value)
   }
-    console.log('Updated Tabs:', tabs.value); // 检查 tabs 是否正确更新
-    editableTabsValue.value = newTabName // 2,使用模板字符串`${++tabIndex}`将 tabIndex 的新值 3 转换为字符串,并赋值给 editableTabsValue.value。
+    console.log('Updated Tabs:', tabs.value); // 打印全部的tab值，检查 tabs 是否正确更新；
   };
   
 
