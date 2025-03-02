@@ -44,7 +44,9 @@ const tabs = computed(()=>store.state.tabs);// 获取 Vuex 中的状态
 // const activeMenu = computed(() => store.state.activeMenu);
 
 
-// 用于传递数据,这里居然不需要是响应式；
+// 用于传递数据,这里居然不需要定义是响应式；
+// let会造成全局变量污染
+// const实际实际上是修改了包装对象的属性，而不是重新赋值变量本身。
 let TabName = '';
 
 

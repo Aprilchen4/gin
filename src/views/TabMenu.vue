@@ -12,12 +12,13 @@
     <!--  :default-active用于设置 el-tabs 初始化时默认选中的标签页 ;  v-model用于动态切换-->
     <!-- 这里key的逻辑，代表列表内元素对象的唯一标识tabIndex -->
      <!-- editableTabs是数组，item是数值里面的元素 -->
+      <!-- 控制第一个元素不能删除：:closable ='item.label!==1' -->
       <el-tab-pane
         v-for="item in tabs"
         :key="item.label"
         :label="item.name"
         :name="item.label"
-        closable
+        :closable ='item.label!==1'
       >
         {{ item.content }}
       </el-tab-pane>

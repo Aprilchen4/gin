@@ -4,7 +4,7 @@
             <el-image class='logo' :src="require('@/assets/logo1.png')"></el-image>
             <div class="title">Gin-Vue-Admin</div>
             <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
-            <el-input class='titleInput' v-model="inputValue"></el-input>
+                <el-breadcrumb-item class='titleInput'>{{ inputValue }}</el-breadcrumb-item>
             <!-- <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
                 <a href="/">promotion management</a>
@@ -198,7 +198,7 @@ const toggleMode = (newMode) => {
 }
 
 .titleInput{
-    margin-left: 5px;
+    margin-left: 8px;
     border-color: transparent;
     width:300px;
 }
