@@ -8,13 +8,14 @@ import { createStore } from 'vuex'
 // Vuex 的 state 本身就是响应式的
 const store = createStore({
     state: {
-      activeMenu: '仪表盘',  // 当前选中的菜单项
+      activeMenu:1,  // 当前选中的菜单项
       nextTab:'',
     //   activeTab: '',   // 当前选中的标签
-
+      TabName:'',
+    //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {
-        title: '首页',
-        name: '1',
+        name: '首页',
+        label: 1,
         content: 'Tab 1 content',
       },]   // 存储标签页的内容
 
@@ -38,11 +39,16 @@ const store = createStore({
         commit('setActiveTab', tabs);
         },
 
+
         // 多余了，这里只需要同步修改；
         updateNextTab({ commit }, nextTab) {
             commit('SetnextTab', nextTab);
         },
-  
+        
+        updateClickTab({ commit }, tab) {
+            commit('ClickTab',tab);
+            },
+        
         addNewTab({ commit }, activeMenu) {
         commit('addTab',activeMenu);
         },
@@ -85,20 +91,31 @@ const store = createStore({
         state.tabs = tabs;
         },
   
-        addTab(state,activeMenu) {
-        state.tabs.push({
-            title: activeMenu,
-            name: activeMenu,
-            content: 'new tab content',
-            });
+        // addTab(state,{activeMenu,selectedMenu.meta.title}) {
+        // state.tabs.push({
+        //     title: 'selectedMenu.meta.title',
+        //     index: activeMenu,
+        //     content: 'new tab content',
+        //     });
+        // // },
+        ClickTab(state, tab) {
+            state.activeMenu = tab.props.name;//还是得这么写，才能改变activeMenu
         },
 
+        addTab(state,{activeMenu,TabName}) {
+            state.tabs.push({
+               name: TabName,
+               label: activeMenu,
+               content: 'new tab content',
+                });
+            },
+
         SetnextTab(state, nextTab) {
-            state.activeMenu =nextTab.title;
+            state.activeMenu =nextTab.label;
         },
 
         removeTab(state, targetName) {
-            state.tabs = state.tabs.filter((tab) => tab.title !== targetName);
+            state.tabs = state.tabs.filter((tab) => tab.label !== targetName);
           },
     },
 })

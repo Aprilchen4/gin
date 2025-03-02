@@ -3,11 +3,13 @@
    
       <label v-for="navMenu in navMenus" :key="navMenu.menuId">
           <!--只有一级菜单-->
+          <!-- key是唯一标识符，index唯一索引值，index也是select函数返回的值 -->
         <el-menu-item 
             v-if="navMenu.children==null"
+            :title="navMenu.meta.title"
             :key="navMenu.menuId" 
             :data="navMenu" 
-            :index="navMenu.meta.title" 
+            :index="navMenu.menuId" 
             :route="navMenu.parameters.path"
         >
             <!--图标-->
@@ -22,7 +24,7 @@
             v-if="navMenu.children"
             :key="navMenu.menuId" 
             :data="navMenu" 
-            :index="navMenu.meta.title"
+            :index="navMenu.menuId"
         >
             <i :class="navMenu.meta.icon"></i>
             <template #title>

@@ -4,7 +4,14 @@
             <el-image class='logo' :src="require('@/assets/logo1.png')"></el-image>
             <div class="title">Gin-Vue-Admin</div>
             <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
-            <el-input class='titleInput' v-model="activeMenu"></el-input>
+            <el-input class='titleInput' v-model="inputValue"></el-input>
+            <!-- <el-breadcrumb separator="/">
+                <el-breadcrumb-item>
+                <a href="/">promotion management</a>
+                </el-breadcrumb-item>
+                <el-breadcrumb-item>promotion list</el-breadcrumb-item>
+                <el-breadcrumb-item>promotion detail</el-breadcrumb-item>
+            </el-breadcrumb> -->
         </div>
         <div class="top-right">
             <!-- 右侧第一个按钮 -->
@@ -62,7 +69,7 @@
     <div class="bottom">
         <!-- 布局容器 -->
         <el-container>
-            <SideMenu/>
+            <SideMenu  @send-data="handleData"/>
             <!-- 布局容器，注意组件名称 -->
             <el-container>
                  <!-- v-for是为每个标签页渲染一个组件  -->
@@ -85,11 +92,25 @@
 
 import { ElMessageBox,ElDrawer} from 'element-plus'
 import { ElButton} from 'element-plus'
-import { ref } from 'vue'
+import { ref} from 'vue'
 import { useRouter } from 'vue-router'
 import SideMenu from "@/views/SideMenu.vue"
 import TabMenu from '@/views/TabMenu.vue'
 
+// 标签页
+// import { computed } from 'vue';
+// import { useStore } from 'vuex';
+
+// const store = useStore();
+// const activeMenu = computed(() => store.state.activeMenu);
+
+// 子组件向父组件传值
+const inputValue = ref('');
+// breadcrumb 是只读的局部变量；
+const handleData = (breadcrumb) => {
+      console.log('接收到子组件的数据:', breadcrumb);
+      inputValue.value = breadcrumb; // 更新状态
+    };
 
 // 搜索弹窗
 const pump = () => {
@@ -143,14 +164,6 @@ const toggleMode = (newMode) => {
     mode.value = newMode
 }
 
-// 标签页
-import { computed } from 'vue';
-import { useStore } from 'vuex';
-
-const store = useStore();
-// 还是得导入，不然无法读取vuex的状态
-const activeMenu = computed(() => store.state.activeMenu);
-// const activeTab = computed(() => store.state.activeTab);
 </script>
 
 
@@ -187,7 +200,7 @@ const activeMenu = computed(() => store.state.activeMenu);
 .titleInput{
     margin-left: 5px;
     border-color: transparent;
-    width:100px;
+    width:300px;
 }
 .top-right{
     left: 920px;
