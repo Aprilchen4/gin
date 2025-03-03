@@ -37,11 +37,12 @@ const MenuOpenEvent = (key,keyPath) => {
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 import {defineEmits} from 'vue';
+import {watchEffect } from 'vue'
 // import { defineExpose } from 'vue'
 
 const store = useStore();
 const tabs = computed(()=>store.state.tabs);// 获取 Vuex 中的状态
-// const activeMenu = computed(() => store.state.activeMenu);
+const activeMenu = computed(() => store.state.activeMenu);
 
 
 // 用于传递数据,这里居然不需要定义是响应式；
@@ -51,21 +52,19 @@ let TabName = '';
 
 
 // activeMenu 实际上是 el-menu 组件的 @select 事件的第一个参数，即当前选中菜单项的 index 值,通常是菜单的唯一标识，如菜单名字或路径;
-const handleMenuSelect = (activeMenu) => {
-  console.log('Menu Select Event Triggered',activeMenu); // 检查事件是否触发
-  store.commit('setActiveMenu', activeMenu); 
+const handleMenuSelect = (menuId) => {
+  console.log('Menu Select Event Triggered',menuId); // 检查事件是否触发
+  store.commit('setActiveMenu', menuId); 
 
   // 遍历数据
   function findNodeAndParents(tree, targetId, path = []) {
     for (const node of tree) {
       // 将当前节点加入路径
       const currentPath = [...path, node];
-
       // 如果找到目标节点，返回路径
       if (node.menuId === targetId) {
         return currentPath;
       }
-
       // 如果有子节点，递归查找
       if (node.children && node.children.length > 0) {
         const result = findNodeAndParents(node.children, targetId, currentPath);
@@ -82,7 +81,6 @@ const handleMenuSelect = (activeMenu) => {
   function generateBreadcrumb(tree, targetId) {
     // 查找节点及其父节点
     const path = findNodeAndParents(tree, targetId);
-
     if (!path) {
       return '未找到指定节点';
     }
@@ -99,7 +97,7 @@ const handleMenuSelect = (activeMenu) => {
 
   console.log('菜单的生成面包屑', activeMenu)
   // const breadcrumb = ref('');
-  const breadcrumb = generateBreadcrumb(sideData.values, activeMenu);
+  const breadcrumb = generateBreadcrumb(sideData.values, menuId);
   // console.log('生成面包屑',breadcrumb);
   // console.log('生成面包屑价值',breadcrumb.value);，显示未定义
 
@@ -119,8 +117,8 @@ const handleMenuSelect = (activeMenu) => {
   // store.commit('setActiveMenu', activeMenu); // 无顺序，保证切换。这里必须要写vuex更新,标签页动态绑定;
 
 // 切换已有、新增时会调用watchEffect函数监测切换标签页
-  if (tabs.value.some((tab)=>tab.label===activeMenu)){
-    store.dispatch('updateActiveMenu', activeMenu);//无顺序，保证切换
+  if (tabs.value.some((tab)=>tab.label===menuId)){
+    store.commit('setActiveMenu', menuId); //无顺序，保证切换
     console.log('Tab already exists:', activeMenu);
     console.log('已有菜单tabs',tabs.value)
   }else{
@@ -145,6 +143,10 @@ const handleMenuSelect = (activeMenu) => {
     console.log('Updated Tabs:', tabs.value); // 打印全部的tab值，检查 tabs 是否正确更新；
   };
 
+  watchEffect(() => {
+  console.log('editableTabsValue changed:', activeMenu)//这里也是操作后端
+  console.log('监测标签页的tabs',tabs.value)//放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
+})
 // const TabName=ref('');
 
   // 自定义事件

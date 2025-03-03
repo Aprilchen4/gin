@@ -6,6 +6,7 @@ import { createStore } from 'vuex'
 
 
 // Vuex 的 state 本身就是响应式的
+//state 是只读的，必须通过 mutations 来修改
 const store = createStore({
     state: {
       activeMenu:1,  // 当前选中的菜单项
@@ -31,12 +32,12 @@ const store = createStore({
 // actions 来处理异步操作(如api请求），通过dispatch触发,dispatch;
 // 每个 action 都是一个函数，接收一个 context 对象作为参数，context 包含 commit、state、getters 等方法。
     actions: {
-        updateActiveMenu({ commit }, activeMenu) {
-        commit('setActiveMenu',activeMenu);
+        updateActiveMenu({ commit }, menuId) {
+        commit('setActiveMenu',menuId);
         },
 
-        updateActiveTab({ commit }, tabs) {
-        commit('setActiveTab', tabs);
+        updateActiveTab({ commit }, tab) {
+        commit('setActiveTab', tab);
         },
 
 
@@ -83,12 +84,12 @@ const store = createStore({
 // mutations 用于修改状态的同步操作，commit;
 // 每个 mutation 都是一个函数，接收 state 作为第一个参数，用于直接修改状态。
     mutations: {
-        setActiveMenu(state, activeMenu) {
-        state.activeMenu = activeMenu;
+        setActiveMenu(state, menuId) {
+        state.activeMenu = menuId;
         },
 
-        setActiveTab(state, tabs) {
-        state.tabs = tabs;
+        setActiveTab(state, tab) {
+        state.tabs = tab;
         },
   
         // addTab(state,{activeMenu,selectedMenu.meta.title}) {
