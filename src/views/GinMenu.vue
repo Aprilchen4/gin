@@ -105,7 +105,8 @@ import TabMenu from '@/views/TabMenu.vue'
 // const activeMenu = computed(() => store.state.activeMenu);
 
 // 子组件向父组件传值
-const inputValue = ref('');
+// 在 Vue 3 中，使用 ref 创建响应式引用时，通常使用 const 关键字
+const inputValue = ref('仪表盘');
 // breadcrumb 是只读的局部变量；
 const handleData = (breadcrumb) => {
       console.log('接收到子组件的数据:', breadcrumb);

@@ -41,19 +41,19 @@ const activeMenu = computed(() => store.state.activeMenu);
 // tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
 const TabClick = (tab) => {
   console.log('Tab Select Event Triggered',tab.props.name); // 检查事件是否触发
-  console.log('before Updated Active Menu:', activeMenu);
-  store.commit('ClickTab',tab)
+  store.commit('setClickTab',tab.props.name)
+  console.log('before Updated Active Menu:', activeMenu.value);
   // store.dispatch('updateClickTab',tab)
   // const activeMenu = tab.props.name //表示访问 tab 对象的 props 属性中的 label值,建是属性的名称，属性是键值对；
   // store.dispatch('updateActiveMenu', activeMenu); // 必须加，这句保证在切换标签页时动态更新菜单和抬头
   // store.commit('setActiveMenu', activeMenu); // 
-  console.log('Updated Active Menu:', activeMenu); // 打印更新后的 activeMenu
+  console.log('Updated Active Menu:', activeMenu.value); // 打印更新后的 activeMenu
 }
 
 // SideMenu组件切换、新增都会调用watchEffect函数监测，新增打印的是新增之后的；
 // delete函数也会调用watchEffect，打印的是delete之后的；；
   watchEffect(() => {
-  console.log('editableTabsValue changed:', activeMenu)//这里也是操作后端
+  console.log('editableTabsValue changed:', activeMenu.value)//这里也是操作后端
   console.log('监测标签页的tabs',tabs.value)//放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
 })
 
@@ -62,7 +62,7 @@ const TabClick = (tab) => {
 // 移除指定的 Tab。如果移除的是当前选中的 Tab，自动切换到下一个或上一个 Tab。
   const deleteTab = (targetName) => {
     console.log('传入的目标数据',targetName)
-    console.log('删除前选中的内容',activeMenu)
+    console.log('删除前选中的内容',activeMenu.value)
     console.log('删除前的tabs',tabs.value)
 
     // const tabValue = tabs.value //获取当前所有的 Tab 数据。tabs 是一个数组，每个元素是一个 Tab 对象
@@ -83,8 +83,7 @@ const TabClick = (tab) => {
           console.log("可选数组f",tabs.value[index+1],index+1)
           console.log("可选数组b",tabs.value[index-1],index-1)
         // 写法四
-          store.commit('removeTab', targetName);//直接mutation--commit，同步修改
-          // store.dispatch('removeTab', targetName)//actions-dispatch-mutation--commit,异步修改
+          store.commit('setRemoveTab', targetName);//直接mutation--commit，同步修改
           console.log("删除后序列",index)
           console.log("删除后可选数组2",tabs.value[index+1],index+1)
           console.log("删除后可选数组1",tabs.value[index-1],index-1)
@@ -101,10 +100,10 @@ const TabClick = (tab) => {
             // activeMenu.value = nextTab.title//更新当前选中的标签页
             
             // store.dispatch('updateNextTab', nextTab);//可以 
-            store.commit('SetnextTab',nextTab)
+            store.commit('setNextTab',nextTab)
             
             // store.commit('setActiveMenu',activeMenu)这一句和store.commit('SetnextTab',nextTab)是一个意思；
-            console.log('选中的内容',activeMenu)//这里不对
+            console.log('选中的内容',activeMenu.value)//这里不对
             console.log('删除后的tabs',tabs.value)//是数组，没问题
           }
       }

@@ -12,7 +12,6 @@ const store = createStore({
       activeMenu:1,  // 当前选中的菜单项
       nextTab:'',
     //   activeTab: '',   // 当前选中的标签
-      TabName:'',
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {
         name: '首页',
@@ -43,19 +42,19 @@ const store = createStore({
 
         // 多余了，这里只需要同步修改；
         updateNextTab({ commit }, nextTab) {
-            commit('SetnextTab', nextTab);
+            commit('setNextTab', nextTab);
         },
         
-        updateClickTab({ commit }, tab) {
-            commit('ClickTab',tab);
+        updateClickTab({ commit }, name) {
+            commit('setClickTab',name);
             },
         
         addNewTab({ commit }, activeMenu) {
-        commit('addTab',activeMenu);
+        commit('setAddTab',activeMenu);
         },
    
         removeTab({ commit }, targetName) {
-        commit('removeTab', targetName);
+        commit('setRemoveTab', targetName);
         },
     },
     // action和dispatch的关系
@@ -85,11 +84,11 @@ const store = createStore({
 // 每个 mutation 都是一个函数，接收 state 作为第一个参数，用于直接修改状态。
     mutations: {
         setActiveMenu(state, menuId) {
-        state.activeMenu = menuId;
+            state.activeMenu = menuId;
         },
 
         setActiveTab(state, tab) {
-        state.tabs = tab;
+            state.tabs = tab;
         },
   
         // addTab(state,{activeMenu,selectedMenu.meta.title}) {
@@ -99,23 +98,30 @@ const store = createStore({
         //     content: 'new tab content',
         //     });
         // // },
-        ClickTab(state, tab) {
-            state.activeMenu = tab.props.name;//还是得这么写，才能改变activeMenu
+        setClickTab(state, name) {
+            state.activeMenu = name;//还是得这么写，才能改变activeMenu
         },
 
-        addTab(state,{activeMenu,TabName}) {
+        // setAddTab(state,{props}) {
+        //     state.tabs.push({
+        //        name: props.tabName,
+        //        label: props.activeMenu,
+        //        content: 'new tab content',
+        //         });
+        //     },
+
+        setAddTab(state,{activeMenu,tabName}) {
             state.tabs.push({
-               name: TabName,
-               label: activeMenu,
-               content: 'new tab content',
+                name: tabName,
+                label: activeMenu,
+                content: 'new tab content',
                 });
             },
-
-        SetnextTab(state, nextTab) {
+        setNextTab(state, nextTab) {
             state.activeMenu =nextTab.label;
         },
 
-        removeTab(state, targetName) {
+        setRemoveTab(state, targetName) {
             state.tabs = state.tabs.filter((tab) => tab.label !== targetName);
           },
     },
