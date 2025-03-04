@@ -11,6 +11,7 @@ const store = createStore({
     state: {
       activeMenu:1,  // 当前选中的菜单项
       nextTab:'',
+      breadCrumb:'仪表盘',
     //   activeTab: '',   // 当前选中的标签
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {
@@ -56,6 +57,10 @@ const store = createStore({
         removeTab({ commit }, targetName) {
         commit('setRemoveTab', targetName);
         },
+
+        updateBreadCrumb({ commit }, breadCrumb) {
+            commit('setBreadCrumb', breadCrumb);
+            },
     },
     // action和dispatch的关系
         // store.dispatch('updateActiveMenu', activeMenu); 
@@ -124,6 +129,10 @@ const store = createStore({
         setRemoveTab(state, targetName) {
             state.tabs = state.tabs.filter((tab) => tab.label !== targetName);
           },
+
+        setBreadCrumb(state,newBreadCrumb) {
+        state.breadCrumb = newBreadCrumb
+        },
     },
 })
 

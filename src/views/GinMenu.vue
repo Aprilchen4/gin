@@ -4,14 +4,14 @@
             <el-image class='logo' :src="require('@/assets/logo1.png')"></el-image>
             <div class="title">Gin-Vue-Admin</div>
             <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
-                <el-breadcrumb-item class='titleInput'>{{ inputValue }}</el-breadcrumb-item>
-            <!-- <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
+                <el-breadCrumb-item class='titleInput'>{{ breadCrumb }}</el-breadCrumb-item>
+            <!-- <el-breadCrumb separator="/">
+                <el-breadCrumb-item>
                 <a href="/">promotion management</a>
-                </el-breadcrumb-item>
-                <el-breadcrumb-item>promotion list</el-breadcrumb-item>
-                <el-breadcrumb-item>promotion detail</el-breadcrumb-item>
-            </el-breadcrumb> -->
+                </el-breadCrumb-item>
+                <el-breadCrumb-item>promotion list</el-breadCrumb-item>
+                <el-breadCrumb-item>promotion detail</el-breadCrumb-item>
+            </el-breadCrumb> -->
         </div>
         <div class="top-right">
             <!-- 右侧第一个按钮 -->
@@ -96,6 +96,10 @@ import { ref} from 'vue'
 import { useRouter } from 'vue-router'
 import SideMenu from "@/views/SideMenu.vue"
 import TabMenu from '@/views/TabMenu.vue'
+const breadCrumb = computed(() => store.state.breadCrumb);
+import { computed } from 'vue';
+const store = useStore();
+import { useStore } from 'vuex';
 
 // 标签页
 // import { computed } from 'vue';
@@ -106,12 +110,12 @@ import TabMenu from '@/views/TabMenu.vue'
 
 // 子组件向父组件传值
 // 在 Vue 3 中，使用 ref 创建响应式引用时，通常使用 const 关键字
-const inputValue = ref('仪表盘');
-// breadcrumb 是只读的局部变量；
-const handleData = (breadcrumb) => {
-      console.log('接收到子组件的数据:', breadcrumb);
-      inputValue.value = breadcrumb; // 更新状态
-    };
+// const inputValue = ref('仪表盘');
+// // breadCrumb 是只读的局部变量；
+// const handleData = (breadCrumb) => {
+//       console.log('接收到子组件的数据:', breadCrumb);
+//       inputValue.value = breadCrumb; // 更新状态
+//     };
 
 // 搜索弹窗
 const pump = () => {
@@ -204,7 +208,7 @@ const toggleMode = (newMode) => {
     width:300px;
 }
 .top-right{
-    left: 920px;
+    right: 10px;
     display: inline-flex;
     position: absolute; 
     align-items: center; /* 上下居中 */

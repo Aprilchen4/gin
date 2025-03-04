@@ -36,13 +36,14 @@ const menuOpenEvent = (key,keyPath) => {
 // 标签页相关
 import { computed } from 'vue';
 import { useStore } from 'vuex';
-import {defineEmits} from 'vue';
+// import {defineEmits} from 'vue';
 import {watchEffect } from 'vue'
 // import { defineExpose } from 'vue'
 
 const store = useStore();
 const tabs = computed(()=>store.state.tabs);// 获取 Vuex 中的状态
 const activeMenu = computed(() => store.state.activeMenu);
+const breadCrumb = computed(() => store.state.breadCrumb);
 
 // 用于传递数据,这里居然不需要定义是响应式；
 // let会造成全局变量污染
@@ -76,34 +77,35 @@ const handleMenuSelect = (menuId) => {
   }
 
   // 生成面包屑
-  function generateBreadcrumb(tree, targetId) {
+  function generatebreadCrumb(tree, targetId) {
     // 查找节点及其父节点
     const path = findNodeAndParents(tree, targetId);
     if (!path) {
       return '未找到指定节点';
     }
     // 提取每个节点的 meta.title
-    const breadcrumb = path.map((node) => node.meta.title).join(' / ');
-    emit('send-data', breadcrumb);
-    // return breadcrumb;
+  let breadCrumbValue = path.map((node) => node.meta.title).join(' / ');
+   store.dispatch('updateBreadCrumb',breadCrumbValue);
+    // emit('send-data', breadCrumb.value);
+    // return breadCrumb;
     //  提起最后一个节点的meta.title
     tabName =  path[path.length - 1].meta.title;
     console.log('里标签页名称:',tabName);
     // tabName.value=tabName;//报错
-    console.log('生成面包屑',breadcrumb);
+    console.log('生成面包屑',breadCrumb.value);
   }
 
   console.log('菜单的生成面包屑', activeMenu.value)
-  // const breadcrumb = ref('');
-  const breadcrumb = generateBreadcrumb(sideData.values, menuId);
-  // console.log('生成面包屑',breadcrumb);
-  // console.log('生成面包屑价值',breadcrumb.value);，显示未定义
+  // const breadCrumb = ref('');
+  breadCrumb.value = generatebreadCrumb(sideData.values, menuId);
+  // console.log('生成面包屑',breadCrumb);
+  // console.log('生成面包屑价值',breadCrumb.value);，显示未定义
 
   // // 自定义事件
-  // console.log('外面生成面包屑',breadcrumb);
+  // console.log('外面生成面包屑',breadCrumb);
   // const emit = defineEmits(['send-data']); // 定义自定义事件
   // const sendData = () => {
-  // emit('send-data', breadcrumb); // 触发事件并传递数据
+  // emit('send-data', breadCrumb); // 触发事件并传递数据
   // };
 
   // 遍历数组，找到与 activeMenu 匹配的对象，只能找到一级；
@@ -121,7 +123,7 @@ const handleMenuSelect = (menuId) => {
     console.log('已有菜单tabs',tabs.value)
   }else{
       console.log('Tab not exists:', activeMenu.value);
-      console.log('面包屑名称:',breadcrumb );//函数外调用显示未定义
+      console.log('面包屑名称:',breadCrumb.value );//函数外调用显示未定义
       // console.log('外标签页名称1:',tabNameComputed);
       console.log('外标签页名称:',tabName);
       store.commit('setActiveMenu',menuId);
@@ -149,13 +151,13 @@ const handleMenuSelect = (menuId) => {
 // const tabName=ref('');
 
   // 自定义事件
-  // const breadcrumb = generateBreadcrumb(sideData.values, activeMenu);
-  // console.log('生成面包屑',breadcrumb);
-  // console.log('外面生成面包屑',breadcrumb);
-  const emit = defineEmits(['send-data']); // 定义自定义事件
-  const sendData = () => {
-  // emit('send-data', breadcrumb); // 触发事件并传递数据
-  };
+  // const breadCrumb = generatebreadCrumb(sideData.values, activeMenu);
+  // console.log('生成面包屑',breadCrumb);
+  // console.log('外面生成面包屑',breadCrumb);
+  // const emit = defineEmits(['send-data']); // 定义自定义事件
+  // const sendData = () => {
+  // emit('send-data', breadCrumb); // 触发事件并传递数据
+  // };
   // console.log('外标签页名称',tabName)//啥也不是
 </script>
 

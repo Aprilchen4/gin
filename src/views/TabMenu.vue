@@ -30,18 +30,78 @@
 import {watchEffect } from 'vue'
 import { computed } from 'vue';
 import { useStore } from 'vuex';
+import {reactive} from 'vue'
+import { getMenu } from '@/api/user'
+// import {handleMenuSelect}from '@/views/SideMenu.vue'
 // import {state} from '@/store/index'
 
 const store = useStore();
 const tabs = computed(()=>store.state.tabs);
 // 还是得导入，不然无法读取vuex的状态
 const activeMenu = computed(() => store.state.activeMenu);
+const breadCrumb = computed(() => store.state.breadCrumb);
 
+let tabName=''
 
+const sideData = reactive({
+  values: []  // 初始化 values 数组
+});
+
+// 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
+getMenu().then(a => {
+        console.log('侧边栏数据:',a.data.menus)
+        sideData.values = a.data.menus// 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
+        console.log('数据信息', sideData.values)//这里是异步函数,
+        })
 // tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
 const TabClick = (tab) => {
   console.log('Tab Select Event Triggered',tab.props.name); // 检查事件是否触发
   store.commit('setClickTab',tab.props.name)
+
+  function findNodeAndParents(tree, targetId, path = []) {
+    for (const node of tree) {
+      // 将当前节点加入路径
+      const currentPath = [...path, node];
+      // 如果找到目标节点，返回路径
+      if (node.menuId === targetId) {
+        return currentPath;
+      }
+      // 如果有子节点，递归查找
+      if (node.children && node.children.length > 0) {
+        const result = findNodeAndParents(node.children, targetId, currentPath);
+        if (result) {
+          return result;
+        }
+      }
+    }
+    // 如果未找到，返回 null
+    return null;
+  }
+
+  // 生成面包屑
+  function generatebreadCrumb(tree, targetId) {
+    // 查找节点及其父节点
+    const path = findNodeAndParents(tree, targetId);
+    if (!path) {
+      return '未找到指定节点';
+    }
+    // 提取每个节点的 meta.title
+  let breadCrumbValue = path.map((node) => node.meta.title).join(' / ');
+   store.dispatch('updateBreadCrumb',breadCrumbValue);
+    // emit('send-data', breadCrumb.value);
+    // return breadCrumb;
+    //  提起最后一个节点的meta.title
+    tabName =  path[path.length - 1].meta.title;
+    console.log('里标签页名称:',tabName);
+    // tabName.value=tabName;//报错
+    console.log('生成面包屑',breadCrumb.value);
+  }
+
+  console.log('菜单的生成面包屑', activeMenu.value)
+  // const breadCrumb = ref('');
+  breadCrumb.value = generatebreadCrumb(sideData.values, tab.props.name);
+
+  // store.commit('setBreadCrumb',breadCrumb)
   console.log('before Updated Active Menu:', activeMenu.value);
   // store.dispatch('updateClickTab',tab)
   // const activeMenu = tab.props.name //表示访问 tab 对象的 props 属性中的 label值,建是属性的名称，属性是键值对；
