@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 // import login from '@/login.vue';
-// import GinMenu from '@/views/GinMenu.vue';
+// import ginMenu from '@/views/ginMenu.vue';
 
 // path 主要是前端路由，决定了浏览器地址栏中的 URL 访问哪个前端页面组件
 // 后端接口通常是 fetch 或 axios 请求时使用的 API 地址
@@ -8,18 +8,18 @@ const routes = [
   {
     path: '/', // 路由路径
     name: 'login', // 路由名称
-    component:() => import('@/views/LoginWeb.vue') , // 对应的组件
+    component:() => import('@/views/loginWeb.vue') , // 对应的组件
     // component:login, //也可以这么写,前面需要import
   },
   {
     path: '/menu',
     name: 'menu',
-    component: () => import('@/views/GinMenu.vue'),
+    component: () => import('@/views/ginMenu.vue'),
     children:[
       {
         path: '/test',
         name: 'test',
-        component: () => import('@/views/HelloTest.vue'),
+        component: () => import('@/views/helloTest.vue'),
       },
     ]
   },

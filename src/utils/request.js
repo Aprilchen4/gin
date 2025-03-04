@@ -72,8 +72,8 @@ service.interceptors.response.use(
     // response 是 Axios 请求成功后的响应对象。
     // 对应登录页面组件登录请求里的response；
 
-    //将响应数据（response.data）返回给调用方（程序-LoginWeb.vue）。
-    //程序-LoginWeb.vue可以通过 then 方法获取到 response.data
+    //将响应数据（response.data）返回给调用方（程序-loginWeb.vue）。
+    //程序-loginWeb.vue可以通过 then 方法获取到 response.data
 
     // console.log(response.data)在 return 之后，因此永远不会执行。
     // 如果需要打印响应数据，应该将 console.log 放在 return 之前：
@@ -113,13 +113,13 @@ service.interceptors.response.use(
     }
 
     // 错误处理逻辑
-    // 第一步：捕获"错误'：调用请求函数（LoginWeb.vue），try/catch到错误 （前端）
+    // 第一步：捕获"错误'：调用请求函数（loginWeb.vue），try/catch到错误 （前端）
     // 第二步：判断错误：错误返回给响应拦截器，错误分类，打印错误；（后端）
-    // 第三步：反馈错误：（LoginWeb.vue）打印（如显示提示、记录日志等）（前端）
+    // 第三步：反馈错误：（loginWeb.vue）打印（如显示提示、记录日志等）（前端）
 
     // promise js里面用于处理异步操作的对象
-    // promise 发生在第二步：错误被捕获后，但尚未被最终处理（（LoginWeb.vue）catch部分）之前。
-    // 将错误向上抛出,"向上"指的是返回到 Axios 请求的调用者（程序-LoginWeb.vue）
+    // promise 发生在第二步：错误被捕获后，但尚未被最终处理（（loginWeb.vue）catch部分）之前。
+    // 将错误向上抛出,"向上"指的是返回到 Axios 请求的调用者（程序-loginWeb.vue）
     // 请求成功时不会打印，error函数不会执行；
     console.log('uuu');
     return Promise.reject(error);
