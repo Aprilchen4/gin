@@ -29,8 +29,10 @@
 import { watchEffect } from "vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
-import { reactive } from "vue";
-import { getMenu } from "@/api/user";
+// import { reactive } from "vue";
+// import { getMenu } from "@/api/user";
+import { emitter } from "@/utils/eventBus";
+import { ref, onMounted, onUnmounted } from "vue";
 // import {handleMenuSelect}from '@/views/sideMenu.vue'
 // import {state} from '@/store/index'
 
@@ -42,16 +44,31 @@ const breadCrumb = computed(() => store.state.breadCrumb);
 
 let tabName = "";
 
-const sideData = reactive({
-  values: [], // 初始化 values 数组
-});
+// const sideData = reactive({
+//   values: [], // 初始化 values 数组
+// });
 
 // 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
-getMenu().then((a) => {
-  console.log("侧边栏数据:", a.data.menus);
-  sideData.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  console.log("数据信息", sideData.values); //这里是异步函数,
+// getMenu().then((a) => {
+//   console.log("侧边栏数据:", a.data.menus);
+//   sideData.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
+//   console.log("数据信息", sideData.values); //这里是异步函数,
+// });
+
+const receivedMessage = ref("");
+// 监听事件
+onMounted(() => {
+  emitter.on("messageEvent", (msg) => {
+    receivedMessage.value = msg;
+  });
 });
+
+// 组件卸载时清理监听器
+onUnmounted(() => {
+  emitter.off("messageEvent"); // 移除特定事件监听
+  // 或者使用 emitter.all.clear() 移除所有监听
+});
+
 // tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
 const TabClick = (tab) => {
   console.log("Tab Select Event Triggered", tab.props.name); // 检查事件是否触发
@@ -98,7 +115,7 @@ const TabClick = (tab) => {
 
   console.log("菜单的生成面包屑", activeMenu.value);
   // const breadCrumb = ref('');
-  breadCrumb.value = generatebreadCrumb(sideData.values, tab.props.name);
+  breadCrumb.value = generatebreadCrumb(receivedMessage.value, tab.props.name);
 
   // store.commit('setBreadCrumb',breadCrumb)
   console.log("before Updated Active Menu:", activeMenu.value);

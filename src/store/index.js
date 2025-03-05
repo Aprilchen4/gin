@@ -84,6 +84,7 @@ const store = createStore({
         // action（‘context’，payload：通过 dispatch 传递的数据。）
         // commit（”mutation 的名称“，payload：传递给 mutation 的数据（可选））
         // mutation（state，payload：通过 dispatch 传递的数据。），mutation 接收 state 和 payload，并修改状态
+        // mutation 的参数不需要和 action 的参数完全一致，只要逻辑上能够正确传递数据即可
 
 // mutations 用于修改状态的同步操作，commit;
 // 每个 mutation 都是一个函数，接收 state 作为第一个参数，用于直接修改状态。
@@ -129,7 +130,7 @@ const store = createStore({
         setRemoveTab(state, targetName) {
             state.tabs = state.tabs.filter((tab) => tab.label !== targetName);
           },
-
+          
         setBreadCrumb(state,newBreadCrumb) {
         state.breadCrumb = newBreadCrumb
         },

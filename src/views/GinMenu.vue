@@ -7,13 +7,6 @@
       <el-breadCrumb-item class="titleInput">{{
         breadCrumb
       }}</el-breadCrumb-item>
-      <!-- <el-breadCrumb separator="/">
-                <el-breadCrumb-item>
-                <a href="/">promotion management</a>
-                </el-breadCrumb-item>
-                <el-breadCrumb-item>promotion list</el-breadCrumb-item>
-                <el-breadCrumb-item>promotion detail</el-breadCrumb-item>
-            </el-breadCrumb> -->
     </div>
     <div class="top-right">
       <!-- 右侧第一个按钮 -->
