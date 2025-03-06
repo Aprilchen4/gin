@@ -32,7 +32,6 @@ import { useStore } from "vuex";
 // import { reactive } from "vue";
 // import { getMenu } from "@/api/user";
 import { emitter } from "@/utils/eventBus";
-import { ref, onMounted, onUnmounted } from "vue";
 // import {handleMenuSelect}from '@/views/sideMenu.vue'
 // import {state} from '@/store/index'
 
@@ -40,89 +39,13 @@ const store = useStore();
 const tabs = computed(() => store.state.tabs);
 // 还是得导入，不然无法读取vuex的状态
 const activeMenu = computed(() => store.state.activeMenu);
-const breadCrumb = computed(() => store.state.breadCrumb);
-
-let tabName = "";
-
-// const sideData = reactive({
-//   values: [], // 初始化 values 数组
-// });
-
-// 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
-// getMenu().then((a) => {
-//   console.log("侧边栏数据:", a.data.menus);
-//   sideData.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-//   console.log("数据信息", sideData.values); //这里是异步函数,
-// });
-
-const receivedMessage = ref("");
-// 监听事件
-onMounted(() => {
-  emitter.on("messageEvent", (msg) => {
-    receivedMessage.value = msg;
-  });
-});
-
-// 组件卸载时清理监听器
-onUnmounted(() => {
-  emitter.off("messageEvent"); // 移除特定事件监听
-  // 或者使用 emitter.all.clear() 移除所有监听
-});
 
 // tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
 const TabClick = (tab) => {
   console.log("Tab Select Event Triggered", tab.props.name); // 检查事件是否触发
   store.commit("setClickTab", tab.props.name);
+  emitter.emit("messageEvent", tab.props.name);
 
-  function findNodeAndParents(tree, targetId, path = []) {
-    for (const node of tree) {
-      // 将当前节点加入路径
-      const currentPath = [...path, node];
-      // 如果找到目标节点，返回路径
-      if (node.menuId === targetId) {
-        return currentPath;
-      }
-      // 如果有子节点，递归查找
-      if (node.children && node.children.length > 0) {
-        const result = findNodeAndParents(node.children, targetId, currentPath);
-        if (result) {
-          return result;
-        }
-      }
-    }
-    // 如果未找到，返回 null
-    return null;
-  }
-
-  // 生成面包屑
-  function generatebreadCrumb(tree, targetId) {
-    // 查找节点及其父节点
-    const path = findNodeAndParents(tree, targetId);
-    if (!path) {
-      return "未找到指定节点";
-    }
-    // 提取每个节点的 meta.title
-    let breadCrumbValue = path.map((node) => node.meta.title).join(" / ");
-    store.dispatch("updateBreadCrumb", breadCrumbValue);
-    // emit('send-data', breadCrumb.value);
-    // return breadCrumb;
-    //  提起最后一个节点的meta.title
-    tabName = path[path.length - 1].meta.title;
-    console.log("里标签页名称:", tabName);
-    // tabName.value=tabName;//报错
-    console.log("生成面包屑", breadCrumb.value);
-  }
-
-  console.log("菜单的生成面包屑", activeMenu.value);
-  // const breadCrumb = ref('');
-  breadCrumb.value = generatebreadCrumb(receivedMessage.value, tab.props.name);
-
-  // store.commit('setBreadCrumb',breadCrumb)
-  console.log("before Updated Active Menu:", activeMenu.value);
-  // store.dispatch('updateClickTab',tab)
-  // const activeMenu = tab.props.name //表示访问 tab 对象的 props 属性中的 label值,建是属性的名称，属性是键值对；
-  // store.dispatch('updateActiveMenu', activeMenu); // 必须加，这句保证在切换标签页时动态更新菜单和抬头
-  // store.commit('setActiveMenu', activeMenu); //
   console.log("Updated Active Menu:", activeMenu.value); // 打印更新后的 activeMenu
 };
 
@@ -166,19 +89,9 @@ const deleteTab = (targetName) => {
       // store.dispatch('updateActiveTab',tabs)  //前三种写法加这句无法删除,state的数据修改，只能mutaion或者action里面的函数修改
       // store.commit('updateActiveTab',tabs) // 同理
 
-      // 删除后的index发生了变化；
-      // 当删除一个元素时，数组中剩余元素的索引会自动调整，以保持连续的索引。
-      // console.log("可选数组f",tabs.value[index])
-      // console.log("可选数组b",tabs.value[index-1])
       const nextTab = tabs.value[index] || tabs.value[index - 1]; // ||：逻辑或运算符，如果左边的值为 undefined 或 null，则返回右边的值。
       if (nextTab) {
-        //如果存在 nextTab，则将 activeName 更新为 nextTab 的 name。
-        // 包括activemenu也是需要通过mutations修改，不能直接赋值；
-        // activeMenu.value = nextTab.title//更新当前选中的标签页
-
-        // store.dispatch('updateNextTab', nextTab);//可以
         store.commit("setNextTab", nextTab);
-
         // store.commit('setActiveMenu',activeMenu)这一句和store.commit('SetnextTab',nextTab)是一个意思；
         console.log("选中的内容", activeMenu.value); //这里不对
         console.log("删除后的tabs", tabs.value); //是数组，没问题

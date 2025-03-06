@@ -1,13 +1,11 @@
 <template>
   <div id="app">
-    <router-view></router-view>  
-    <!-- 哈哈哈 -->
-    <!-- <div class="momo">hhhhhhh</div> -->
+    <router-view></router-view>
     <!-- App.vue的只会渲染一级子组件 -->
     <!-- Router-view也被称为路由的出口 -->
     <!-- 用于渲染显示当前路由匹配的组件 -->
     <!-- 将 router-view 放在 App.vue 中，能够实现 路由的集中管理，并且保持 全局布局的统一 -->
-  </div> 
+  </div>
 </template>
 
 <!-- App.vue 是 Vue 应用的根组件， -->
@@ -15,8 +13,8 @@
 
 <script>
 export default {
-  name: 'App',
-}
+  name: "App",
+};
 </script>
 
 <style>

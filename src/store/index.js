@@ -4,7 +4,6 @@
 
 import { createStore } from 'vuex'
 
-
 // Vuex 的 state 本身就是响应式的
 //state 是只读的，必须通过 mutations 来修改
 const store = createStore({
@@ -61,7 +60,7 @@ const store = createStore({
         updateBreadCrumb({ commit }, breadCrumb) {
             commit('setBreadCrumb', breadCrumb);
             },
-    },
+        },
     // action和dispatch的关系
         // store.dispatch('updateActiveMenu', activeMenu); 
         // 'updateActiveMenu' 是要触发的 action 的名称。
@@ -96,25 +95,10 @@ const store = createStore({
         setActiveTab(state, tab) {
             state.tabs = tab;
         },
-  
-        // addTab(state,{activeMenu,selectedMenu.meta.title}) {
-        // state.tabs.push({
-        //     title: 'selectedMenu.meta.title',
-        //     index: activeMenu,
-        //     content: 'new tab content',
-        //     });
-        // // },
+
         setClickTab(state, name) {
             state.activeMenu = name;//还是得这么写，才能改变activeMenu
         },
-
-        // setAddTab(state,{props}) {
-        //     state.tabs.push({
-        //        name: props.tabName,
-        //        label: props.activeMenu,
-        //        content: 'new tab content',
-        //         });
-        //     },
 
         setAddTab(state,{activeMenu,tabName}) {
             state.tabs.push({
@@ -131,8 +115,8 @@ const store = createStore({
             state.tabs = state.tabs.filter((tab) => tab.label !== targetName);
           },
           
-        setBreadCrumb(state,newBreadCrumb) {
-        state.breadCrumb = newBreadCrumb
+        setBreadCrumb(state,breadCrumb) {
+        state.breadCrumb = breadCrumb
         },
     },
 })
