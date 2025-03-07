@@ -1,5 +1,5 @@
 <template>
-  <!-- v-model 属性是用来绑定当前激活的标签页。 -->
+  <!-- v-model 属性是用来绑定当前激活的标签页，需要写activeMenu计算属性 -->
   <!--:default-active后面跟el-tab-pane的name属性的类型  -->
   <el-tabs
     v-model="activeMenu"
@@ -29,11 +29,7 @@
 import { watchEffect } from "vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
-// import { reactive } from "vue";
-// import { getMenu } from "@/api/user";
 import { emitter } from "@/utils/eventBus";
-// import {handleMenuSelect}from '@/views/sideMenu.vue'
-// import {state} from '@/store/index'
 
 const store = useStore();
 const tabs = computed(() => store.state.tabs);
@@ -43,9 +39,9 @@ const activeMenu = computed(() => store.state.activeMenu);
 // tab-click 事件被触发时,它会返回一个参数,这个参数就是被点击的标签页对象,包含一些属性
 const TabClick = (tab) => {
   console.log("Tab Select Event Triggered", tab.props.name); // 检查事件是否触发
+
   store.commit("setClickTab", tab.props.name);
   emitter.emit("messageEvent", tab.props.name);
-
   console.log("Updated Active Menu:", activeMenu.value); // 打印更新后的 activeMenu
 };
 
@@ -67,27 +63,18 @@ const deleteTab = (targetName) => {
   tabs.value.forEach((tab, index) => {
     if (tab.label === targetName) {
       //遍历 tabs，可以找到要移除的 Tab 的位置（index）
-
-      // 写法一
-      // tabs.value = tabs.value.filter((tab) => tab.title !== targetName)//从 tabs 中移除 name 等于 targetName 的 Tab，更新 editableTabs，filter 方法会返回一个新的数组：
-
-      //写法二
-      // state.tabs = state.tabs.filter((tab) => tab.title !== targetName);
-
-      // 写法三
-      // const newTabs = [...tabs.value];
-      // newTabs.splice(index, 1);
-      // tabs.value = newTabs;
       console.log("删除前序列", index);
       console.log("可选数组f", tabs.value[index + 1], index + 1);
       console.log("可选数组b", tabs.value[index - 1], index - 1);
+
       // 写法四
       store.commit("setRemoveTab", targetName); //直接mutation--commit，同步修改
+      // store.dispatch('updateActiveTab',tabs)  //前三种写法加这句无法删除,state的数据修改，只能mutaion或者action里面的函数修改
+      // store.commit('updateActiveTab',tabs) // 同理
+
       console.log("删除后序列", index);
       console.log("删除后可选数组2", tabs.value[index + 1], index + 1);
       console.log("删除后可选数组1", tabs.value[index - 1], index - 1);
-      // store.dispatch('updateActiveTab',tabs)  //前三种写法加这句无法删除,state的数据修改，只能mutaion或者action里面的函数修改
-      // store.commit('updateActiveTab',tabs) // 同理
 
       const nextTab = tabs.value[index] || tabs.value[index - 1]; // ||：逻辑或运算符，如果左边的值为 undefined 或 null，则返回右边的值。
       if (nextTab) {

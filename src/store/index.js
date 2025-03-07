@@ -9,7 +9,8 @@ import { createStore } from 'vuex'
 const store = createStore({
     state: {
       activeMenu:1,  // 当前选中的菜单项
-      nextTab:'',
+    //   tabName:'',
+    //   nextTab:'',
       breadCrumb:'仪表盘',
     //   activeTab: '',   // 当前选中的标签
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
@@ -96,10 +97,15 @@ const store = createStore({
             state.tabs = tab;
         },
 
+        setTabName(state,tabName) {
+            state.tabName = tabName;
+        },
+
         setClickTab(state, name) {
             state.activeMenu = name;//还是得这么写，才能改变activeMenu
         },
 
+        // 修改 state.tabs，通过mutation。
         setAddTab(state,{activeMenu,tabName}) {
             state.tabs.push({
                 name: tabName,

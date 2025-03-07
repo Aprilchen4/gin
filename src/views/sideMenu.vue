@@ -1,6 +1,6 @@
 <template>
   <!-- 滚动条 -->
-  <!-- :default-active="1" 用于设置 el-menu [组件初始化时默认,不对]高亮选中的菜单项 -->
+  <!-- :default-active="1" 用于设置 el-menu [组件初始化时默认,不对]高亮选中的菜单项 ，需要引入activeMenu计算属性-->
   <el-scrollbar height="400px">
     <el-menu
       class="bottom-left"
@@ -24,21 +24,19 @@ import menuItems from "@/views/menuItems.vue";
 import { emitter } from "@/utils/eventBus";
 import { ref, onMounted, onUnmounted } from "vue";
 
-// const sideData = reactive([]);
 const sideData = reactive({
   values: [], // 初始化 values 数组
 });
+const receivedMessage = ref("");
 
 // const breadCrumbValue = ref("");
 // 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
 getMenu().then((a) => {
   console.log("侧边栏数据:", a.data.menus);
   sideData.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  // emitter.emit("messageEvent", sideData.values);
   console.log("数据信息", sideData.values); //这里是异步函数,
 });
 
-const receivedMessage = ref("");
 // 监听事件
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
@@ -65,15 +63,16 @@ import { useStore } from "vuex";
 import { watchEffect } from "vue";
 
 const store = useStore();
-const tabs = computed(() => store.state.tabs); // 获取 Vuex 中的状态
+// const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
 const activeMenu = computed(() => store.state.activeMenu);
-// const breadCrumb = computed(() => store.state.breadCrumb);
-// const tabName = computed(() => store.state.tabName);
+// const breadCrumb = computed(() => store.state.breadCrumb);//这里使用breadCrumbValue，作为函数返回值；
 
 const handleMenuSelect = (menuId) => {
   console.log("Menu Select Event Triggered", menuId); // 检查事件是否触发
   store.commit("setActiveMenu", menuId);
   console.log("Menu Select", activeMenu.value);
+
+  // 调用面包屑函数
   const { breadCrumbValue, tabName } = breadMake(sideData.values, menuId);
   store.commit("setBreadCrumb", breadCrumbValue);
   store.commit("setTabName", tabName);
@@ -82,10 +81,11 @@ const handleMenuSelect = (menuId) => {
   console.log("标签页名称:", tabName);
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
-  if (tabs.value.some((tab) => tab.label === menuId)) {
+  // vuex取数
+  if (store.state.tabs.some((tab) => tab.label === menuId)) {
     store.commit("setActiveMenu", menuId); //无顺序，保证切换
     console.log("Tab already exists:", activeMenu.value);
-    console.log("已有菜单tabs", tabs.value);
+    // console.log("已有菜单tabs", tabs.value);
     console.log("点击菜单id", menuId);
   } else {
     console.log("Tab not exists:", activeMenu.value);
@@ -93,7 +93,6 @@ const handleMenuSelect = (menuId) => {
     // 传参里面是一个对象，tabName此时不是计算属性；
     store.commit("setAddTab", { activeMenu: menuId, tabName: tabName }); //这个地方的参数可以是state之外的
   }
-  console.log("Updated Tabs:", tabs.value); // 打印全部的tab值，检查 tabs 是否正确更新；
 };
 
 // 生成面包屑
@@ -133,13 +132,15 @@ const breadMake = (tree, targetId) => {
   }
 
   const { breadCrumbValue, tabName } = generatebreadCrumb(tree, targetId);
+  // 在 JavaScript 中，使用 breadCrumb.value 作为对象的键是不合法的，因而导致语法错误。
+  // 正确的做法是将 breadCrumbValue 作为一个对象的属性，然后将这个对象作为参数传递给 store.commit。
   // breadCrumb.value = breadCrumbValue;
   return { breadCrumbValue, tabName };
 };
 
 watchEffect(() => {
   console.log("editableTabsValue changed:", activeMenu.value); //这里也是操作后端
-  console.log("监测标签页的tabs", tabs.value); //放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
+  // console.log("监测标签页的tabs", tabs.value); //放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
 });
 </script>
 
