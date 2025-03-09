@@ -9,15 +9,18 @@ import { createStore } from 'vuex'
 const store = createStore({
     state: {
       activeMenu:1,  // 当前选中的菜单项
-    //   tabName:'',
-    //   nextTab:'',
+      tabName:'',
+    // nextTab:'',
       breadCrumb:'仪表盘',
+      rPath:'',
+      rComponent:'',
+      rName:'',
     //   activeTab: '',   // 当前选中的标签
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {
         name: '首页',
         label: 1,
-        content: 'Tab 1 content',
+        content: '',
       },]   // 存储标签页的内容
 
     },
@@ -35,33 +38,8 @@ const store = createStore({
         updateActiveMenu({ commit }, menuId) {
         commit('setActiveMenu',menuId);
         },
+    },
 
-        updateActiveTab({ commit }, tab) {
-        commit('setActiveTab', tab);
-        },
-
-
-        // 多余了，这里只需要同步修改；
-        updateNextTab({ commit }, nextTab) {
-            commit('setNextTab', nextTab);
-        },
-        
-        updateClickTab({ commit }, name) {
-            commit('setClickTab',name);
-            },
-        
-        addNewTab({ commit }, activeMenu) {
-        commit('setAddTab',activeMenu);
-        },
-   
-        removeTab({ commit }, targetName) {
-        commit('setRemoveTab', targetName);
-        },
-
-        updateBreadCrumb({ commit }, breadCrumb) {
-            commit('setBreadCrumb', breadCrumb);
-            },
-        },
     // action和dispatch的关系
         // store.dispatch('updateActiveMenu', activeMenu); 
         // 'updateActiveMenu' 是要触发的 action 的名称。
@@ -92,15 +70,9 @@ const store = createStore({
         setActiveMenu(state, menuId) {
             state.activeMenu = menuId;
         },
-
-        setActiveTab(state, tab) {
-            state.tabs = tab;
-        },
-
-        setTabName(state,tabName) {
+        setTabName(state, tabName) {
             state.tabName = tabName;
         },
-
         setClickTab(state, name) {
             state.activeMenu = name;//还是得这么写，才能改变activeMenu
         },
@@ -110,7 +82,7 @@ const store = createStore({
             state.tabs.push({
                 name: tabName,
                 label: activeMenu,
-                content: 'new tab content',
+                content: '',
                 });
             },
         setNextTab(state, nextTab) {
@@ -123,6 +95,17 @@ const store = createStore({
           
         setBreadCrumb(state,breadCrumb) {
         state.breadCrumb = breadCrumb
+        },
+        setRoutePath(state,rPath) {
+            state.rPath = rPath 
+            },
+        
+        setComponent(state,rComponent ) {
+        state.rComponent = rComponent 
+        },
+    
+        setRouteName(state,rName) {
+        state.rName = rName 
         },
     },
 })

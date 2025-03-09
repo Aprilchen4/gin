@@ -70,7 +70,6 @@ const deleteTab = (targetName) => {
       // 写法四
       store.commit("setRemoveTab", targetName); //直接mutation--commit，同步修改
       // store.dispatch('updateActiveTab',tabs)  //前三种写法加这句无法删除,state的数据修改，只能mutaion或者action里面的函数修改
-      // store.commit('updateActiveTab',tabs) // 同理
 
       console.log("删除后序列", index);
       console.log("删除后可选数组2", tabs.value[index + 1], index + 1);

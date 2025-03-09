@@ -20,7 +20,7 @@
 // 侧边栏相关,编写一个递归函数，将扁平数据转换为树形结构
 import { getMenu } from "@/api/user";
 import { reactive } from "vue";
-import menuItems from "@/views/menuItems.vue";
+import menuItems from "@/components/menuItems.vue";
 import { emitter } from "@/utils/eventBus";
 import { ref, onMounted, onUnmounted } from "vue";
 
@@ -41,9 +41,9 @@ getMenu().then((a) => {
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
     receivedMessage.value = msg;
-    const { breadCrumbValue, tabName } = breadMake(sideData.values, msg);
+    const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
     store.commit("setBreadCrumb", breadCrumbValue);
-    store.commit("setTabName", tabName);
+    store.commit("settabNameValue", tabNameValue);
   });
 });
 
@@ -61,6 +61,11 @@ const menuOpenEvent = (key, keyPath) => {
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { watchEffect } from "vue";
+// import { useRouter } from "vue-router";
+// const router = useRouter();
+
+import Vrouter from "@/router/router";
+const router = Vrouter;
 
 const store = useStore();
 // const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
@@ -73,12 +78,30 @@ const handleMenuSelect = (menuId) => {
   console.log("Menu Select", activeMenu.value);
 
   // 调用面包屑函数
-  const { breadCrumbValue, tabName } = breadMake(sideData.values, menuId);
+  const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, menuId);
   store.commit("setBreadCrumb", breadCrumbValue);
-  store.commit("setTabName", tabName);
+  store.commit("settabNameValue", tabNameValue);
 
   console.log("生成的面包屑:", breadCrumbValue);
-  console.log("标签页名称:", tabName);
+  console.log("标签页名称:", tabNameValue);
+
+  // 调用路由生成函数
+  const { routePath, routeName, routeComponent } = routeMake(
+    sideData.values,
+    menuId
+  );
+  store.commit("setRoutePath", routePath);
+  store.commit("setRouteName", routeName);
+  store.commit("setComponent", routeComponent);
+
+  console.log("当前路由信息", routePath);
+  console.log("当前路由名称", routeName);
+  console.log("当前路由组件", routeComponent);
+
+  // 点击跳转路由
+  // router.push({ path: "/happy" });//可行
+  // `/${routePath}`
+  router.push({ path: "/menu/test" });
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
   // vuex取数
@@ -90,8 +113,8 @@ const handleMenuSelect = (menuId) => {
   } else {
     console.log("Tab not exists:", activeMenu.value);
     store.commit("setActiveMenu", menuId);
-    // 传参里面是一个对象，tabName此时不是计算属性；
-    store.commit("setAddTab", { activeMenu: menuId, tabName: tabName }); //这个地方的参数可以是state之外的
+    // 传参里面是一个对象，tabNameValue此时不是计算属性；
+    store.commit("setAddTab", { activeMenu: menuId, tabName: tabNameValue }); //这个地方的参数可以是state之外的
   }
 };
 
@@ -123,19 +146,60 @@ const breadMake = (tree, targetId) => {
     // 查找节点及其父节点
     const path = findNodeAndParents(tree, targetId);
     if (!path) {
-      return { breadCrumbValue: "未找到指定节点", tabName: null };
+      return { breadCrumbValue: "未找到指定节点", tabNameValue: null };
     }
     // 提取每个节点的 meta.title
     const breadCrumbValue = path.map((node) => node.meta.title).join(" / ");
-    const tabName = path[path.length - 1].meta.title;
-    return { breadCrumbValue, tabName };
+    const tabNameValue = path[path.length - 1].meta.title;
+    return { breadCrumbValue, tabNameValue };
   }
 
-  const { breadCrumbValue, tabName } = generatebreadCrumb(tree, targetId);
+  const { breadCrumbValue, tabNameValue } = generatebreadCrumb(tree, targetId);
   // 在 JavaScript 中，使用 breadCrumb.value 作为对象的键是不合法的，因而导致语法错误。
   // 正确的做法是将 breadCrumbValue 作为一个对象的属性，然后将这个对象作为参数传递给 store.commit。
   // breadCrumb.value = breadCrumbValue;
-  return { breadCrumbValue, tabName };
+  return { breadCrumbValue, tabNameValue };
+};
+
+// 找出路由节点
+const routeMake = (tree, targetId) => {
+  function findNodeRoute(tree, targetId, path = []) {
+    for (const node of tree) {
+      const route = [...path, node];
+      if (node.menuId === targetId) {
+        return route;
+      }
+      if (node.children && node.children.length > 0) {
+        const result = findNodeRoute(node.children, targetId, route);
+        if (result) {
+          return result;
+        }
+      }
+    }
+  }
+
+  // 生成路由路径
+  const generateRoutePath = (tree, targetId) => {
+    // route
+    const route = findNodeRoute(tree, targetId);
+    if (!route) {
+      return {
+        routePath: "未找到指定节点",
+        routeName: null,
+        routeComponent: null,
+      };
+    }
+
+    const routePath = route.map((node) => node.path).join(" / ");
+    const routeName = route[route.length - 1].name;
+    const routeComponent = route[route.length - 1].component;
+    return { routePath, routeName, routeComponent };
+  };
+  const { routePath, routeName, routeComponent } = generateRoutePath(
+    tree,
+    targetId
+  );
+  return { routePath, routeName, routeComponent };
 };
 
 watchEffect(() => {

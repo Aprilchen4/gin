@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import App from './App.vue' //全局的
-import router from './api/router' //main.js是全局注册，在app.vue是引用；
+import router from './router/router' //main.js是全局注册，在app.vue是引用；
 // import Vue from 'vue' Vue 3 项目不需要import Vue from 'vue'也可以正常运行
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import store from './store'

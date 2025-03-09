@@ -15,11 +15,12 @@ const routes = [
     path: '/menu',
     name: 'menu',
     component: () => import('@/views/ginMenu.vue'),
+    // 'test'路由是相对路径 menu/test, 而/test的绝对路径，路由是/test;
     children:[
       {
-        path: '/test',
+        path: 'test',
         name: 'test',
-        component: () => import('@/views/helloTest.vue'),
+        component: () => import('@/components/helloTest.vue'),
       },
     ]
   },

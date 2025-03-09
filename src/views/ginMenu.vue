@@ -106,7 +106,7 @@
   <div class="bottom">
     <!-- 布局容器 -->
     <el-container>
-      <sideMenu @send-data="handleData" />
+      <sideMenu />
       <!-- 布局容器，注意组件名称 -->
       <el-container>
         <!-- v-for是为每个标签页渲染一个组件  -->
@@ -114,9 +114,8 @@
           <tabMenu />
         </el-header>
         <!-- 标签页 -->
-
         <el-main>
-          <!-- <router-view></router-view> -->
+          <router-view />
         </el-main>
       </el-container>
     </el-container>
@@ -130,8 +129,8 @@ import { ElMessageBox, ElDrawer } from "element-plus";
 import { ElButton } from "element-plus";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import sideMenu from "@/views/sideMenu.vue";
-import tabMenu from "@/views/tabMenu.vue";
+import sideMenu from "@/components/sideMenu.vue";
+import tabMenu from "@/components/tabMenu.vue";
 const breadCrumb = computed(() => store.state.breadCrumb);
 import { computed } from "vue";
 const store = useStore();
