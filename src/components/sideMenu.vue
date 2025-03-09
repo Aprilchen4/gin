@@ -118,7 +118,7 @@ const handleMenuSelect = (menuId) => {
   }
 };
 
-// 生成面包屑
+// 面包屑函数
 const breadMake = (tree, targetId) => {
   // 生成路径
   function findNodeAndParents(tree, targetId, path = []) {
@@ -161,8 +161,9 @@ const breadMake = (tree, targetId) => {
   return { breadCrumbValue, tabNameValue };
 };
 
-// 找出路由节点
+// 路由函数
 const routeMake = (tree, targetId) => {
+  // 查找节点及其父节点
   function findNodeRoute(tree, targetId, path = []) {
     for (const node of tree) {
       const route = [...path, node];
@@ -189,7 +190,7 @@ const routeMake = (tree, targetId) => {
         routeComponent: null,
       };
     }
-
+    // 主逻辑
     const routePath = route.map((node) => node.path).join(" / ");
     const routeName = route[route.length - 1].name;
     const routeComponent = route[route.length - 1].component;
