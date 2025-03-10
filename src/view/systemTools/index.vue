@@ -1,5 +1,5 @@
 <template>
-  <div>抽象行为TEST</div>
+  <div>过于抽象行为</div>
 </template>
 
 <style>

@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// import login from '@/login.vue';
-// import ginMenu from '@/views/ginMenu.vue';
+import Store from '@/store/index';
 
 // path 主要是前端路由，决定了浏览器地址栏中的 URL 访问哪个前端页面组件
 // 后端接口通常是 fetch 或 axios 请求时使用的 API 地址
@@ -20,7 +19,15 @@ const routes = [
       {
         path: 'test',
         name: 'test',
-        component: () => import('@/components/helloTest.vue'),
+        component: () => import('@/components/temptMode.vue'),
+      },
+      {
+        path: 'dashboard',
+        name: 'dashboard',
+        component: () => {
+          const componentName = Store.state.rComponent; // 从 Vuex 获取组件名称
+          return import(`@/${componentName}`);
+        }
       },
     ]
   },

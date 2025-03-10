@@ -12,9 +12,9 @@ const store = createStore({
       tabName:'',
     // nextTab:'',
       breadCrumb:'仪表盘',
-      rPath:'',
+      rPath:'dashboard',
       rComponent:'',
-      rName:'',
+      rName:'dashboard',
     //   activeTab: '',   // 当前选中的标签
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {

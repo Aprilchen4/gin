@@ -101,7 +101,8 @@ const handleMenuSelect = (menuId) => {
   // 点击跳转路由
   // router.push({ path: "/happy" });//可行
   // `/${routePath}`
-  router.push({ path: "/menu/test" });
+  router.push({ path: `/menu/${routePath}` || "dashboard" });
+  // router.push({ path: "/menu/test" });
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
   // vuex取数
