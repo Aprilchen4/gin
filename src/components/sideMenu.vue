@@ -192,7 +192,7 @@ const routeMake = (tree, targetId) => {
       };
     }
     // 主逻辑
-    const routePath = route.map((node) => node.path).join(" / ");
+    const routePath = route.map((node) => node.path).join("/");
     const routeName = route[route.length - 1].name;
     const routeComponent = route[route.length - 1].component;
     return { routePath, routeName, routeComponent };

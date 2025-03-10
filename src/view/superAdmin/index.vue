@@ -1,5 +1,5 @@
 <template>
-  <div>过于抽象行为</div>
+  <div>超级管理员的抽象行为</div>
 </template>
 
 <style>
