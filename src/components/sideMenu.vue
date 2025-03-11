@@ -43,7 +43,7 @@ onMounted(() => {
     receivedMessage.value = msg;
     const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
     store.commit("setBreadCrumb", breadCrumbValue);
-    store.commit("settabNameValue", tabNameValue);
+    store.commit("setTabName", tabNameValue);
   });
 });
 
@@ -80,7 +80,7 @@ const handleMenuSelect = (menuId) => {
   // 调用面包屑函数
   const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, menuId);
   store.commit("setBreadCrumb", breadCrumbValue);
-  store.commit("settabNameValue", tabNameValue);
+  store.commit("setTabName", tabNameValue);
 
   console.log("生成的面包屑:", breadCrumbValue);
   console.log("标签页名称:", tabNameValue);
