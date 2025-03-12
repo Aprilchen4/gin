@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Store from '@/store/index';
 
+// const routeP = Store.state.rPath;
+// const routeN = Store.state.rName;
+
 // path 主要是前端路由，决定了浏览器地址栏中的 URL 访问哪个前端页面组件
 // 后端接口通常是 fetch 或 axios 请求时使用的 API 地址
 const routes = [
@@ -24,11 +27,22 @@ const routes = [
       {
         path: 'dashboard',
         name: 'dashboard',
+        // component: () => import('@/view/dashboard/index.vue'),
         component: () => {
           const componentName = Store.state.rComponent; // 从 Vuex 获取组件名称
           return import(`@/${componentName}`);
         }
+        
       },
+      {
+        path: 'admin/authority',
+        name: 'authority',
+        // component: () => import('@/view/superAdmin/authority/authority.vue'),
+        component: () => {
+          const componentName = Store.state.rComponent; // 从 Vuex 获取组件名称
+          return import(`@/${componentName}`);
+        }
+      }
     ]
   },
 ];
@@ -42,5 +56,15 @@ const router = createRouter({
   history: createWebHistory(), // 使用 HTML5 历史模式
   routes, // 路由配置
 });
+
+// router.addRoute({
+//   // path: Store.state.rPath, // 使用 Vuex 状态
+//   path:`/menu/${Store.state.rPath}`,
+//   name: Store.state.rName,
+//   component: () => {
+//         const componentName = Store.state.rComponent; // 从 Vuex 获取组件名称
+//         return import(`@/${componentName}`);
+//       }
+// });
 
 export default router;

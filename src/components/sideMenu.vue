@@ -41,9 +41,19 @@ getMenu().then((a) => {
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
     receivedMessage.value = msg;
+    // 面包屑
     const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
     store.commit("setBreadCrumb", breadCrumbValue);
     store.commit("setTabName", tabNameValue);
+    // 路由
+    const { routePath, routeName, routeComponent } = routeMake(
+      sideData.values,
+      msg
+    );
+    store.commit("setRoutePath", routePath);
+    store.commit("setRouteName", routeName);
+    store.commit("setComponent", routeComponent);
+    router.push({ path: `/menu/${Store.state.rPath}` || "dashboard" });
   });
 });
 
@@ -61,11 +71,11 @@ const menuOpenEvent = (key, keyPath) => {
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { watchEffect } from "vue";
+import Store from "@/store/index";
 // import { useRouter } from "vue-router";
 // const router = useRouter();
 
-import Vrouter from "@/router/router";
-const router = Vrouter;
+import router from "@/router/router";
 
 const store = useStore();
 // const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
@@ -99,10 +109,9 @@ const handleMenuSelect = (menuId) => {
   console.log("当前路由组件", routeComponent);
 
   // 点击跳转路由
-  // router.push({ path: "/happy" });//可行
-  // `/${routePath}`
-  router.push({ path: `/menu/${routePath}` || "dashboard" });
+  // router.push({ path: `/menu/${routePath}` || "dashboard" });
   // router.push({ path: "/menu/test" });
+  router.push({ path: `/menu/${Store.state.rPath}` || "dashboard" });
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
   // vuex取数
