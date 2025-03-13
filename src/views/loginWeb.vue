@@ -124,7 +124,7 @@ import { ElInput, ElButton } from "element-plus";
 // import VerifyCode from '@/components/VerifyCode.vue'
 import { ref } from "vue";
 import { getCode, getlogin, getMenu } from "@/api/user";
-//import { router } from '@/router/router'
+//import { router } from '@/router'
 
 // useRouter 只能在 setup 函数或 <script setup> 中使用，是一个局部工具函数
 // 每次在组件中使用 useRouter，都会返回当前的路由实例，即 router.js 中导出的 router

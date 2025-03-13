@@ -75,7 +75,7 @@ import Store from "@/store/index";
 // import { useRouter } from "vue-router";
 // const router = useRouter();
 
-import router from "@/router/router";
+import router from "@/router";
 
 const store = useStore();
 // const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
