@@ -78,7 +78,7 @@ const deleteTab = (targetName) => {
       const nextTab = tabs.value[index] || tabs.value[index - 1]; // ||：逻辑或运算符，如果左边的值为 undefined 或 null，则返回右边的值。
       if (nextTab) {
         store.commit("setNextTab", nextTab);
-        // store.commit('setActiveMenu',activeMenu)这一句和store.commit('SetnextTab',nextTab)是一个意思；
+        emitter.emit("deleteEvent", nextTab.label);
         console.log("选中的内容", activeMenu.value); //这里不对
         console.log("删除后的tabs", tabs.value); //是数组，没问题
       }

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import store from '@/store/index';
+// import store from '@/store/index';
 
 // const routeP = store.state.rPath;
 // const routeN = store.state.rName;
@@ -14,33 +14,33 @@ const routes = [
     // component:login, //也可以这么写,前面需要import
   },
   {
-    path: '/menu',
-    name: 'menu',
+    path: '/ginmenu',
+    name: 'ginmenu',
     component: () => import('@/views/ginMenu.vue'),
-    // 'test'路由是相对路径 menu/test, 而/test的绝对路径，路由是/test;
+    // 'test'路由是相对路径 ginMenu/test, 而/test的绝对路径，路由是/test;
     children:[
       {
         path: 'test',
         name: 'test',
         component: () => import('@/components/temptMode.vue'),
       },
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        component: () => import('@/view/dashboard/index.vue'),
-        // component: () => {
-        //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
-        //   return import(`@/${componentName}`);
-      },
-      {
-        path: 'admin/authority',
-        name: 'authority',
-        // component: () => import('@/view/superAdmin/authority/authority.vue'),
-        component: () => {
-          const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
-          return import(`@/${componentName}`);
-        }
-      }
+      // {
+      //   path: 'dashboard',
+      //   name: 'dashboard',
+      //   component: () => import('@/view/dashboard/index.vue'),
+      //   // component: () => {
+      //   //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
+      //   //   return import(`@/${componentName}`);
+      // },
+      // {
+      //   path: 'admin/authority',
+      //   name: 'authority',
+      //   // component: () => import('@/view/superAdmin/authority/authority.vue'),
+      //   component: () => {
+      //     const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
+      //     return import(`@/${componentName}`);
+      //   }
+      // }
     ]
   },
 ];

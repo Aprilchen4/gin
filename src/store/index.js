@@ -82,7 +82,7 @@ const store = createStore({
             state.tabs.push({
                 name: tabName,
                 label: activeMenu,
-                content: '',
+                content: ''
                 });
             },
         setNextTab(state, nextTab) {
@@ -94,18 +94,12 @@ const store = createStore({
           },
           
         setBreadCrumb(state,breadCrumb) {
-        state.breadCrumb = breadCrumb
+            state.breadCrumb = breadCrumb
         },
-        setRoutePath(state,rPath) {
-            state.rPath = rPath 
-            },
-        
-        setComponent(state,rComponent ) {
-            state.rComponent = rComponent 
-        },
-    
-        setRouteName(state,rName) {
-            state.rName = rName 
+        setRoute(state,{ routePath, routeName, routeComponent }) {
+            state.rPath = routePath,
+            state.rName = routeName,
+            state.rComponent =  routeComponent
         },
     },
 })

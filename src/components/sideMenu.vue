@@ -37,7 +37,7 @@ getMenu().then((a) => {
   console.log("数据信息", sideData.values); //这里是异步函数,
 });
 
-// 监听事件
+// 监听b标签页切换事件
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
     receivedMessage.value = msg;
@@ -50,10 +50,9 @@ onMounted(() => {
       sideData.values,
       msg
     );
-    store.commit("setRoutePath", routePath);
-    store.commit("setRouteName", routeName);
-    store.commit("setComponent", routeComponent);
-    router.push({ path: `/menu/${Store.state.rPath}` || "dashboard" });
+    console.log("当前路由信息", routePath, routeName, routeComponent);
+    store.commit("setRoute", { routePath, routeName, routeComponent });
+    router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
   });
 });
 
@@ -61,6 +60,21 @@ onMounted(() => {
 onUnmounted(() => {
   emitter.off("messageEvent"); // 移除特定事件监听
   // 或者使用 emitter.all.clear() 移除所有监听
+});
+
+// 监听标签页删除事件
+const deleteMessage = ref("");
+onMounted(() => {
+  emitter.on("deleteEvent", (msg) => {
+    deleteMessage.value = msg;
+    const { routePath, routeName, routeComponent } = routeMake(
+      sideData.values,
+      msg
+    );
+    console.log("当前路由信息", routePath, routeName, routeComponent);
+    store.commit("setRoute", { routePath, routeName, routeComponent });
+    router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
+  });
 });
 
 const menuOpenEvent = (key, keyPath) => {
@@ -100,18 +114,17 @@ const handleMenuSelect = (menuId) => {
     sideData.values,
     menuId
   );
-  store.commit("setRoutePath", routePath);
-  store.commit("setRouteName", routeName);
-  store.commit("setComponent", routeComponent);
 
   console.log("当前路由信息", routePath);
   console.log("当前路由名称", routeName);
   console.log("当前路由组件", routeComponent);
 
   // 点击跳转路由
-  // router.push({ path: `/menu/${routePath}` || "dashboard" });
-  // router.push({ path: "/menu/test" });
-  router.push({ path: `/menu/${Store.state.rPath}` || "dashboard" });
+  // router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
+  // router.push({ path: "/ginmenu/test" });
+  store.commit("setRoute", { routePath, routeName, routeComponent });
+  addRouteOneByOne(routePath, routeName, routeComponent);
+  router.push({ path: `/ginmenu/${Store.state.rPath}` || "dashboard" });
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
   // vuex取数
@@ -211,6 +224,14 @@ const routeMake = (tree, targetId) => {
     targetId
   );
   return { routePath, routeName, routeComponent };
+};
+
+const addRouteOneByOne = (routePath, routeName, routeComponent) => {
+  router.addRoute("ginmenu", {
+    path: routePath,
+    name: routeName,
+    component: () => import(`@/${routeComponent}`),
+  });
 };
 
 watchEffect(() => {

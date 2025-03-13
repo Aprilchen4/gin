@@ -183,7 +183,7 @@ export default {
 
         // 编程式导航
         // router.push('/menu')
-        router.push({ path: "/menu" });
+        router.push({ path: "/ginMenu" });
 
         // 假设返回的数据中有 token，存储在 localStorage
         // response.token 是响应对象中的一个字段，表示用户的身份验证令牌（Token）
