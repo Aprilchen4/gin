@@ -51,7 +51,7 @@ onMounted(() => {
       msg
     );
     console.log("当前路由信息", routePath, routeName, routeComponent);
-    store.commit("setRoute", { routePath, routeName, routeComponent });
+    // store.commit("setRoute", { routePath, routeName, routeComponent });
     router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
   });
 });
@@ -72,7 +72,7 @@ onMounted(() => {
       msg
     );
     console.log("当前路由信息", routePath, routeName, routeComponent);
-    store.commit("setRoute", { routePath, routeName, routeComponent });
+    // store.commit("setRoute", { routePath, routeName, routeComponent });
     router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
   });
 });
@@ -85,7 +85,7 @@ const menuOpenEvent = (key, keyPath) => {
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { watchEffect } from "vue";
-import Store from "@/store/index";
+// import Store from "@/store/index";
 // import { useRouter } from "vue-router";
 // const router = useRouter();
 
@@ -122,9 +122,9 @@ const handleMenuSelect = (menuId) => {
   // 点击跳转路由
   // router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
   // router.push({ path: "/ginmenu/test" });
-  store.commit("setRoute", { routePath, routeName, routeComponent });
+  // store.commit("setRoute", { routePath, routeName, routeComponent });
   addRouteOneByOne(routePath, routeName, routeComponent);
-  router.push({ path: `/ginmenu/${Store.state.rPath}` || "dashboard" });
+  router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
 
   // 切换已有、新增时会调用watchEffect函数监测切换标签页
   // vuex取数
@@ -227,11 +227,23 @@ const routeMake = (tree, targetId) => {
 };
 
 const addRouteOneByOne = (routePath, routeName, routeComponent) => {
-  router.addRoute("ginmenu", {
-    path: routePath,
-    name: routeName,
-    component: () => import(`@/${routeComponent}`),
-  });
+  // 获取当前所有路由
+  const existingRoutes = router.getRoutes();
+  // 检查是否已存在相同的 routeName 或 routePath
+  const routeExists = existingRoutes.some(
+    (route) => route.name === routeName || route.path === routePath
+  );
+  // 如果路由不存在，则添加
+  if (!routeExists) {
+    router.addRoute("ginmenu", {
+      path: routePath,
+      name: routeName,
+      component: () => import(`@/${routeComponent}`),
+    });
+    console.log("Route added:", routePath);
+  } else {
+    console.log("Route already exists:", routePath, routeName);
+  }
 };
 
 watchEffect(() => {

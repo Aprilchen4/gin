@@ -12,9 +12,9 @@ const store = createStore({
       tabName:'',
     // nextTab:'',
       breadCrumb:'仪表盘',
-      rPath:'admin/authority',
-      rComponent:'',
-      rName:'admin/authority',
+    //   rPath:'dashboard',
+    //   rComponent:'',
+    //   rName:'dashboard',
     //   activeTab: '',   // 当前选中的标签
     //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
       tabs: [ {
@@ -96,11 +96,11 @@ const store = createStore({
         setBreadCrumb(state,breadCrumb) {
             state.breadCrumb = breadCrumb
         },
-        setRoute(state,{ routePath, routeName, routeComponent }) {
-            state.rPath = routePath,
-            state.rName = routeName,
-            state.rComponent =  routeComponent
-        },
+        // setRoute(state,{ routePath, routeName, routeComponent }) {
+        //     state.rPath = routePath,
+        //     state.rName = routeName,
+        //     state.rComponent =  routeComponent
+        // },
     },
 })
 
