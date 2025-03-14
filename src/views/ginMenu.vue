@@ -193,7 +193,7 @@ function ToggleDrawer() {
 const router = useRouter();
 
 const refresh = () => {
-  router.push({ path: "/menu" }); // 导航到当前路由，强制重新加载视图
+  router.push({ path: "/ginmenu" }); // 导航到当前路由，强制重新加载视图
 };
 
 // 切换主题
