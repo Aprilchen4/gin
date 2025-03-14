@@ -38,7 +38,6 @@
 
 <script setup>
 import { defineProps, toRefs } from "vue";
-// import { onMounted } from 'vue'
 
 const props = defineProps({
   navMenus: Array,

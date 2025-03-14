@@ -23,6 +23,10 @@ import { reactive } from "vue";
 import menuItems from "@/components/menuItems.vue";
 import { emitter } from "@/utils/eventBus";
 import { ref, onMounted, onUnmounted } from "vue";
+import { computed } from "vue";
+import { useStore } from "vuex";
+import { watchEffect } from "vue";
+import router from "@/router";
 
 const sideData = reactive({
   values: [], // 初始化 values 数组
@@ -82,14 +86,6 @@ const menuOpenEvent = (key, keyPath) => {
 };
 
 // 标签页相关
-import { computed } from "vue";
-import { useStore } from "vuex";
-import { watchEffect } from "vue";
-// import Store from "@/store/index";
-// import { useRouter } from "vue-router";
-// const router = useRouter();
-
-import router from "@/router";
 
 const store = useStore();
 // const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
