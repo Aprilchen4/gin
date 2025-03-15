@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <router-view />
+    <!-- <router-view v-slot="{ Component }">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </router-view> -->
     <!-- App.vue的只会渲染一级子组件 -->
     <!-- Router-view也被称为路由的出口 -->
     <!-- 用于渲染显示当前路由匹配的组件 -->

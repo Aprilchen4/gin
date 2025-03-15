@@ -44,6 +44,7 @@ getMenu().then((a) => {
 // 监听b标签页切换事件
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
+    console.log("msg", msg);
     receivedMessage.value = msg;
     // 面包屑
     const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
