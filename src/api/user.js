@@ -16,13 +16,19 @@ export function getlogin(data){
 }
 
 export function getMenu(){//这里没有参数，所以调用时不要加参数
-  console.log("hhh");
     return request({
         url:'/menu/getMenu',
         method: 'POST', //post一般需要传参数，无载荷，无参数
     });
 }
 
+
+export function getAuthority(){//这里没有参数，所以调用时不要加参数
+    return request({
+        url:'/authority/getAuthorityList',
+        method: 'POST', //post一般需要传参数，无载荷，无参数
+    });
+}
 // 1.确定请求路径
 // 2.确定请求参数，这里无需参数（判断依据：浏览器-标头-旁边有个预览，即不需要参数）
 // 3. 确定请求方式post/get;

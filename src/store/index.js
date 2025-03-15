@@ -21,7 +21,7 @@ const store = createStore({
         name: '首页',
         label: 1,
         content: '',
-      },]   // 存储标签页的内容
+      }]   // 存储标签页的内容
 
     },
 
@@ -77,6 +77,9 @@ const store = createStore({
             state.activeMenu = name;//还是得这么写，才能改变activeMenu
         },
 
+        setFirstTab(state, tabs) {
+            state.tabs = tabs;
+        },
         // 修改 state.tabs，通过mutation。
         setAddTab(state,{activeMenu,tabName}) {
             state.tabs.push({
@@ -96,11 +99,6 @@ const store = createStore({
         setBreadCrumb(state,breadCrumb) {
             state.breadCrumb = breadCrumb
         },
-        // setRoute(state,{ routePath, routeName, routeComponent }) {
-        //     state.rPath = routePath,
-        //     state.rName = routeName,
-        //     state.rComponent =  routeComponent
-        // },
     },
 })
 

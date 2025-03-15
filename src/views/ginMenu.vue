@@ -194,6 +194,10 @@ const router = useRouter();
 
 const refresh = () => {
   router.push({ path: "/ginmenu" }); // 导航到当前路由，强制重新加载视图
+  store.commit("setActiveMenu", 1);
+  store.commit("setTabName", "首页");
+  store.commit("setBreadCrumb", "仪表盘");
+  store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
 };
 
 // 切换主题

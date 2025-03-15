@@ -19,11 +19,11 @@ const routes = [
     component: () => import('@/views/ginMenu.vue'),
     // 'test'路由是相对路径 ginMenu/test, 而/test的绝对路径，路由是/test;
     children:[
-      {
-        path: 'test',
-        name: 'test',
-        component: () => import('@/components/temptMode.vue'),
-      },
+      // {
+      //   path: 'test',
+      //   name: 'test',
+      //   component: () => import('@/components/temptMode.vue'),
+      // },
       // {
       //   path: 'dashboard',
       //   name: 'dashboard',
@@ -35,12 +35,37 @@ const routes = [
       // {
       //   path: 'admin/authority',
       //   name: 'authority',
-      //   // component: () => import('@/view/superAdmin/authority/authority.vue'),
-      //   component: () => {
-      //     const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
-      //     return import(`@/${componentName}`);
-      //   }
-      // }
+      //   component: () => import('@/view/superAdmin/authority/authority.vue'),
+      //   // component: () => {
+      //   //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
+      //   //   return import(`@/${componentName}`);
+      //   // }
+      // },
+      // {
+      //   path: 'admin/menu',
+      //   name: 'menu',
+      //   component: () => import('@/view/superAdmin/menu/menu.vue'),
+      // },
+      // {
+      //   path: 'admin/api',
+      //   name: 'api',
+      //   component: () => import('@/view/superAdmin/api/api.vue'),
+      // },
+      // {
+      //   path: 'admin/user',
+      //   name: 'user',
+      //   component: () => import('@/view/superAdmin/user/user.vue'),
+      // },
+      // {
+      //   path: 'admin/dictionary',
+      //   name: 'dictionary',
+      //   component: () => import('@/view/superAdmin/dictionary/sysDictionary.vue'),
+      // },
+      // {
+      //   path: 'admin/operation',
+      //   name: 'operation',
+      //   component: () => import('@/view/superAdmin/operation/sysOperationRecord.vue'),
+      // },
     ]
   },
 ];
