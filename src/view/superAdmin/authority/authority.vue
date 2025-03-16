@@ -19,9 +19,38 @@
       lazy
       :load="load"
     >
-      <el-table-column prop="ID" label="角色ID" />
-      <el-table-column prop="name" label="角色名称" />
-      <el-table-column prop="operation" label="操作" />
+      <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
+      <el-table-column prop="ID" label="角色ID" width="200" />
+      <el-table-column prop="name" label="角色名称" width="200" />
+      <el-table-column label="操作">
+        <template #default="scope">
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @click="handleClick(scope.row)"
+          >
+            <el-icon><Setting /></el-icon>设置权限
+          </el-button>
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @click="handleClick(scope.row)"
+          >
+            + 新增子角色
+          </el-button>
+          <el-button link type="primary" size="small">
+            <el-icon><CopyDocument /></el-icon>拷贝
+          </el-button>
+          <el-button link type="primary" size="small">
+            <el-icon><edit /></el-icon>编辑
+          </el-button>
+          <el-button link type="primary" size="small">
+            <el-icon><delete /></el-icon>删除
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -33,7 +62,6 @@ let menuAuthority; //定义为全局变量，方便读取
 
 getAuthority().then((a) => {
   menuAuthority = a.data;
-  // const menuAuthority = await getAuthority();
   console.log("角色数据", menuAuthority);
 });
 
@@ -47,7 +75,7 @@ const load = (row, treeNode, resolve) => {
       {
         ID: "8881",
         name: "普通用户子角色",
-        operation: "No. 189, Grove St, Los Angeles",
+        // operation: "No. 189, Grove St, Los Angeles",
       },
     ]);
   }, 1000);
@@ -58,7 +86,7 @@ let tableData = [
     ID: "888",
     name: "普通用户",
     // hasChildren: true, // 表示有子节点，但不直接提供 children
-    operation: "No. 189, Grove St, Los Angeles",
+    // operation: "No. 189, Grove St, Los Angeles",
     hasChildren: true, // 明确指定有子节点
     // children: [
     //   {
@@ -71,7 +99,7 @@ let tableData = [
   {
     ID: "9528",
     name: "测试角色",
-    operation: "No. 189, Grove St, Los Angeles",
+    // operation: "No. 189, Grove St, Los Angeles",
   },
 ];
 </script>
