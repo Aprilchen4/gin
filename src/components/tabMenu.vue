@@ -92,7 +92,6 @@ const deleteTab = (targetName) => {
 :deep(.el-tabs__item.is-active) {
   color: #409eff; /* 文字颜色为蓝色 */
   background-color: #e6f7ff; /* 背景色为浅蓝色 */
-  border-color: #409eff; /* 边框颜色为蓝色 */
   font-weight: bold;
 }
 </style>
