@@ -24,14 +24,14 @@ const routes = [
       //   name: 'test',
       //   component: () => import('@/components/temptMode.vue'),
       // },
-      // {
-      //   path: 'dashboard',
-      //   name: 'dashboard',
-      //   component: () => import('@/view/dashboard/index.vue'),
-      //   // component: () => {
-      //   //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
-      //   //   return import(`@/${componentName}`);
-      // },
+      {
+        path: 'dashboard',
+        name: 'dashboard',
+        component: () => import('@/view/dashboard/index.vue'),
+        // component: () => {
+        //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
+        //   return import(`@/${componentName}`);
+      },
       // {
       //   path: 'admin/authority',
       //   name: 'authority',

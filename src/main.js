@@ -26,5 +26,24 @@ app.use(store)
 // 将整个 Vue 应用（即 app）挂载到页面上一个特定的 DOM 元素中，
 // 通常是 index.html 中的一个 div 元素
 app.mount('#app')
-
+// 解决报错：ResizeObserver loop completed with undelivered notifications.
+const debounce = (fn, delay) => {
+  let timer
+   return (...args) => {
+     if (timer) {
+       clearTimeout(timer)
+     }
+     timer = setTimeout(() => {
+       fn(...args)
+     }, delay)
+   }
+}
+const _ResizeObserver = window.ResizeObserver;
+window.ResizeObserver = class ResizeObserver extends _ResizeObserver{
+   constructor(callback) {
+     callback = debounce(callback, 200);
+     super(callback);
+   }
+}
+// 解决报错：ResizeObserver loop completed with undelivered notifications.
 

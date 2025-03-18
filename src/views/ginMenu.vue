@@ -109,11 +109,9 @@
       <sideMenu />
       <!-- 布局容器，注意组件名称 -->
       <el-container>
-        <!-- v-for是为每个标签页渲染一个组件  -->
         <el-header>
           <tabMenu />
         </el-header>
-        <!-- 标签页 -->
         <el-main>
           <router-view />
         </el-main>

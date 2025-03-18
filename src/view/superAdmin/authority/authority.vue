@@ -2,13 +2,55 @@
   <!-- 左上角按钮 -->
   <div>
     <!-- <el-drawer> 组件和 <el-button> 之间的关系是通过 v-model 指令来实现的。 -->
-    <el-button class="buttonBelow" type="primary" @click="drawer = true">
+    <el-button class="buttonBelow" type="primary" @click="handleClickAdd">
       + 新增角色
     </el-button>
-    <el-drawer v-model="drawer" title="I am the title" :with-header="true">
-      <el-button color="pink">Smart!</el-button>
+    <el-drawer v-model="drawerAdd" :with-header="true" size="600px">
+      <template #header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>新增角色</span>
+          <div>
+            <el-button @click="drawerAdd = false">取消</el-button>
+            <el-button type="primary" @click="handleSubmitAdd">
+              确定
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :model="form" label-width="80px">
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 父级角色
+          </template>
+          <el-input
+            placeholder="根角色(严格模式下为当前用户角色)"
+            v-model="form.name"
+            disabled
+          >
+          </el-input>
+        </el-form-item>
+
+        <el-form-item>
+          <template #label> <span style="color: red">*</span> 角色ID </template>
+          <el-input v-model="form.ID" placeholder="请输入角色ID" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 角色名称
+          </template>
+          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        </el-form-item>
+      </el-form>
     </el-drawer>
   </div>
+  <!-- 以上是新增角色按钮 -->
   <!-- 表格 -->
   <div>
     <el-table
@@ -38,10 +80,84 @@
           >
             <el-icon><Setting /></el-icon>设置权限
           </el-button>
+          <el-drawer v-model="drawerSetting" :with-header="true" size="600px">
+            <template #header>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span>角色配置</span>
+              </div>
+            </template>
+
+            <!-- 搜索框 -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <el-input placeholder="筛选" style="width: 380px" />
+              <el-button>确定</el-button>
+            </div>
+            <!-- 遍历数据 -->
+          </el-drawer>
 
           <!-- 新增子角色 -->
-          <el-button link type="primary" size="small"> + 新增子角色 </el-button>
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @click="handleClickAddSub"
+          >
+            + 新增子角色
+          </el-button>
+          <el-drawer v-model="drawerAddSub" :with-header="true" size="600px">
+            <template #header>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span>新增子角色</span>
+                <div>
+                  <el-button @click="drawerAdd = false">取消</el-button>
+                  <el-button type="primary" @click="handleSubmitAddSub">
+                    确定
+                  </el-button>
+                </div>
+              </div>
+            </template>
 
+            <el-form :model="form" label-width="80px">
+              <el-form-item>
+                <template #label>
+                  <span style="color: red">*</span> 父级角色
+                </template>
+                <el-input placeholder="普通用户" v-model="form.name" disabled>
+                </el-input>
+              </el-form-item>
+
+              <el-form-item>
+                <template #label>
+                  <span style="color: red">*</span> 角色ID
+                </template>
+                <el-input v-model="form.ID" placeholder="请输入角色ID" />
+              </el-form-item>
+              <el-form-item>
+                <template #label>
+                  <span style="color: red">*</span> 角色名称
+                </template>
+                <el-input v-model="form.name" placeholder="请输入角色名称" />
+              </el-form-item>
+            </el-form>
+          </el-drawer>
           <!-- 拷贝 -->
           <el-button
             link
@@ -210,7 +326,12 @@
           </el-drawer>
 
           <!-- 删除 -->
-          <el-button link type="primary" size="small">
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @Click="handleClickDelete(scope.row)"
+          >
             <el-icon><delete /></el-icon>删除
           </el-button>
         </template>
@@ -222,7 +343,7 @@
 <script setup>
 import { getAuthority } from "@/api/user";
 import { ref } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessageBox, ElMessage } from "element-plus";
 let menuAuthority; //定义为全局变量，方便读取
 // let currentRow;
 
@@ -232,10 +353,11 @@ getAuthority().then((a) => {
 });
 
 // 弹窗
-const drawer = ref(false); //这里的逻辑是：按钮点击将 drawer 设置为 true 来打开抽屉。抽屉关闭后，drawer 自动设置为 false
-// const drawerSetting = ref(false);
+const drawerAdd = ref(false); //这里的逻辑是：按钮点击将 drawer 设置为 true 来打开抽屉。抽屉关闭后，drawer 自动设置为 false
+const drawerSetting = ref(false);
 const drawerEdit = ref(false);
 const drawerCopy = ref(false);
+const drawerAddSub = ref(false);
 
 const form = ref({
   ID: "",
@@ -253,7 +375,7 @@ const load = (row, treeNode, resolve) => {
   }, 1000);
 };
 
-let tableData = [
+let tableData = ref([
   {
     ID: "888",
     name: "普通用户",
@@ -263,22 +385,106 @@ let tableData = [
     ID: "9528",
     name: "测试角色",
   },
-];
+]);
+
+const handleClickAdd = (row) => {
+  drawerAdd.value = true;
+  form.value.ID = row.ID;
+  form.value.name = row.name;
+};
+
+const handleClickSetting = (row) => {
+  drawerSetting.value = true;
+  form.value.ID = row.ID;
+  form.value.name = row.name;
+};
+
+const handleClickAddSub = (row) => {
+  drawerAddSub.value = true;
+  form.value.ID = row.ID;
+  form.value.name = row.name;
+};
+
+const handleSubmitAddSub = () => {
+  if (form.value.ID && form.value.name) {
+    tableData.value.push({
+      ID: form.value.ID,
+      name: form.value.name,
+    });
+    console.log("表格内容添加后", tableData.value);
+    // 清空输入框
+    form.value.roleID = "";
+    form.value.rolename = "";
+    drawerAddSub.value = false;
+  } else {
+    // 在这里可以添加错误提示或警告
+    console.error("角色ID和角色名称不能为空");
+  }
+};
 
 const handleClickEdit = (row) => {
   drawerEdit.value = true;
   form.value.ID = row.ID;
   form.value.name = row.name;
-  console.log("当前行数据", row);
-  console.log("当前行ID", row.ID);
 };
 
 const handleClickCopy = (row) => {
   drawerCopy.value = true;
   form.value.ID = row.ID;
   form.value.name = row.name;
-  console.log("当前行数据", row);
-  console.log("当前行ID", row.ID);
+};
+
+const handleClickDelete = async (row) => {
+  try {
+    await ElMessageBox.confirm("此操作将永久删除该角色，是否继续？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    // 确定后执行的逻辑
+    handleSubmitDelete(row); // 调用函数
+    ElMessage({
+      message: "删除成功!",
+      type: "success",
+    });
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消删除!",
+        type: "info",
+      });
+    }
+  }
+};
+
+const handleSubmitDelete = (row) => {
+  if (row.ID) {
+    console.log("表格内容", tableData);
+    tableData.value = tableData.value.filter((item) => item.ID !== row.ID);
+    // 清空输入框
+    form.value.roleID = "";
+    form.value.roleName = "";
+  } else {
+    alert("请输入角色ID以删除角色");
+    console.error("请输入角色ID以删除角色");
+  }
+};
+
+const handleSubmitAdd = () => {
+  if (form.value.ID && form.value.name) {
+    tableData.value.push({
+      ID: form.value.ID,
+      name: form.value.name,
+    });
+    // 清空输入框
+    form.value.roleID = "";
+    form.value.rolename = "";
+    drawerAdd.value = false;
+  } else {
+    // 在这里可以添加错误提示或警告
+    console.error("角色ID和角色名称不能为空");
+  }
 };
 
 const handleSubmitEdit = () => {
@@ -301,6 +507,10 @@ const handleSubmitCopy = () => {
 </script>
 
 <style>
+.buttonBelow {
+  margin-bottom: 20px;
+}
+
 .placeholder-text {
   color: black;
 }
