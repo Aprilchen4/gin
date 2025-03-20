@@ -10,13 +10,9 @@ const store = createStore({
     state: {
       activeMenu:1,  // 当前选中的菜单项
       tabName:'',
-    // nextTab:'',
       breadCrumb:'仪表盘',
-    //   rPath:'dashboard',
-    //   rComponent:'',
-    //   rName:'dashboard',
-    //   activeTab: '',   // 当前选中的标签
-    //  这里label是数字，不是字符串，同理activeMenu是数字，点击仪表盘才不会新增仪表盘标签；
+      activeAuthorityTab:'角色菜单',
+
       tabs: [ {
         name: '首页',
         label: 1,
@@ -99,6 +95,10 @@ const store = createStore({
         setBreadCrumb(state,breadCrumb) {
             state.breadCrumb = breadCrumb
         },
+
+        setAuthorityTab (state,tab) {
+            state.activeAuthorityTab =tab.props.label
+        }
     },
 })
 

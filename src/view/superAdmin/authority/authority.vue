@@ -92,18 +92,7 @@
                 <span>角色配置</span>
               </div>
             </template>
-
-            <!-- 搜索框 -->
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              "
-            >
-              <el-input placeholder="筛选" style="width: 380px" />
-              <el-button>确定</el-button>
-            </div>
+            <tabReview />
             <!-- 遍历数据 -->
           </el-drawer>
 
@@ -203,6 +192,7 @@
                     >
                   </el-option>
                   <el-select placeholder="">
+                    <!-- <template #prefix> 用于添加一个带有 普通用户 标签的单选框 el-radio： -->
                     <template #prefix>
                       <el-radio style="margin-left: 8px" value="普通用户">
                         普通用户
@@ -215,9 +205,9 @@
                     </el-option>
                   </el-select>
 
-                  <el-option value="测试用户">
-                    <el-radio v-model="form.ID" value="测试用户">
-                      测试用户
+                  <el-option value="测试角色">
+                    <el-radio v-model="form.ID" value="测试角色">
+                      测试角色
                     </el-radio>
                   </el-option>
                 </el-select>
@@ -278,8 +268,7 @@
                 </template>
                 <el-select
                   placeholder="根角色(严格模式下为当前用户角色)"
-                  v-model="form.name"
-                  @visible-change="handleVisibleChange"
+                  v-model="form.parentName"
                 >
                   <el-radio-group v-model="form.name">
                     <el-option value="根角色(严格模式下为当前用户角色)">
@@ -299,8 +288,8 @@
                         </el-radio>
                       </el-option>
                     </el-select>
-                    <el-option value="测试用户">
-                      <el-radio value="测试用户">测试用户</el-radio>
+                    <el-option value="测试角色">
+                      <el-radio value="测试角色">测试角色</el-radio>
                     </el-option>
                   </el-radio-group>
                 </el-select>
@@ -344,6 +333,8 @@
 import { getAuthority } from "@/api/user";
 import { ref } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
+import tabReview from "@/view/superAdmin/authority/tabReview.vue";
+
 let menuAuthority; //定义为全局变量，方便读取
 // let currentRow;
 
@@ -362,6 +353,7 @@ const drawerAddSub = ref(false);
 const form = ref({
   ID: "",
   name: "",
+  parentName: "",
 });
 // 表格数据
 const load = (row, treeNode, resolve) => {
@@ -370,6 +362,7 @@ const load = (row, treeNode, resolve) => {
       {
         ID: "8881",
         name: "普通用户子角色",
+        parentName: "普通用户",
       },
     ]);
   }, 1000);
@@ -380,10 +373,12 @@ let tableData = ref([
     ID: "888",
     name: "普通用户",
     hasChildren: true, // 明确指定有子节点
+    parentName: "根角色(严格模式下为当前用户角色)",
   },
   {
     ID: "9528",
     name: "测试角色",
+    parentName: "根角色(严格模式下为当前用户角色)",
   },
 ]);
 
@@ -426,6 +421,7 @@ const handleClickEdit = (row) => {
   drawerEdit.value = true;
   form.value.ID = row.ID;
   form.value.name = row.name;
+  form.value.parentName = row.parentName;
 };
 
 const handleClickCopy = (row) => {
