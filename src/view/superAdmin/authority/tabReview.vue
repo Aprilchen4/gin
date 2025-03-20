@@ -18,7 +18,10 @@
           <el-button type="primary">确定</el-button>
         </div>
         <div>
-          <checkboxTree :treeDatas="sideDates.values" />
+          <checkboxTree
+            :treeDatas="sideDates.values"
+            v-model:selectedItems="selectedItems"
+          />
         </div>
       </el-tab-pane>
       <el-tab-pane label="角色api">
@@ -49,11 +52,11 @@
   </div>
 </template>
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { getMenu } from "@/api/user";
 import { useStore } from "vuex";
 import checkboxTree from "@/view/superAdmin/authority/checkboxTree.vue";
-// const selectedItems = ref([]);
+const selectedItems = ref([]);
 const store = useStore();
 
 const sideDates = reactive({
