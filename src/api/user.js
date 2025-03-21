@@ -49,19 +49,4 @@ export const getAllApis = () => {
   })
 }
 
-// export const getPolicyPathByAuthorityId = (data) => {
-//   return request({
-//     url: '/casbin/getPolicyPathByAuthorityId',
-//     method: 'POST',
-//     data
-//   })
-// }
-
-// export const UpdateCasbin = (data) => {
-//   return request({
-//     url: '/casbin/updateCasbin',
-//     method: 'POST',
-//     data
-//   })
-// }
 
