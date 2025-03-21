@@ -40,3 +40,28 @@ export  function getCode(){
 
   })
 }
+
+// 获取角色Api信息
+export const getAllApis = () => {
+  return request({
+    url: '/api/getAllApis',
+    method: 'POST',
+  })
+}
+
+// export const getPolicyPathByAuthorityId = (data) => {
+//   return request({
+//     url: '/casbin/getPolicyPathByAuthorityId',
+//     method: 'POST',
+//     data
+//   })
+// }
+
+// export const UpdateCasbin = (data) => {
+//   return request({
+//     url: '/casbin/updateCasbin',
+//     method: 'POST',
+//     data
+//   })
+// }
+

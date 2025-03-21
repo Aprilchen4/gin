@@ -18,20 +18,18 @@
     >
       <!-- 自定义节点内容 -->
       <template #default="{ node, data }">
-        <div class="custom-tree-node">
-          <!-- 节点标签（包含复选框和文本） -->
-          <span>{{ node.label }}</span>
-          <!-- 设置首页按钮 -->
-          <el-button
-            link
-            type="success"
-            size="small"
-            :style="isHomePage(data) ? { color: '#ff7f00' } : {}"
-            @click.stop="handleSetHome(data)"
-          >
-            {{ isHomePage(data) ? "首页" : "设为首页" }}
-          </el-button>
-        </div>
+        <!-- 节点标签（包含复选框和文本） -->
+        <span>{{ node.label }}</span>
+        <!-- 设置首页按钮 -->
+        <el-button
+          link
+          type="success"
+          size="small"
+          :style="isHomePage(data) ? { color: '#ff7f00' } : {}"
+          @click.stop="handleSetHome(data)"
+        >
+          {{ isHomePage(data) ? "首页" : "设为首页" }}
+        </el-button>
       </template>
     </el-tree>
   </div>
@@ -48,10 +46,10 @@ const sideDates = reactive({
 const homePageId = ref(1);
 
 getMenu().then((a) => {
-  console.log("侧边栏数据:", a.data.menus);
   sideDates.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  console.log("uuuuuuxhshg:", sideDates.values);
+  console.log("sideDates.values:", sideDates.values);
 });
+console.log("外面的sideDates.values:", sideDates.values); // 空的
 
 const defaultProps = {
   children: "children",
