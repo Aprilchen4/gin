@@ -1,78 +1,82 @@
 <template>
-  <div class="container">
-    <el-tabs
-      v-model="activeAuthorityTab"
-      type="border-card"
-      @tab-click="tabClickAuthority"
+  <div
+    style="display: flex; justify-content: space-between; align-items: center"
+  >
+    <el-input placeholder="筛选" style="width: 380px" />
+    <el-button type="primary">确定</el-button>
+  </div>
+  <div>
+    <el-tree
+      style="max-width: 600px"
+      :data="sideDates.values"
+      show-checkbox
+      node-key="menuId"
+      default-expand-all
+      highlight-current
+      :default-checked-keys="defaultCheckedKeys"
+      :props="defaultProps"
     >
-      <el-tab-pane label="角色菜单">
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-          "
-        >
-          <el-input placeholder="筛选" style="width: 380px" />
-          <el-button type="primary">确定</el-button>
+      <!-- 自定义节点内容 -->
+      <template #default="{ node, data }">
+        <div class="custom-tree-node">
+          <!-- 节点标签（包含复选框和文本） -->
+          <span>{{ node.label }}</span>
+          <!-- 设置首页按钮 -->
+          <el-button
+            link
+            type="success"
+            size="small"
+            :style="isHomePage(data) ? { color: '#ff7f00' } : {}"
+            @click.stop="handleSetHome(data)"
+          >
+            {{ isHomePage(data) ? "首页" : "设为首页" }}
+          </el-button>
         </div>
-        <div>
-          <checkboxTree
-            :treeDatas="sideDates.values"
-            v-model:selectedItems="selectedItems"
-          />
-        </div>
-      </el-tab-pane>
-      <el-tab-pane label="角色api">
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
-          <el-input placeholder="筛选" style="width: 380px" />
-          <el-button type="primary">确定</el-button>
-        </div>
-      </el-tab-pane>
-      <el-tab-pane label="资源权限">
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
-          <el-input placeholder="筛选" style="width: 380px" />
-          <el-button type="primary">确定</el-button>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+      </template>
+    </el-tree>
   </div>
 </template>
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, computed, ref } from "vue";
+import { ElMessage } from "element-plus";
 import { getMenu } from "@/api/user";
-import { useStore } from "vuex";
-import checkboxTree from "@/view/superAdmin/authority/checkboxTree.vue";
-const selectedItems = ref([]);
-const store = useStore();
 
 const sideDates = reactive({
   values: [], // 初始化 values 数组
 });
-
-const tabClickAuthority = (tab) => {
-  console.log("Tab小标签页", tab.props.label); // 检查事件是否触发
-  store.commit("setAuthorityTab", tab);
-};
+// 当前首页的 menuId
+const homePageId = ref(1);
 
 getMenu().then((a) => {
   console.log("侧边栏数据:", a.data.menus);
   sideDates.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  console.log("uuuuuyyyttt", sideDates.values); //这里是异步函数,
+  console.log("uuuuuuxhshg:", sideDates.values);
 });
+
+const defaultProps = {
+  children: "children",
+  label: (data) => data.meta.title, // 使用函数动态返回 meta.title
+  disabled: (data) => isHomePage(data), // 仅首页复选框禁用，只影响复选框
+};
+
+// 默认全选
+const defaultCheckedKeys = computed(() => {
+  return sideDates.values.map((item) => item.menuId);
+});
+
+// 判断是否是首页
+const isHomePage = (data) => {
+  return data.menuId === homePageId.value;
+};
+
+// 处理“设为首页”点击事件
+const handleSetHome = (data) => {
+  if (!isHomePage(data)) {
+    homePageId.value = data.menuId;
+    console.log(`${data.meta.title} 被设为首页`);
+  }
+  ElMessage({ type: "success", message: "设置成功" });
+};
 </script>
 
 <style></style>
