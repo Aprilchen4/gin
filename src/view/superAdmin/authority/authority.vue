@@ -5,7 +5,7 @@
     <el-button class="buttonBelow" type="primary" @click="handleClickAdd">
       + 新增角色
     </el-button>
-    <el-drawer v-model="drawerAdd" :with-header="true" size="600px">
+    <el-drawer v-model="drawerAdd" :with-header="true" size="700px">
       <template #header>
         <div
           style="
@@ -83,7 +83,7 @@
           <el-drawer
             v-model="drawerSetting"
             :with-header="true"
-            size="600px"
+            size="700px"
             title="角色配置"
           >
             <el-tabs
@@ -99,7 +99,7 @@
                 <tabApis />
               </el-tab-pane>
               <el-tab-pane label="资源权限">
-                <tabResource />
+                <tabResource :selectedName="form.name" />
               </el-tab-pane>
             </el-tabs>
           </el-drawer>
@@ -113,7 +113,7 @@
           >
             + 新增子角色
           </el-button>
-          <el-drawer v-model="drawerAddSub" :with-header="true" size="600px">
+          <el-drawer v-model="drawerAddSub" :with-header="true" size="700px">
             <template #header>
               <div
                 style="
@@ -164,7 +164,7 @@
           >
             <el-icon><CopyDocument /></el-icon>拷贝
           </el-button>
-          <el-drawer v-model="drawerCopy" :with-header="true" size="600px">
+          <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
             <template #header>
               <div
                 style="
@@ -250,7 +250,7 @@
             <el-icon><edit /></el-icon>编辑
           </el-button>
 
-          <el-drawer v-model="drawerEdit" :with-header="true" size="600px">
+          <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
             <template #header>
               <div
                 style="
@@ -344,6 +344,7 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import tabReview from "@/view/superAdmin/authority/tabReview.vue";
 import tabApis from "@/view/superAdmin/authority/tabApis.vue";
 import tabResource from "@/view/superAdmin/authority/tabResource.vue";
+import { useStore } from "vuex";
 
 let menuAuthority; //定义为全局变量，方便读取
 // let currentRow;
@@ -359,7 +360,6 @@ const drawerSetting = ref(false);
 const drawerEdit = ref(false);
 const drawerCopy = ref(false);
 const drawerAddSub = ref(false);
-import { useStore } from "vuex";
 const store = useStore();
 
 const form = ref({

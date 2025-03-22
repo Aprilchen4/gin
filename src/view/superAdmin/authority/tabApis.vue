@@ -12,7 +12,7 @@
       style="width: 380px; margin-left: 8px"
       v-model="filterTextPath"
     />
-    <el-button type="primary" @click="apisTreedata">确定</el-button>
+    <el-button type="primary">确定</el-button>
   </div>
   <div>
     <el-tree
@@ -51,8 +51,10 @@ const filterTextName = ref("");
 const filterTextPath = ref("");
 
 const apiDefaultProps = {
-  label: "group", // 指定节点显示的文本字段
-  children: "apis",
+  label: "label", // flatToTree 中的字段名一致
+  // 在 apiDefaultProps 中明确告诉 <el-tree>：“请把每个节点对象中的 apis 字段当作子节点数组来处理。
+  // children是一个约定，你可以用 apiDefaultProps 自定义映射。
+  children: "apis", // apis是原始数据的106个节点，children是默认字段，
 };
 
 // 平级数据转为树形结构
@@ -64,6 +66,7 @@ function flatToTree(data) {
     if (!groupMap.has(groupName)) {
       groupMap.set(groupName, []);
     }
+    // 处理的是单个 API 对象。
     groupMap.get(groupName).push({
       id: item.ID,
       label: item.description,
@@ -74,6 +77,7 @@ function flatToTree(data) {
   const tree = [];
   let idCounter = 200;
   groupMap.forEach((children, groupName) => {
+    // 处理的是整个组（包括组名和子节点数组）。
     tree.push({
       id: ++idCounter,
       label: groupName + "组",
