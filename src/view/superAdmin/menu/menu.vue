@@ -23,6 +23,262 @@
         </div>
       </template>
       <WarningTip title="新增菜单，需要在角色管理内配置权限才可使用" />
+      <el-form label-position="top" :rules="rules" v-model="form">
+        <el-row>
+          <el-col span="12">
+            <el-form-item>
+              <div class="custom-layout">
+                <div><span style="color: red">*</span> 文件路径</div>
+                <div>
+                  <MenuCascade />
+                  <el-button>手动输入</el-button>
+                </div>
+                <div>
+                  <span style="font-size: xx-small">
+                    如果菜单包含子菜单，请创建router-view二级路由页面或者
+                  </span>
+                  <el-button>点我设置</el-button>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item>
+              <div class="custom-layout" style="margin-left: 30px">
+                <div><span style="color: red">*</span> 展示名称</div>
+                <div><el-input autocomplete="off" /></div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col span="8">
+            <el-form-item>
+              <div class="custom-layout">
+                <div><span style="color: red">*</span> 路由Name</div>
+                <div><el-input /></div>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item>
+              <div class="custom-layout">
+                <div>
+                  <span style="color: red">*</span> 路由Path
+                  <el-checkbox style="margin-left: 12px; height: auto">
+                    添加参数
+                  </el-checkbox>
+                </div>
+                <div><el-input placeholder="建议只在后方拼接参数" /></div>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item label="是否隐藏">
+              <div class="custom-layout">
+                <el-select style="width: 200px">
+                  <el-option>是</el-option>
+                  <el-option>否</el-option>
+                </el-select>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col span="8">
+            <el-form-item label="父节点ID">
+              <el-select
+                placeholder="根目录"
+                :disabled="!isEdit"
+                style="width: 200px"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item label="图标">
+              <div class="custom-layout">
+                <menuIcon />
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item label="排序标记">
+              <div class="custom-layout">
+                <el-input />
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col span="8">
+            <el-form-item>
+              <div class="custom-layout">
+                <div>
+                  <span> 高亮菜单 </span>
+                  <el-tooltip
+                    content="注：当到达此路由时候，指定左侧菜单指定name会处于活跃状态（亮起），可为空，为空则为本路由Name。"
+                    placement="top"
+                    effect="light"
+                  >
+                    <el-icon><QuestionFilled /></el-icon>
+                  </el-tooltip>
+                </div>
+                <el-input style="width: 200px" />
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item label="KeepAlive">
+              <div class="custom-layout">
+                <el-select style="width: 200px">
+                  <el-option>是</el-option>
+                  <el-option>否</el-option>
+                </el-select>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8" style="margin-left: 20px">
+            <el-form-item label="CloseTab">
+              <div class="custom-layout">
+                <el-select style="width: 200px">
+                  <el-option>是</el-option>
+                  <el-option>否</el-option>
+                </el-select>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col span="8">
+            <el-form-item>
+              <div class="custom-layout">
+                <div>
+                  <span> 是否为基础页面 </span>
+                  <el-tooltip
+                    content="此项选择为是，则不会展示左侧菜单以及顶部信息。"
+                    placement="top"
+                    effect="light"
+                  >
+                    <el-icon><QuestionFilled /></el-icon>
+                  </el-tooltip>
+                </div>
+                <el-select style="width: 200px">
+                  <el-option>是</el-option>
+                  <el-option>否</el-option>
+                </el-select>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <!-- 写在表单外面 -->
+      <div>
+        <el-button type="primary" icon="edit" @click="addParameter(form)">
+          新增菜单参数
+        </el-button>
+        <!-- 表单行，新增一行的逻辑是 form.parameters新增数据，牛-->
+        <div>
+          <el-table :data="form.parameters">
+            <el-table-column
+              align="left"
+              prop="type"
+              label="参数类型"
+              width="180"
+            >
+              <template #default="scope">
+                <el-select v-model="scope.row.type" placeholder="请选择">
+                  <el-option key="query" value="query" label="query" />
+                  <el-option key="params" value="params" label="params" />
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column
+              align="left"
+              prop="key"
+              label="参数key"
+              width="180"
+            >
+              <template #default="scope">
+                <el-input v-model="scope.row.key" />
+              </template>
+            </el-table-column>
+            <el-table-column align="left" prop="value" label="参数值">
+              <template #default="scope">
+                <div>
+                  <el-input v-model="scope.row.value" />
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="left">
+              <template #default="scope">
+                <div>
+                  <el-button
+                    type="danger"
+                    icon="delete"
+                    @click="deleteParameter(form.parameters, scope.$index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+      <div>
+        <div>
+          <el-button type="primary" icon="edit" @click="addBtn(form)">
+            新增可控按钮
+          </el-button>
+          <a
+            placement="top"
+            effect="light"
+            target="_blank"
+            href="https://www.gin-vue-admin.com/guide/web/button-auth.html"
+          >
+            <el-icon style="color: black"><QuestionFilled /></el-icon>
+          </a>
+          <div>
+            <el-table :data="form.menuBtn">
+              <el-table-column
+                align="left"
+                prop="name"
+                label="按钮名称"
+                width="180"
+              >
+                <template #default="scope">
+                  <div>
+                    <el-input v-model="scope.row.name" />
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column
+                align="left"
+                prop="name"
+                label="备注"
+                width="180"
+              >
+                <template #default="scope">
+                  <div>
+                    <el-input v-model="scope.row.desc" />
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column align="left">
+                <template #default="scope">
+                  <div>
+                    <el-button
+                      type="danger"
+                      icon="delete"
+                      @click="deleteBtn(form.menuBtn, scope.$index)"
+                    >
+                      删除
+                    </el-button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
     </el-drawer>
   </div>
   <!-- 表格 -->
@@ -143,10 +399,15 @@
 
 <script setup>
 import { getMenuList } from "@/api/user";
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import WarningTip from "@/components/WarningTip.vue";
+import MenuCascade from "@/components/menuCascade.vue";
+import menuIcon from "@/components/menuIcon.vue";
 
+const drawerRootAdd = ref(false);
+const drawerRootAddSub = ref(false);
+const drawerRootEdit = ref(false);
 const menuList = ref([]);
 
 getMenuList().then((a) => {
@@ -154,14 +415,30 @@ getMenuList().then((a) => {
   console.log("菜单数据", menuList);
 });
 
-const drawerRootAdd = ref(false);
-const drawerRootAddSub = ref(false);
-const drawerRootEdit = ref(false);
-// const drawerRootDelete = ref(false);
-
 const form = ref({
-  ID: "",
+  ID: 0,
+  path: "",
   name: "",
+  hidden: false,
+  parentId: 0,
+  component: "",
+  meta: {
+    activeName: "",
+    title: "",
+    icon: "",
+    defaultMenu: false,
+    closeTab: false,
+    keepAlive: false,
+  },
+  parameters: [],
+  menuBtn: [],
+});
+
+// 表单规则
+const rules = reactive({
+  path: [{ required: true, message: "请输入菜单name", trigger: "blur" }],
+  component: [{ required: true, message: "请输入文件路径", trigger: "blur" }],
+  title: [{ required: true, message: "请输入菜单展示名称", trigger: "blur" }],
 });
 
 const handleClickRootAdd = () => {
@@ -170,16 +447,15 @@ const handleClickRootAdd = () => {
 
 const operateClickAddSub = (row) => {
   drawerRootAddSub.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+  console.log(row);
 };
 
 const operateClickEdit = (row) => {
   drawerRootEdit.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+  console.log(row);
 };
 
+// 操作栏删除按钮
 const operateClickDelete = async (row) => {
   try {
     await ElMessageBox.confirm("此操作将永久删除该角色，是否继续？", "提示", {
@@ -204,18 +480,52 @@ const operateClickDelete = async (row) => {
   }
 };
 
+// 操作栏删除弹窗确定
 const operateSubmitDelete = (row) => {
   if (row.ID) {
     console.log("删除中表格内容", menuList);
     menuList.value = menuList.value.filter((item) => item.ID !== row.ID);
     // 清空输入框
-    form.value.roleID = "";
-    form.value.roleName = "";
+    form.value.ID = "";
+    form.value.name = "";
   } else {
     alert("请输入角色ID以删除角色");
     console.error("请输入角色ID以删除角色");
   }
 };
+
+// 抽屉新增菜单参数，对象格式
+const addParameter = (form) => {
+  form.parameters.push({
+    type: "query",
+    key: "",
+    value: "",
+  });
+};
+
+// 抽屉删除菜单参数，使用 splice 方法从 parameters 数组中删除指定索引的元素。
+// scope.$index: 表示当前参数行的索引
+const deleteParameter = (parameters, index) => {
+  parameters.splice(index, 1);
+};
+
+// 抽屉新增可控按钮
+const addBtn = (form) => {
+  form.menuBtn.push({
+    name: "",
+    desc: "",
+  });
+};
+
+// 抽屉删除可控按钮
+const deleteBtn = (menuBtn, index) => {
+  menuBtn.splice(index, 1);
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+.custom-layout {
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+}
+</style>
