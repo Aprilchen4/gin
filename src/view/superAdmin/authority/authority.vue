@@ -354,10 +354,10 @@ import tabApis from "@/view/superAdmin/authority/tabApis.vue";
 import tabResource from "@/view/superAdmin/authority/tabResource.vue";
 import { useStore } from "vuex";
 
-let menuAuthority; //定义为全局变量，方便读取
+const menuAuthority = ref([]); //定义为全局变量，方便读取
 
 getAuthority().then((a) => {
-  menuAuthority = a.data;
+  menuAuthority.value = a.data;
   console.log("角色数据", menuAuthority);
 });
 
