@@ -212,7 +212,7 @@ const toggleMode = (newMode) => {
   justify-content: center; /* 左右居中 */
   align-items: center; /* 上下居中 */
   width: 100%;
-  height: 60px; /* 或者设置成你需要的高度 */
+  height: 40px; /* 或者设置成你需要的高度 */
   border-bottom: 1px solid #d3d3d3; /* 只有下边缘 */
   background-color: none; /* 设置背景色 */
 }

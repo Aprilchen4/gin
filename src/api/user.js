@@ -49,4 +49,10 @@ export const getAllApis = () => {
   })
 }
 
+export const getMenuList = () => {
+  return request({
+    url: '/menu/getMenuList',
+    method: 'POST',
+  })
+}
 

@@ -274,7 +274,15 @@
                 <template #label>
                   <span style="color: red">*</span> 父级角色
                 </template>
-                <el-select
+                <el-cascader
+                  style="width: 580px"
+                  :options="tableData"
+                  :props="cascaderProps"
+                  placeholder="根角色(严格模式下为当前用户角色)"
+                  v-model="form.parentName"
+                  clearable
+                />
+                <!-- <el-select
                   placeholder="根角色(严格模式下为当前用户角色)"
                   v-model="form.parentName"
                 >
@@ -300,7 +308,7 @@
                       <el-radio value="测试角色">测试角色</el-radio>
                     </el-option>
                   </el-radio-group>
-                </el-select>
+                </el-select> -->
               </el-form-item>
 
               <el-form-item>
@@ -347,7 +355,6 @@ import tabResource from "@/view/superAdmin/authority/tabResource.vue";
 import { useStore } from "vuex";
 
 let menuAuthority; //定义为全局变量，方便读取
-// let currentRow;
 
 getAuthority().then((a) => {
   menuAuthority = a.data;
@@ -368,24 +375,39 @@ const form = ref({
   parentName: "",
 });
 // 表格数据
-const load = (row, treeNode, resolve) => {
-  setTimeout(() => {
-    resolve([
-      {
-        ID: "8881",
-        name: "普通用户子角色",
-        parentName: "普通用户",
-      },
-    ]);
-  }, 1000);
+// const load = (row, treeNode, resolve) => {
+//   setTimeout(() => {
+//     resolve([
+//       {
+//         ID: "8881",
+//         name: "普通用户子角色",
+//         parentName: "普通用户",
+//       },
+//     ]);
+//   }, 1000);
+// };
+
+// 配置 props，映射字段
+const cascaderProps = {
+  value: "ID", // 对应数据的 ID 字段
+  label: "name", // 对应数据的 name 字段
+  children: "children", // 对应数据的 children 字段
+  checkStrictly: true, // 严格模式，只有选择了完整的路径才能确认
 };
 
 let tableData = ref([
   {
     ID: "888",
     name: "普通用户",
-    hasChildren: true, // 明确指定有子节点
+    // hasChildren: true, // 明确指定有子节点
     parentName: "根角色(严格模式下为当前用户角色)",
+    children: [
+      {
+        ID: "8881",
+        name: "普通用户子角色",
+        parentName: "普通用户",
+      },
+    ],
   },
   {
     ID: "9528",
