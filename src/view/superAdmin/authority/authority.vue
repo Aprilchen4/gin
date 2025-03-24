@@ -80,29 +80,6 @@
           >
             <el-icon><Setting /></el-icon>设置权限
           </el-button>
-          <el-drawer
-            v-model="drawerSetting"
-            :with-header="true"
-            size="700px"
-            title="角色配置"
-          >
-            <el-tabs
-              :before-leave="autoEnter"
-              type="border-card"
-              v-model="activeAuthorityTab"
-              @tab-click="tabClickAuthority"
-            >
-              <el-tab-pane label="角色菜单">
-                <tabReview />
-              </el-tab-pane>
-              <el-tab-pane label="角色api">
-                <tabApis />
-              </el-tab-pane>
-              <el-tab-pane label="资源权限">
-                <tabResource :selectedName="form.name" />
-              </el-tab-pane>
-            </el-tabs>
-          </el-drawer>
 
           <!-- 新增子角色 -->
           <el-button
@@ -113,48 +90,7 @@
           >
             + 新增子角色
           </el-button>
-          <el-drawer v-model="drawerAddSub" :with-header="true" size="700px">
-            <template #header>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span>新增子角色</span>
-                <div>
-                  <el-button @click="drawerAdd = false">取消</el-button>
-                  <el-button type="primary" @click="handleSubmitAddSub">
-                    确定
-                  </el-button>
-                </div>
-              </div>
-            </template>
 
-            <el-form :model="form" label-width="80px">
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 父级角色
-                </template>
-                <el-input placeholder="普通用户" v-model="form.name" disabled>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色ID
-                </template>
-                <el-input v-model="form.ID" placeholder="请输入角色ID" />
-              </el-form-item>
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色名称
-                </template>
-                <el-input v-model="form.name" placeholder="请输入角色名称" />
-              </el-form-item>
-            </el-form>
-          </el-drawer>
           <!-- 拷贝 -->
           <el-button
             link
@@ -164,81 +100,6 @@
           >
             <el-icon><CopyDocument /></el-icon>拷贝
           </el-button>
-          <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
-            <template #header>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span>拷贝角色</span>
-                <div>
-                  <el-button @click="drawerCopy = false">取消</el-button>
-                  <el-button type="primary" @click="handleSubmitCopy">
-                    确定
-                  </el-button>
-                </div>
-              </div>
-            </template>
-
-            <el-form :model="form" label-width="80px">
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 父级角色
-                </template>
-                <el-select
-                  placeholder="根角色(严格模式下为当前用户角色)"
-                  v-model="form.name"
-                >
-                  <el-option value="根角色(严格模式下为当前用户角色)">
-                    <el-radio
-                      v-model="form.name"
-                      value="根角色(严格模式下为当前用户角色)"
-                      >根角色(严格模式下为当前用户角色)</el-radio
-                    >
-                  </el-option>
-                  <el-select placeholder="">
-                    <!-- <template #prefix> 用于添加一个带有 普通用户 标签的单选框 el-radio： -->
-                    <template #prefix>
-                      <el-radio style="margin-left: 8px" value="普通用户">
-                        普通用户
-                      </el-radio>
-                    </template>
-                    <el-option disabled value="普通用户子角色">
-                      <el-radio value="普通用户子角色">
-                        普通用户子角色
-                      </el-radio>
-                    </el-option>
-                  </el-select>
-
-                  <el-option value="测试角色">
-                    <el-radio v-model="form.ID" value="测试角色">
-                      测试角色
-                    </el-radio>
-                  </el-option>
-                </el-select>
-              </el-form-item>
-
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色ID
-                </template>
-                <el-input
-                  v-model="form.ID"
-                  disabled
-                  placeholder="请输入角色ID"
-                />
-              </el-form-item>
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色名称
-                </template>
-                <el-input v-model="form.name" placeholder="请输入角色名称" />
-              </el-form-item>
-            </el-form>
-          </el-drawer>
 
           <!-- 编辑 -->
           <el-button
@@ -249,86 +110,6 @@
           >
             <el-icon><edit /></el-icon>编辑
           </el-button>
-
-          <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
-            <template #header>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span>编辑角色</span>
-                <div>
-                  <el-button @click="drawerEdit = false">取消</el-button>
-                  <el-button type="primary" @click="handleSubmitEdit">
-                    确定
-                  </el-button>
-                </div>
-              </div>
-            </template>
-
-            <el-form :model="form" label-width="80px">
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 父级角色
-                </template>
-                <el-cascader
-                  style="width: 580px"
-                  :options="tableData"
-                  :props="cascaderProps"
-                  placeholder="根角色(严格模式下为当前用户角色)"
-                  v-model="form.parentName"
-                  clearable
-                />
-                <!-- <el-select
-                  placeholder="根角色(严格模式下为当前用户角色)"
-                  v-model="form.parentName"
-                >
-                  <el-radio-group v-model="form.name">
-                    <el-option value="根角色(严格模式下为当前用户角色)">
-                      <el-radio value="根角色(严格模式下为当前用户角色)"
-                        >根角色(严格模式下为当前用户角色)</el-radio
-                      >
-                    </el-option>
-                    <el-select placeholder="">
-                      <template #prefix>
-                        <el-radio style="margin-left: 8px" value="普通用户">
-                          普通用户
-                        </el-radio>
-                      </template>
-                      <el-option disabled value="普通用户子角色">
-                        <el-radio value="普通用户子角色">
-                          普通用户子角色
-                        </el-radio>
-                      </el-option>
-                    </el-select>
-                    <el-option value="测试角色">
-                      <el-radio value="测试角色">测试角色</el-radio>
-                    </el-option>
-                  </el-radio-group>
-                </el-select> -->
-              </el-form-item>
-
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色ID
-                </template>
-                <el-input
-                  v-model="form.ID"
-                  disabled
-                  placeholder="请输入角色ID"
-                />
-              </el-form-item>
-              <el-form-item>
-                <template #label>
-                  <span style="color: red">*</span> 角色名称
-                </template>
-                <el-input v-model="form.name" placeholder=""></el-input>
-              </el-form-item>
-            </el-form>
-          </el-drawer>
 
           <!-- 删除 -->
           <el-button
@@ -342,6 +123,180 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-drawer
+      v-model="drawerSetting"
+      :with-header="true"
+      size="700px"
+      title="角色配置"
+    >
+      <el-tabs
+        :before-leave="autoEnter"
+        type="border-card"
+        v-model="activeAuthorityTab"
+        @tab-click="tabClickAuthority"
+      >
+        <el-tab-pane label="角色菜单">
+          <tabReview />
+        </el-tab-pane>
+        <el-tab-pane label="角色api">
+          <tabApis />
+        </el-tab-pane>
+        <el-tab-pane label="资源权限">
+          <tabResource :selectedName="form.name" />
+        </el-tab-pane>
+      </el-tabs>
+    </el-drawer>
+    <el-drawer v-model="drawerAddSub" :with-header="true" size="700px">
+      <template #header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>新增子角色</span>
+          <div>
+            <el-button @click="drawerAdd = false">取消</el-button>
+            <el-button type="primary" @click="handleSubmitAddSub">
+              确定
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :model="form" label-width="80px">
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 父级角色
+          </template>
+          <el-input placeholder="普通用户" v-model="form.name" disabled>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item>
+          <template #label> <span style="color: red">*</span> 角色ID </template>
+          <el-input v-model="form.ID" placeholder="请输入角色ID" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 角色名称
+          </template>
+          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        </el-form-item>
+      </el-form>
+    </el-drawer>
+    <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
+      <template #header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>拷贝角色</span>
+          <div>
+            <el-button @click="drawerCopy = false">取消</el-button>
+            <el-button type="primary" @click="handleSubmitCopy">
+              确定
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :model="form" label-width="80px">
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 父级角色
+          </template>
+          <el-select
+            placeholder="根角色(严格模式下为当前用户角色)"
+            v-model="form.name"
+          >
+            <el-option value="根角色(严格模式下为当前用户角色)">
+              <el-radio
+                v-model="form.name"
+                value="根角色(严格模式下为当前用户角色)"
+                >根角色(严格模式下为当前用户角色)</el-radio
+              >
+            </el-option>
+            <el-select placeholder="">
+              <!-- <template #prefix> 用于添加一个带有 普通用户 标签的单选框 el-radio： -->
+              <template #prefix>
+                <el-radio style="margin-left: 8px" value="普通用户">
+                  普通用户
+                </el-radio>
+              </template>
+              <el-option disabled value="普通用户子角色">
+                <el-radio value="普通用户子角色"> 普通用户子角色 </el-radio>
+              </el-option>
+            </el-select>
+
+            <el-option value="测试角色">
+              <el-radio v-model="form.ID" value="测试角色"> 测试角色 </el-radio>
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item>
+          <template #label> <span style="color: red">*</span> 角色ID </template>
+          <el-input v-model="form.ID" disabled placeholder="请输入角色ID" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 角色名称
+          </template>
+          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        </el-form-item>
+      </el-form>
+    </el-drawer>
+    <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
+      <template #header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>编辑角色</span>
+          <div>
+            <el-button @click="drawerEdit = false">取消</el-button>
+            <el-button type="primary" @click="handleSubmitEdit">
+              确定
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :model="form" label-width="80px">
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 父级角色
+          </template>
+          <el-cascader
+            style="width: 580px"
+            :options="tableData"
+            :props="cascaderProps"
+            placeholder="根角色(严格模式下为当前用户角色)"
+            v-model="form.parentName"
+            clearable
+          />
+        </el-form-item>
+
+        <el-form-item>
+          <template #label> <span style="color: red">*</span> 角色ID </template>
+          <el-input v-model="form.ID" disabled placeholder="请输入角色ID" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <span style="color: red">*</span> 角色名称
+          </template>
+          <el-input v-model="form.name" placeholder=""></el-input>
+        </el-form-item>
+      </el-form>
+    </el-drawer>
   </div>
 </template>
 
