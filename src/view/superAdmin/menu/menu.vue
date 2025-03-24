@@ -87,7 +87,7 @@
           align-items: center;
         "
       >
-        <span>新增菜单</span>
+        <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerChange = false">取消</el-button>
           <el-button type="primary" @click="handleSubmitAddRoot">
@@ -141,7 +141,7 @@
       </el-row>
       <el-row>
         <el-col span="8">
-          <el-form-item prop="path">
+          <el-form-item prop="name">
             <div class="custom-layout">
               <div><span style="color: red">*</span> 路由Name</div>
               <el-input v-model="form.name" />
@@ -187,8 +187,9 @@
       </el-row>
       <el-row>
         <el-col span="8">
-          <el-form-item label="父节点ID">
+          <el-form-item label="父节点ID" prop="parentId">
             <el-select
+              v-model="form.parentId"
               placeholder="根目录"
               :disabled="!isEdit"
               style="width: 200px"
@@ -196,23 +197,23 @@
           </el-form-item>
         </el-col>
         <el-col span="8" style="margin-left: 20px">
-          <el-form-item label="图标">
+          <el-form-item label="图标" prop="meta.icon">
             <div class="custom-layout">
-              <menuIcon />
+              <menuIcon v-model="form.meta.icon" />
             </div>
           </el-form-item>
         </el-col>
         <el-col span="8" style="margin-left: 20px">
-          <el-form-item label="排序标记">
+          <el-form-item label="排序标记" prop="sort">
             <div class="custom-layout">
-              <el-input />
+              <el-input v-model.number="form.sort" />
             </div>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row>
         <el-col span="8">
-          <el-form-item>
+          <el-form-item prop="meta.activeName">
             <div class="custom-layout">
               <div>
                 <span> 高亮菜单 </span>
@@ -224,12 +225,12 @@
                   <el-icon><QuestionFilled /></el-icon>
                 </el-tooltip>
               </div>
-              <el-input style="width: 200px" />
+              <el-input style="width: 200px" v-model="form.meta.activeName" />
             </div>
           </el-form-item>
         </el-col>
         <el-col span="8" style="margin-left: 20px">
-          <el-form-item label="KeepAlive">
+          <el-form-item label="KeepAlive" prop="meta.keepAlive">
             <div class="custom-layout">
               <el-select style="width: 200px" v-model="form.meta.keepAlive">
                 <el-option :value="false" label="否" />
@@ -239,7 +240,7 @@
           </el-form-item>
         </el-col>
         <el-col span="8" style="margin-left: 20px">
-          <el-form-item label="CloseTab">
+          <el-form-item label="CloseTab" prop="meta.closeTab">
             <div class="custom-layout">
               <el-select style="width: 200px" v-model="form.meta.closeTab">
                 <el-option :value="false" label="否" />
@@ -385,7 +386,7 @@ const drawerChange = ref(false);
 const menuList = ref([]);
 const mode = ref("手动输入");
 const isAddParams = ref(false);
-
+const dialogTitle = ref("新增菜单");
 const switchMode = (newMode) => {
   mode.value = newMode;
 };
@@ -426,6 +427,7 @@ const rules = reactive({
 
 const handleClickRootAdd = () => {
   drawerChange.value = true;
+  dialogTitle.value = "新增菜单";
 };
 
 // 添加菜单
@@ -435,13 +437,36 @@ const handleSubmitAddRoot = () => {
 };
 
 const operateClickAddSub = (row) => {
+  dialogTitle.value = "新增菜单";
   drawerChange.value = true;
   console.log(row);
+  form.value.component = "";
+  form.value.path = "";
+  form.value.name = "";
+  form.value.parentId = "";
+  form.value.hidden = "";
+  form.value.meta.title = "";
+  form.value.meta.icon = "";
+  form.value.meta.defaultMenu = "";
+  form.value.keepAlive = "";
+  form.value.meta.closeTab = "";
+  form.value.meta.activeName = "";
 };
 
 const operateClickEdit = (row) => {
   drawerChange.value = true;
-  console.log(row);
+  dialogTitle.value = "编辑菜单";
+  form.value.component = row.component;
+  form.value.path = row.path;
+  form.value.name = row.name;
+  form.value.parentId = row.parentId;
+  form.value.hidden = row.hidden;
+  form.value.meta.title = row.meta.title;
+  form.value.meta.icon = row.meta.icon;
+  form.value.meta.defaultMenu = row.meta.defaultMenu;
+  form.value.keepAlive = row.meta.keepAlive;
+  form.value.meta.closeTab = row.meta.closeTab;
+  form.value.meta.activeName = row.meta.activeName;
 };
 
 // 操作栏删除按钮
