@@ -90,14 +90,21 @@
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerChange = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAddRoot">
-            确定
-          </el-button>
+          <div v-if="operationType === 'addRoot' || operationType === 'addSub'">
+            <el-button type="primary" @click="handleSubmitAdd">
+              确定
+            </el-button>
+          </div>
+          <div v-else-if="operationType === 'edit'">
+            <el-button type="primary" @click="handleSubmitEdit">
+              确定
+            </el-button>
+          </div>
         </div>
       </div>
     </template>
     <WarningTip title="新增菜单，需要在角色管理内配置权限才可使用" />
-    <el-form label-position="top" :rules="rules" v-model="form">
+    <el-form label-position="top" :rules="rules" :model="form">
       <el-row>
         <el-col span="12">
           <el-form-item prop="component">
@@ -134,7 +141,16 @@
           <el-form-item prop="meta.title">
             <div class="custom-layout" style="margin-left: 30px">
               <div><span style="color: red">*</span> 展示名称</div>
-              <el-input v-model="form.meta.title" />
+              <div v-if="operationType === 'edit'" style="width: 200px">
+                <el-input v-model="form.meta.title" />
+              </div>
+              <div
+                v-else-if="
+                  operationType === 'addRoot' || operationType === 'addSub'
+                "
+              >
+                <el-input v-model="form.meta.title" />
+              </div>
             </div>
           </el-form-item>
         </el-col>
@@ -161,11 +177,20 @@
                 </el-checkbox>
               </div>
               <div>
-                <el-input
-                  v-model="form.path"
-                  placeholder="建议只在后方拼接参数"
-                  :disabled="!isAddParams"
-                />
+                <div v-if="operationType === 'edit'">
+                  <el-input v-model="form.path" :disabled="!isAddParams" />
+                </div>
+                <div
+                  v-else-if="
+                    operationType === 'addRoot' || operationType === 'addSub'
+                  "
+                >
+                  <el-input
+                    v-model="form.path"
+                    :disabled="!isAddParams"
+                    placeholder="建议只在后方拼接参数"
+                  />
+                </div>
               </div>
             </div>
           </el-form-item>
@@ -188,10 +213,23 @@
       <el-row>
         <el-col span="8">
           <el-form-item label="父节点ID" prop="parentId">
-            <el-select
+            <div v-if="operationType === 'addRoot'" style="width: 200px">
+              <el-input v-model="rootDisplay" disabled />
+            </div>
+            <div v-else-if="operationType === 'addSub'" style="width: 200px">
+              <el-input v-model="subDisplay" disabled />
+            </div>
+            <div
+              v-else-if="operationType === 'edit' && form.parentId === 0"
+              style="width: 200px"
+            >
+              <el-input v-model="rootDisplay" />
+            </div>
+            <el-cascader
+              v-else
               v-model="form.parentId"
-              placeholder="根目录"
-              :disabled="!isEdit"
+              :options="menuParentList"
+              :props="{ checkStrictly: true, label: 'name', value: 'ID' }"
               style="width: 200px"
             />
           </el-form-item>
@@ -375,7 +413,13 @@
 </template>
 
 <script setup>
-import { getMenuList } from "@/api/user";
+import {
+  getMenuList,
+  getBaseMenuById,
+  addBaseMenu,
+  updateBaseMenu,
+  deleteBaseMenu,
+} from "@/api/user";
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import WarningTip from "@/components/WarningTip.vue";
@@ -384,9 +428,15 @@ import menuIcon from "@/components/menuIcon.vue";
 
 const drawerChange = ref(false);
 const menuList = ref([]);
+const menuParentList = ref([]);
 const mode = ref("手动输入");
 const isAddParams = ref(false);
 const dialogTitle = ref("新增菜单");
+const isEdit = ref(false);
+const operationType = ref(""); // "addRoot", "addSub", "edit"
+const rootDisplay = ref("根目录");
+const subDisplay = ref("");
+
 const switchMode = (newMode) => {
   mode.value = newMode;
 };
@@ -395,6 +445,14 @@ const switchMode = (newMode) => {
 getMenuList().then((a) => {
   menuList.value = a.data;
   console.log("菜单数据格式", menuList.value);
+
+  // 方案1：使用filter直接过滤
+  menuParentList.value = a.data.map((item) => {
+    let newItem = { ...item }; // 创建对象副本
+    delete newItem.children; // 删除children属性
+    return newItem;
+  });
+  console.log("父级菜单数据格式", menuParentList.value);
 });
 
 const form = ref({
@@ -402,7 +460,7 @@ const form = ref({
   path: "",
   name: "",
   hidden: false,
-  parentId: 0,
+  parentId: "",
   component: "",
   meta: {
     activeName: "",
@@ -418,55 +476,114 @@ const form = ref({
 
 // 表单规则
 const rules = reactive({
-  path: [{ required: true, message: "请输入菜单name", trigger: "blur" }],
+  name: [{ required: true, message: "请输入路由name", trigger: "blur" }],
+  path: [{ required: true, message: "请输入路由path", trigger: "blur" }],
   component: [{ required: true, message: "请输入文件路径", trigger: "blur" }],
   "meta.title": [
     { required: true, message: "请输入菜单展示名称", trigger: "blur" },
   ],
 });
 
+// 新增根菜单按钮
 const handleClickRootAdd = () => {
+  operationType.value = "addRoot";
   drawerChange.value = true;
   dialogTitle.value = "新增菜单";
+  form.value = {
+    ID: 0,
+    path: "",
+    name: "",
+    hidden: false,
+    parentId: 0,
+    component: "",
+    meta: {
+      activeName: "",
+      title: "",
+      icon: "",
+      defaultMenu: false,
+      closeTab: false,
+      keepAlive: false,
+    },
+    parameters: [],
+    menuBtn: [],
+  };
+  rootDisplay.value = "根目录";
 };
 
-// 添加菜单
-const handleSubmitAddRoot = () => {
-  menuList.value.push(form);
-  drawerChange.value = false;
+// 新增根菜单/子菜单确定按钮
+// const handleSubmitAdd = async () => {
+//   drawerChange.value = false;
+//   await addBaseMenu(form.value);
+//   getMenuList().then((a) => {
+//     menuList.value = a.data;
+//   });
+//   ElMessage({
+//     message: "添加成功!",
+//     type: "success",
+//   });
+// };
+const handleSubmitAdd = async () => {
+  try {
+    drawerChange.value = false;
+    await addBaseMenu(form.value);
+    const { data } = await getMenuList(); // 等待数据加载
+    menuList.value = data;
+    ElMessage.success("添加成功!");
+  } catch (error) {
+    ElMessage.error(`添加失败: ${error.message}`);
+  }
 };
 
+// 新增子菜单按钮
 const operateClickAddSub = (row) => {
+  operationType.value = "addSub";
+  isEdit.value = false;
   dialogTitle.value = "新增菜单";
   drawerChange.value = true;
   console.log(row);
-  form.value.component = "";
-  form.value.path = "";
-  form.value.name = "";
-  form.value.parentId = "";
-  form.value.hidden = "";
-  form.value.meta.title = "";
-  form.value.meta.icon = "";
-  form.value.meta.defaultMenu = "";
-  form.value.keepAlive = "";
-  form.value.meta.closeTab = "";
-  form.value.meta.activeName = "";
+  form.value = {
+    ID: 0,
+    path: "",
+    name: "",
+    hidden: false,
+    parentId: row.ID,
+    component: "",
+    meta: {
+      activeName: "",
+      title: "",
+      icon: "",
+      defaultMenu: false,
+      closeTab: false,
+      keepAlive: false,
+    },
+    parameters: [], // 清空数组
+    menuBtn: [], // 清空数组
+  };
+  subDisplay.value = row.meta.title || "未命名";
 };
 
-const operateClickEdit = (row) => {
+// 操作-编辑
+const operateClickEdit = async (row) => {
+  operationType.value = "edit";
+  const id = row.ID;
+  const res = await getBaseMenuById({ id });
+  form.value = res.data.menu;
+  isEdit.value = true;
   drawerChange.value = true;
   dialogTitle.value = "编辑菜单";
-  form.value.component = row.component;
-  form.value.path = row.path;
-  form.value.name = row.name;
-  form.value.parentId = row.parentId;
-  form.value.hidden = row.hidden;
-  form.value.meta.title = row.meta.title;
-  form.value.meta.icon = row.meta.icon;
-  form.value.meta.defaultMenu = row.meta.defaultMenu;
-  form.value.keepAlive = row.meta.keepAlive;
-  form.value.meta.closeTab = row.meta.closeTab;
-  form.value.meta.activeName = row.meta.activeName;
+};
+
+// 操作编辑-确定按钮
+const handleSubmitEdit = async () => {
+  drawerChange.value = false;
+  await updateBaseMenu(form.value);
+  getMenuList().then((a) => {
+    menuList.value = a.data;
+  });
+  ElMessage({
+    message: "编辑成功!",
+    type: "success",
+  });
 };
 
 // 操作栏删除按钮
@@ -494,16 +611,17 @@ const operateClickDelete = async (row) => {
   }
 };
 
-// 操作栏删除弹窗确定
-const operateSubmitDelete = (row) => {
+// 操作栏删除弹窗--确定
+const operateSubmitDelete = async (row) => {
   if (row.ID) {
-    console.log("删除中表格内容", menuList);
-    menuList.value = menuList.value.filter((item) => item.ID !== row.ID);
-    // 清空输入框
-    form.value.ID = "";
-    form.value.name = "";
+    // 1. 先等待删除操作完成
+    await deleteBaseMenu({ ID: row.ID });
+    // 2. 删除成功后再获取最新数据
+    getMenuList().then((a) => {
+      menuList.value = a.data;
+    });
   } else {
-    alert("请输入角色ID以删除角色");
+    alert("请输入角色名称以删除角色");
     console.error("请输入角色ID以删除角色");
   }
 };

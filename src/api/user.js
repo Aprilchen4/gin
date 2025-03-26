@@ -56,3 +56,38 @@ export const getMenuList = () => {
   })
 }
 
+// 获取菜单操作对应数据
+export const getBaseMenuById = (data) => {
+  return request({
+    url: '/menu/getBaseMenuById',
+    method: 'POST',
+    data
+  })
+}
+
+// 新增根菜单
+export const addBaseMenu = (data) => {
+  return request({
+    url: '/menu/addBaseMenu',
+    method: 'POST',
+    data
+  })
+}
+
+// 编辑菜单
+export const updateBaseMenu = (data) => {
+  return request({
+    url: '/menu/updateBaseMenu',
+    method: 'POST',
+    data
+  })
+}
+
+// 删除菜单
+export const deleteBaseMenu = (data) => {
+  return request({
+    url: '/menu/deleteBaseMenu',
+    method: 'POST',
+    data
+  })
+}
