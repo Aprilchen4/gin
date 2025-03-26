@@ -511,17 +511,6 @@ const handleClickRootAdd = () => {
 };
 
 // 新增根菜单/子菜单确定按钮
-// const handleSubmitAdd = async () => {
-//   drawerChange.value = false;
-//   await addBaseMenu(form.value);
-//   getMenuList().then((a) => {
-//     menuList.value = a.data;
-//   });
-//   ElMessage({
-//     message: "添加成功!",
-//     type: "success",
-//   });
-// };
 const handleSubmitAdd = async () => {
   try {
     drawerChange.value = false;

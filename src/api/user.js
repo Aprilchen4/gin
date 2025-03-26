@@ -6,6 +6,11 @@ import request from '@/utils/request';
 // 获取用户信息
 //这里其实是直接登录到menu界面，一般是getlogin函数；
 //这里etlogin只有一个参数；
+
+
+// 1.确定请求路径
+// 2.确定请求参数，这里无需参数（判断依据：浏览器-标头-旁边有个预览，即不需要参数）
+// 3. 确定请求方式post/get;
 export function getlogin(data){
   console.log("hhh");
     return request({
@@ -29,9 +34,42 @@ export function getAuthority(){//这里没有参数，所以调用时不要加�
         method: 'POST', //post一般需要传参数，无载荷，无参数
     });
 }
-// 1.确定请求路径
-// 2.确定请求参数，这里无需参数（判断依据：浏览器-标头-旁边有个预览，即不需要参数）
-// 3. 确定请求方式post/get;
+
+export function createAuthority(data){
+    return request({
+        url:'/authority/createAuthority',
+        method: 'POST', //post一般需要传参数，无载荷，无参数
+        data
+    });
+}
+
+// 拷贝角色
+export function copyAuthority(data){
+  return request({
+      url:'/authority/copyAuthority',
+      method: 'POST', //post一般需要传参数，无载荷，无参数
+      data
+  });
+}
+
+// 编辑角色/变更首页
+export function updateAuthority(data){
+  return request({
+      url:'/authority/updateAuthority',
+      method: 'POST', //post一般需要传参数，无载荷，无参数
+      data
+  });
+}
+
+// 删除角色
+export function deleteAuthority(data){
+  return request({
+      url:'/authority/deleteAuthority',
+      method: 'POST', //post一般需要传参数，无载荷，无参数
+      data
+  });
+}
+
 export  function getCode(){
   return request({
     url:'/base/captcha',
@@ -49,6 +87,26 @@ export const getAllApis = () => {
   })
 }
 
+// 获取角色权限信息
+export const getPolicyPathByAuthorityId = (data) => {
+  return request({
+    url: '/casbin/getPolicyPathByAuthorityId',
+    method: 'POST',
+    data
+  })
+}
+
+// 角色权限信息
+export const getMenuAuthority = (data) => {
+  return request({
+    url: '/menu/getMenuAuthority',
+    method: 'POST',
+    data
+  })
+}
+
+
+// 获取菜单页面数据，绑定table
 export const getMenuList = () => {
   return request({
     url: '/menu/getMenuList',
@@ -91,3 +149,4 @@ export const deleteBaseMenu = (data) => {
     data
   })
 }
+

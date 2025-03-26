@@ -37,7 +37,7 @@
 <script setup>
 import { reactive, computed, ref } from "vue";
 import { ElMessage } from "element-plus";
-import { getMenu } from "@/api/user";
+import { getMenu, updateAuthority } from "@/api/user";
 
 const sideDates = reactive({
   values: [], // 初始化 values 数组
@@ -68,9 +68,9 @@ const isHomePage = (data) => {
 };
 
 // 处理“设为首页”点击事件
-const handleSetHome = (data) => {
+const handleSetHome = async (data) => {
   if (!isHomePage(data)) {
-    homePageId.value = data.menuId;
+    await updateAuthority(data);
     console.log(`${data.meta.title} 被设为首页`);
   }
   ElMessage({ type: "success", message: "设置成功" });

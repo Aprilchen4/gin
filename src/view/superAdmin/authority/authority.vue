@@ -24,28 +24,20 @@
         </div>
       </template>
 
-      <el-form :model="form" label-width="80px">
-        <el-form-item>
-          <template #label>
-            <span style="color: red">*</span> 父级角色
-          </template>
-          <el-input
-            placeholder="根角色(严格模式下为当前用户角色)"
-            v-model="form.name"
-            disabled
-          >
+      <el-form :model="form" label-width="80px" :rules="rules">
+        <el-form-item prop="parentId">
+          <template #label> 父级角色 </template>
+          <el-input placeholder="根角色(严格模式下为当前用户角色)" disabled>
           </el-input>
         </el-form-item>
 
-        <el-form-item>
-          <template #label> <span style="color: red">*</span> 角色ID </template>
-          <el-input v-model="form.ID" placeholder="请输入角色ID" />
+        <el-form-item prop="authorityId">
+          <template #label> 角色ID </template>
+          <el-input v-model="form.authorityId" placeholder="0" />
         </el-form-item>
-        <el-form-item>
-          <template #label>
-            <span style="color: red">*</span> 角色名称
-          </template>
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        <el-form-item prop="authorityName">
+          <template #label> 角色名称 </template>
+          <el-input v-model="form.authorityName" placeholder="请输入角色名称" />
         </el-form-item>
       </el-form>
     </el-drawer>
@@ -54,12 +46,10 @@
   <!-- 表格 -->
   <div>
     <el-table
-      :data="tableData"
+      :data="authorityList"
       style="width: 100%; margin-bottom: 20px"
-      row-key="ID"
+      row-key="authorityId"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-      lazy
-      :load="load"
       :header-row-style="{
         backgroundColor: '#f5f7fa',
         color: '#000',
@@ -67,8 +57,8 @@
       }"
     >
       <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
-      <el-table-column prop="ID" label="角色ID" width="200" />
-      <el-table-column prop="name" label="角色名称" width="200" />
+      <el-table-column prop="authorityId" label="角色ID" width="200" />
+      <el-table-column prop="authorityName" label="角色名称" width="200" />
       <el-table-column label="操作">
         <template #default="scope">
           <!-- 设置权限 -->
@@ -86,7 +76,7 @@
             link
             type="primary"
             size="small"
-            @click="handleClickAddSub"
+            @click="handleClickAddSub(scope.row)"
           >
             + 新增子角色
           </el-button>
@@ -142,7 +132,7 @@
           <tabApis />
         </el-tab-pane>
         <el-tab-pane label="资源权限">
-          <tabResource :selectedName="form.name" />
+          <tabResource :selectedName="form.authorityName" />
         </el-tab-pane>
       </el-tabs>
     </el-drawer>
@@ -158,34 +148,31 @@
           <span>新增子角色</span>
           <div>
             <el-button @click="drawerAdd = false">取消</el-button>
-            <el-button type="primary" @click="handleSubmitAddSub">
+            <el-button type="primary" @click="handleSubmitAdd">
               确定
             </el-button>
           </div>
         </div>
       </template>
 
-      <el-form :model="form" label-width="80px">
-        <el-form-item>
-          <template #label>
-            <span style="color: red">*</span> 父级角色
-          </template>
-          <el-input placeholder="普通用户" v-model="form.name" disabled>
-          </el-input>
+      <el-form :model="form" label-width="80px" :rules="rules">
+        <el-form-item prop="parentId">
+          <template #label> 父级角色 </template>
+          <el-input v-model="parentDisplay" disabled> </el-input>
         </el-form-item>
 
-        <el-form-item>
-          <template #label> <span style="color: red">*</span> 角色ID </template>
-          <el-input v-model="form.ID" placeholder="请输入角色ID" />
+        <el-form-item prop="authorityId">
+          <template #label> 角色ID </template>
+          <el-input v-model="form.authorityId" placeholder="0" />
         </el-form-item>
-        <el-form-item>
-          <template #label>
-            <span style="color: red">*</span> 角色名称
-          </template>
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        <el-form-item prop="authorityName">
+          <template #label> 角色名称 </template>
+          <el-input v-model="form.authorityName" placeholder="请输入角色名称" />
         </el-form-item>
       </el-form>
     </el-drawer>
+
+    <!-- 拷贝 -->
     <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
       <template #header>
         <div
@@ -205,18 +192,18 @@
         </div>
       </template>
 
-      <el-form :model="form" label-width="80px">
-        <el-form-item>
+      <el-form :model="form" label-width="80px" :rules="rules">
+        <el-form-item prop="parentId">
           <template #label>
-            <span style="color: red">*</span> 父级角色
+            <span>父级角色</span>
           </template>
           <el-select
             placeholder="根角色(严格模式下为当前用户角色)"
-            v-model="form.name"
+            v-model="form.parentId"
           >
             <el-option value="根角色(严格模式下为当前用户角色)">
               <el-radio
-                v-model="form.name"
+                v-model="form.parentId"
                 value="根角色(严格模式下为当前用户角色)"
                 >根角色(严格模式下为当前用户角色)</el-radio
               >
@@ -234,23 +221,25 @@
             </el-select>
 
             <el-option value="测试角色">
-              <el-radio v-model="form.ID" value="测试角色"> 测试角色 </el-radio>
+              <el-radio v-model="form.authorityId" value="测试角色">
+                测试角色
+              </el-radio>
             </el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item>
-          <template #label> <span style="color: red">*</span> 角色ID </template>
-          <el-input v-model="form.ID" disabled placeholder="请输入角色ID" />
+        <el-form-item prop="authorityId">
+          <template #label> 角色ID </template>
+          <el-input v-model="form.authorityId" placeholder="请输入角色ID" />
         </el-form-item>
-        <el-form-item>
-          <template #label>
-            <span style="color: red">*</span> 角色名称
-          </template>
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        <el-form-item prop="authorityName">
+          <template #label> 角色名称 </template>
+          <el-input v-model="form.authorityName" placeholder="请输入角色名称" />
         </el-form-item>
       </el-form>
     </el-drawer>
+
+    <!-- 编辑抽屉 -->
     <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
       <template #header>
         <div
@@ -270,30 +259,35 @@
         </div>
       </template>
 
-      <el-form :model="form" label-width="80px">
-        <el-form-item>
+      <el-form :model="form" label-width="80px" :rules="rules">
+        <el-form-item prop="parentId">
           <template #label>
-            <span style="color: red">*</span> 父级角色
+            <span>父级角色</span>
           </template>
           <el-cascader
             style="width: 580px"
-            :options="tableData"
+            :options="authorityList"
             :props="cascaderProps"
+            :show-all-levels="false"
             placeholder="根角色(严格模式下为当前用户角色)"
-            v-model="form.parentName"
+            v-model="form.parentId"
             clearable
           />
         </el-form-item>
 
-        <el-form-item>
-          <template #label> <span style="color: red">*</span> 角色ID </template>
-          <el-input v-model="form.ID" disabled placeholder="请输入角色ID" />
+        <el-form-item prop="authorityId">
+          <template #label> 角色ID </template>
+          <el-input
+            v-model="form.authorityId"
+            disabled
+            placeholder="请输入角色ID"
+          />
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="authorityName">
           <template #label>
-            <span style="color: red">*</span> 角色名称
+            <span>角色名称</span>
           </template>
-          <el-input v-model="form.name" placeholder=""></el-input>
+          <el-input v-model="form.authorityName" placeholder=""></el-input>
         </el-form-item>
       </el-form>
     </el-drawer>
@@ -301,19 +295,27 @@
 </template>
 
 <script setup>
-import { getAuthority } from "@/api/user";
+import {
+  getAuthority,
+  createAuthority,
+  copyAuthority,
+  updateAuthority,
+  deleteAuthority,
+  getMenuAuthority,
+} from "@/api/user";
 import { ref } from "vue";
+import { reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
-import tabReview from "@/view/superAdmin/authority/tabReview.vue";
-import tabApis from "@/view/superAdmin/authority/tabApis.vue";
-import tabResource from "@/view/superAdmin/authority/tabResource.vue";
+import tabReview from "@/view/superAdmin/authority/components/tabReview.vue";
+import tabApis from "@/view/superAdmin/authority/components/tabApis.vue";
+import tabResource from "@/view/superAdmin/authority/components/tabResource.vue";
 import { useStore } from "vuex";
 
-const menuAuthority = ref([]); //定义为全局变量，方便读取
+const authorityList = ref([]); //定义为全局变量，方便读取
 
 getAuthority().then((a) => {
-  menuAuthority.value = a.data;
-  console.log("角色数据", menuAuthority);
+  authorityList.value = a.data;
+  console.log("角色数据", authorityList);
 });
 
 // 弹窗
@@ -323,102 +325,109 @@ const drawerEdit = ref(false);
 const drawerCopy = ref(false);
 const drawerAddSub = ref(false);
 const store = useStore();
+const parentDisplay = ref("");
+const oldAuthorityId = ref(0);
 
 const form = ref({
-  ID: "",
-  name: "",
-  parentName: "",
+  authorityId: "",
+  authorityName: "",
+  parentId: "",
 });
-// 表格数据
-// const load = (row, treeNode, resolve) => {
-//   setTimeout(() => {
-//     resolve([
-//       {
-//         ID: "8881",
-//         name: "普通用户子角色",
-//         parentName: "普通用户",
-//       },
-//     ]);
-//   }, 1000);
-// };
 
-// 配置 props，映射字段
+//  表格规则
+const rules = reactive({
+  authorityId: [{ required: true, message: "必须为正整数", trigger: "blur" }],
+  authorityName: [{ required: true, message: "请输入角色名", trigger: "blur" }],
+  parentId: [{ required: true, message: "请选择父角色", trigger: "blur" }],
+});
+
+// 级联选择器配置 props，映射字段
 const cascaderProps = {
-  value: "ID", // 对应数据的 ID 字段
-  label: "name", // 对应数据的 name 字段
+  value: "authorityId", // 对应数据的 ID 字段
+  label: "authorityName", // 对应数据的 name 字段
   children: "children", // 对应数据的 children 字段
-  checkStrictly: true, // 严格模式，只有选择了完整的路径才能确认
+  checkStrictly: true, // 关键设置：可以单独选择任意节点
 };
 
-let tableData = ref([
-  {
-    ID: "888",
-    name: "普通用户",
-    // hasChildren: true, // 明确指定有子节点
-    parentName: "根角色(严格模式下为当前用户角色)",
-    children: [
-      {
-        ID: "8881",
-        name: "普通用户子角色",
-        parentName: "普通用户",
-      },
-    ],
-  },
-  {
-    ID: "9528",
-    name: "测试角色",
-    parentName: "根角色(严格模式下为当前用户角色)",
-  },
-]);
-
-const handleClickAdd = (row) => {
+const handleClickAdd = () => {
   drawerAdd.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+  form.value.authorityId = "";
+  form.value.authorityName = "";
+  form.value.parentId = 0; //新增角色
 };
 
-const handleClickSetting = (row) => {
-  drawerSetting.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+const handleSubmitAdd = async () => {
+  drawerAddSub.value = false;
+  drawerAdd.value = false;
+  form.value.authorityId = Number(form.value.authorityId); // 转为数字
+  await createAuthority(form.value);
+  const { data } = await getAuthority();
+  authorityList.value = data;
+  ElMessage.success("添加成功!");
 };
 
 const handleClickAddSub = (row) => {
   drawerAddSub.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+  form.value.authorityId = "";
+  form.value.authorityName = "";
+  form.value.parentId = row.authorityId; // 函数参数
+  parentDisplay.value = row.authorityName; // 显示用
 };
 
-const handleSubmitAddSub = () => {
-  if (form.value.ID && form.value.name) {
-    tableData.value.push({
-      ID: form.value.ID,
-      name: form.value.name,
-    });
-    console.log("表格内容添加后", tableData.value);
-    // 清空输入框
-    form.value.roleID = "";
-    form.value.rolename = "";
-    drawerAddSub.value = false;
-  } else {
-    // 在这里可以添加错误提示或警告
-    console.error("角色ID和角色名称不能为空");
-  }
-};
-
-const handleClickEdit = (row) => {
-  drawerEdit.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
-  form.value.parentName = row.parentName;
-};
-
-const handleClickCopy = (row) => {
+const handleClickCopy = async (row) => {
   drawerCopy.value = true;
-  form.value.ID = row.ID;
-  form.value.name = row.name;
+  oldAuthorityId.value = Number(row.authorityId);
+  form.value.authorityId = row.authorityId;
+  form.value.authorityName = row.authorityName;
+  form.value.parentId = row.parentId;
 };
 
+const handleSubmitCopy = async () => {
+  drawerCopy.value = false;
+  form.value.authorityId = Number(form.value.authorityId); // 转为数字
+  await copyAuthority({
+    authority: {
+      authorityId: form.value.authorityId,
+      authorityName: form.value.authorityName,
+      parentId: form.value.parentId,
+    },
+    oldAuthorityId: oldAuthorityId.value,
+  });
+
+  const { data } = await getAuthority();
+  authorityList.value = data;
+  ElMessage.success("拷贝成功!");
+};
+
+const handleClickSetting = async (row) => {
+  drawerSetting.value = true;
+  form.value.authorityId = row.authorityId;
+  form.value.authorityName = row.authorityName;
+  form.value.parentId = row.parentId;
+  await getMenuAuthority({ authorityId: form.value.authorityId });
+};
+
+const handleClickEdit = async (row) => {
+  drawerEdit.value = true;
+  form.value.authorityId = row.authorityId;
+  form.value.authorityName = row.authorityName;
+  form.value.parentId = row.parentId;
+};
+
+const handleSubmitEdit = async () => {
+  drawerEdit.value = false;
+  form.value.authorityId = Number(form.value.authorityId); // 转为数字
+  await updateAuthority({
+    authorityId: form.value.authorityId,
+    authorityName: form.value.authorityName,
+    parentId: form.value.parentId,
+  });
+  const { data } = await getAuthority();
+  authorityList.value = data;
+  ElMessage.success("编辑成功!");
+};
+
+// 删除按钮
 const handleClickDelete = async (row) => {
   try {
     await ElMessageBox.confirm("此操作将永久删除该角色，是否继续？", "提示", {
@@ -427,11 +436,8 @@ const handleClickDelete = async (row) => {
       type: "warning",
     });
     // 确定后执行的逻辑
+    form.value.authorityId = row.authorityId;
     handleSubmitDelete(row); // 调用函数
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
   } catch (error) {
     // 处理取消逻辑
     if (error === "cancel") {
@@ -443,51 +449,21 @@ const handleClickDelete = async (row) => {
   }
 };
 
-const handleSubmitDelete = (row) => {
-  if (row.ID) {
-    console.log("表格内容", tableData);
-    tableData.value = tableData.value.filter((item) => item.ID !== row.ID);
-    // 清空输入框
-    form.value.roleID = "";
-    form.value.roleName = "";
+// 删除按钮--确定
+const handleSubmitDelete = async () => {
+  form.value.authorityId = Number(form.value.authorityId); // 转为数字
+  if (
+    form.value.authorityId === 888 ||
+    form.value.authorityId === 8881 ||
+    form.value.authorityId === 9528
+  ) {
+    ElMessage.error("系统角色不可删除!");
+    return;
   } else {
-    alert("请输入角色ID以删除角色");
-    console.error("请输入角色ID以删除角色");
+    await deleteAuthority({ authorityId: form.value.authorityId });
+    const { data } = await getAuthority();
+    authorityList.value = data;
   }
-};
-
-const handleSubmitAdd = () => {
-  if (form.value.ID && form.value.name) {
-    tableData.value.push({
-      ID: form.value.ID,
-      name: form.value.name,
-    });
-    // 清空输入框
-    form.value.roleID = "";
-    form.value.rolename = "";
-    drawerAdd.value = false;
-  } else {
-    // 在这里可以添加错误提示或警告
-    console.error("角色ID和角色名称不能为空");
-  }
-};
-
-const handleSubmitEdit = () => {
-  ElMessage({
-    message: "添加成功!",
-    type: "success",
-    duration: 3000, // 提示持续时间
-    center: true, // 内容居中
-  });
-};
-
-const handleSubmitCopy = () => {
-  ElMessage({
-    message: "拷贝失败存在相同角色ID",
-    type: "error",
-    duration: 3000, // 提示持续时间
-    center: true, // 内容居中
-  });
 };
 
 const tabClickAuthority = (tab) => {
