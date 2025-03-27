@@ -114,7 +114,10 @@ function flatToTree(data) {
 
 // 选中Api
 const defaultCheckedKeys = computed(() => {
-  return authorityApi.values.map((item) => item.path) || [];
+  // || [] 的短路求值只能在整个表达式为 undefined 或 null 时生效。
+  // 如果 authorityApi.values 是 undefined，.map() 仍然会抛出错误
+  // return authorityApi.values.map((item) => item.path) || [];
+  return (authorityApi.values || []).map((item) => item.path);
 });
 </script>
 
