@@ -12,7 +12,7 @@
       style="width: 380px; margin-left: 8px"
       v-model="filterTextPath"
     />
-    <el-button type="primary">确定</el-button>
+    <el-button type="primary" @click="apisButt">确定</el-button>
   </div>
   <div>
     <el-tree
@@ -25,6 +25,7 @@
       :default-checked-keys="defaultCheckedKeys"
       :props="apiDefaultProps"
       :filter-node-method="filterNode"
+      @check="handleApiChange"
     >
       <!-- 自定义节点内容 -->
       <template #default="{ data }">
@@ -38,7 +39,11 @@
 </template>
 
 <script setup>
-import { getAllApis, getPolicyPathByAuthorityId } from "@/api/user";
+import {
+  getAllApis,
+  getPolicyPathByAuthorityId,
+  updateCasbin,
+} from "@/api/user";
 import { reactive, ref, watch, computed } from "vue";
 import { defineProps } from "vue";
 
@@ -61,11 +66,12 @@ const apiDefaultProps = {
 };
 
 const props = defineProps({
-  authorityId: Object,
+  authorityForm: Object,
 });
 
+// watch 用于监听 props.authorityForm.authorityId 的变化，
 watch(
-  () => props.authorityId,
+  () => props.authorityForm.authorityId,
   async (id) => {
     const [response, resAuthorityApi] = await Promise.all([
       getAllApis(),
@@ -75,8 +81,6 @@ watch(
     allApis.values = response.data.apis;
     apiTreeDatas.value = flatToTree(allApis.values);
     authorityApi.values = resAuthorityApi.data.paths;
-    console.log("apiTreeDatas", apiTreeDatas.value);
-    console.log("authorityApi", authorityApi.values);
   },
   { immediate: true }
 );
@@ -112,13 +116,34 @@ function flatToTree(data) {
   return tree;
 }
 
+// 切换选中的Api
+const handleApiChange = (checkedNodes, { checkedKeys }) => {
+  // 更新 authorityMenu.values 为当前选中的节点
+  authorityApi.values = apiTreeDatas.value
+    .flatMap((menu) => [menu, ...(menu.children || [])]) // 扁平化树结构
+    .filter((node) => checkedKeys.includes(node.path)); // 过滤出选中的节点
+};
+// const handleApiChange = (checkedNodes, { checkedKeys }) => {
+//   authorityApi.values = allApis.values.filter((api) =>
+//     checkedKeys.includes(api.path)
+//   );
+// };
+
 // 选中Api
 const defaultCheckedKeys = computed(() => {
   // || [] 的短路求值只能在整个表达式为 undefined 或 null 时生效。
   // 如果 authorityApi.values 是 undefined，.map() 仍然会抛出错误
   // return authorityApi.values.map((item) => item.path) || [];
-  return (authorityApi.values || []).map((item) => item.path);
+  return (authorityApi.values || []).map((item) => item.path); //注意这里.path和node-key="path"保持一致
 });
+
+// 提交确定选中的Api
+const apisButt = () => {
+  updateCasbin({
+    authorityId: props.authorityForm.authorityId,
+    casbinInfos: authorityApi.values,
+  });
+};
 </script>
 
 <style scoped>

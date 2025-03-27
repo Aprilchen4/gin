@@ -52,11 +52,11 @@ export function copyAuthority(data){
   });
 }
 
-// 编辑角色/变更首页
+// 编辑角色/变更首页按钮
 export function updateAuthority(data){
   return request({
       url:'/authority/updateAuthority',
-      method: 'POST', //post一般需要传参数，无载荷，无参数
+      method: 'PUT', //注意这里请求方法不一样了
       data
   });
 }
@@ -96,6 +96,14 @@ export const getMenuAuthority = (data) => {
   })
 }
 
+// 提交选中菜单信息
+export const addMenuAuthority = (data) => {
+  return request({
+    url: '/menu/addMenuAuthority',
+    method: 'POST',
+    data
+  })
+}
 // 获取角色Api信息
 export const getAllApis = () => {
   return request({
@@ -112,6 +120,16 @@ export const getPolicyPathByAuthorityId = (data) => {
     data
   })
 }
+
+// 提交角色Api选中信息
+export const updateCasbin = (data) => {
+  return request({
+    url: '/casbin/updateCasbin',
+    method: 'POST',
+    data
+  })
+}
+
 
 // 获取菜单页面数据，绑定table
 export const getMenuList = () => {

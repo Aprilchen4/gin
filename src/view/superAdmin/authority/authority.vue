@@ -126,10 +126,10 @@
         @tab-click="tabClickAuthority"
       >
         <el-tab-pane label="角色菜单">
-          <tabReview :authorityId="form.authorityId" />
+          <tabReview :authorityForm="form" />
         </el-tab-pane>
         <el-tab-pane label="角色api">
-          <tabApis :authorityId="form.authorityId" />
+          <tabApis :authorityForm="form" />
         </el-tab-pane>
         <el-tab-pane label="资源权限">
           <tabResource :selectedName="form.authorityName" />
