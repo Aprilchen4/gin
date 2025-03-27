@@ -111,6 +111,7 @@
       <el-container>
         <el-header>
           <tabMenu />
+          <WarningTip title="注：右上角头像下拉可切换角色" />
         </el-header>
         <el-main>
           <router-view />
@@ -133,6 +134,7 @@ const breadCrumb = computed(() => store.state.breadCrumb);
 import { computed } from "vue";
 const store = useStore();
 import { useStore } from "vuex";
+import WarningTip from "@/components/WarningTip.vue";
 
 // 标签页
 // import { computed } from 'vue';
@@ -294,5 +296,9 @@ const toggleMode = (newMode) => {
 
 .bottom-rght {
   display: flex;
+}
+
+.el-tabs__header.is-top {
+  margin-bottom: 5px !important; /* 或外部可能导致的问题,泽丽tab是引入的*/
 }
 </style>

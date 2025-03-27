@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 // import store from '@/store/index';
 
 // const routeP = store.state.rPath;
@@ -32,40 +32,40 @@ const routes = [
         //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
         //   return import(`@/${componentName}`);
       },
-      // {
-      //   path: 'admin/authority',
-      //   name: 'authority',
-      //   component: () => import('@/view/superAdmin/authority/authority.vue'),
-      //   // component: () => {
-      //   //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
-      //   //   return import(`@/${componentName}`);
-      //   // }
-      // },
-      // {
-      //   path: 'admin/menu',
-      //   name: 'menu',
-      //   component: () => import('@/view/superAdmin/menu/menu.vue'),
-      // },
-      // {
-      //   path: 'admin/api',
-      //   name: 'api',
-      //   component: () => import('@/view/superAdmin/api/api.vue'),
-      // },
-      // {
-      //   path: 'admin/user',
-      //   name: 'user',
-      //   component: () => import('@/view/superAdmin/user/user.vue'),
-      // },
-      // {
-      //   path: 'admin/dictionary',
-      //   name: 'dictionary',
-      //   component: () => import('@/view/superAdmin/dictionary/sysDictionary.vue'),
-      // },
-      // {
-      //   path: 'admin/operation',
-      //   name: 'operation',
-      //   component: () => import('@/view/superAdmin/operation/sysOperationRecord.vue'),
-      // },
+      {
+        path: 'admin/authority',
+        name: 'authority',
+        component: () => import('@/view/superAdmin/authority/authority.vue'),
+        // component: () => {
+        //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
+        //   return import(`@/${componentName}`);
+        // }
+      },
+      {
+        path: 'admin/menu',
+        name: 'menu',
+        component: () => import('@/view/superAdmin/menu/menu.vue'),
+      },
+      {
+        path: 'admin/api',
+        name: 'api',
+        component: () => import('@/view/superAdmin/api/api.vue'),
+      },
+      {
+        path: 'admin/user',
+        name: 'user',
+        component: () => import('@/view/superAdmin/user/user.vue'),
+      },
+      {
+        path: 'admin/dictionary',
+        name: 'dictionary',
+        component: () => import('@/view/superAdmin/dictionary/sysDictionary.vue'),
+      },
+      {
+        path: 'admin/operation',
+        name: 'operation',
+        component: () => import('@/view/superAdmin/operation/sysOperationRecord.vue'),
+      },
     ]
   },
 ];
@@ -76,7 +76,7 @@ const routes = [
 // 提供了一个集中管理和控制路由的入口;
 // createRouter创建实例方法;
 const router = createRouter({
-  history: createWebHistory(), // 使用 HTML5 历史模式
+  history: createWebHashHistory('/ginmenu/'), // 使用 HTML5 历史模式
   routes, // 路由配置
 });
 

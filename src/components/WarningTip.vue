@@ -32,16 +32,16 @@ const open = () => {
 
 <style scoped>
 .warning-tip {
-  padding: 15px;
-  background-color: #fff3cd; /* 浅黄色背景 */
+  padding: 2px;
+  background-color: #fdf4d8; /* 浅黄色背景 */
   border: 1px solid #ffeeba; /* 边框颜色 */
   border-radius: 4px;
   color: #cc9c0a; /* 文字颜色 */
-  margin-bottom: 20px;
+  margin-top: 0px;
   display: flex;
   align-items: center;
   /* justify-content: space-between; */
-  font-size: x-small;
+  font-size: small;
 }
 
 .warning-tip a {

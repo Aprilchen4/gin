@@ -8,9 +8,9 @@
   <div>
     <el-tree
       style="max-width: 600px"
-      :data="sideDates.values"
+      :data="authorityMenuTree.values"
       show-checkbox
-      node-key="menuId"
+      node-key="ID"
       default-expand-all
       highlight-current
       :default-checked-keys="defaultCheckedKeys"
@@ -22,6 +22,7 @@
         <span>{{ node.label }}</span>
         <!-- 设置首页按钮 -->
         <el-button
+          v-if="isChecked(data.ID)"
           link
           type="success"
           size="small"
@@ -35,21 +36,12 @@
   </div>
 </template>
 <script setup>
-import { reactive, computed, ref } from "vue";
+import { reactive, ref } from "vue";
+import { computed } from "vue";
 import { ElMessage } from "element-plus";
-import { getMenu, updateAuthority } from "@/api/user";
-
-const sideDates = reactive({
-  values: [], // 初始化 values 数组
-});
-// 当前首页的 menuId
-const homePageId = ref(1);
-
-getMenu().then((a) => {
-  sideDates.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  console.log("sideDates.values:", sideDates.values);
-});
-console.log("外面的sideDates.values:", sideDates.values); // 空的
+import { getBaseMenuTree, getMenuAuthority, updateAuthority } from "@/api/user";
+import { defineProps } from "vue";
+import { watch } from "vue";
 
 const defaultProps = {
   children: "children",
@@ -57,14 +49,49 @@ const defaultProps = {
   disabled: (data) => isHomePage(data), // 仅首页复选框禁用，只影响复选框
 };
 
-// 默认全选
-const defaultCheckedKeys = computed(() => {
-  return sideDates.values.map((item) => item.menuId);
+const authorityMenuTree = reactive({
+  values: [], // 初始化 values 数组
 });
+const authorityMenu = reactive({
+  values: [], // 初始化 values 数组
+});
+// 当前首页的 ID
+const homePageId = ref(1);
+
+// props传值，props 是只读的，defineProps 返回的对象是只读的响应式对象，而 toRefs 会尝试创建可写的 ref
+//可以在子组件中使用 props.authorityId
+const props = defineProps({
+  authorityId: Object,
+});
+
+// 监听并调用函数
+watch(
+  () => props.authorityId,
+  async (id) => {
+    if (!id) return;
+    const [menuRes, authRes] = await Promise.all([
+      getBaseMenuTree(),
+      getMenuAuthority({ authorityId: id }),
+    ]);
+    authorityMenuTree.values = menuRes.data.menus;
+    authorityMenu.values = authRes.data.menus;
+  },
+  { immediate: true }
+);
+
+// 选中菜单
+const defaultCheckedKeys = computed(() => {
+  return authorityMenu.values.map((item) => Number(item.ID)) || [];
+});
+
+// 新增计算属性：检查当前节点是否被选中
+const isChecked = (ID) => {
+  return defaultCheckedKeys.value.includes(ID);
+};
 
 // 判断是否是首页
 const isHomePage = (data) => {
-  return data.menuId === homePageId.value;
+  return data.ID === homePageId.value;
 };
 
 // 处理“设为首页”点击事件

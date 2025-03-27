@@ -223,6 +223,7 @@ const routeMake = (tree, targetId) => {
   return { routePath, routeName, routeComponent };
 };
 
+// 动态添加路由不能解决浏览器刷新加载页面的问题，后续可以尝试存储到本地(但没必要)
 const addRouteOneByOne = (routePath, routeName, routeComponent) => {
   // 获取当前所有路由
   const existingRoutes = router.getRoutes();

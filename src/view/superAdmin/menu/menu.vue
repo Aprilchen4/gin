@@ -12,8 +12,6 @@
       style="width: 100%; margin-top: 20px"
       row-key="ID"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-      lazy
-      :load="load"
       :header-row-style="{
         backgroundColor: '#f5f7fa',
         color: '#000',
@@ -21,30 +19,30 @@
       }"
     >
       <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
-      <el-table-column prop="ID" label="ID" width="80px" />
-      <el-table-column prop="meta.title" label="展示名称" width="120px" />
-      <el-table-column prop="meta.icon" label="图标" width="120px" />
+      <el-table-column prop="ID" label="ID" min-width="100" />
+      <el-table-column prop="meta.title" label="展示名称" min-width="120" />
+      <el-table-column prop="meta.icon" label="图标" min-width="80" />
       <el-table-column
         prop="name"
         show-overflow-tooltip
         label="路由Name"
-        width="120px"
+        min-width="160"
       />
       <el-table-column
         prop="path"
         show-overflow-tooltip
         label="路由Path"
-        width="120px"
+        min-width="160"
       />
-      <el-table-column prop="hidden" label="是否隐藏" width="120px">
+      <el-table-column prop="hidden" label="是否隐藏" min-width="100">
         <template #default="scope">
           <span>{{ scope.row.hidden ? "隐藏" : "显示" }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="parentId" label="父节点ID" width="100px" />
-      <el-table-column prop="sort" label="排序" width="80px" />
-      <el-table-column prop="component" label="文件路径" width="200px" />
-      <el-table-column fixed="right" label="操作" width="120px">
+      <el-table-column prop="parentId" label="父节点ID" min-width="90" />
+      <el-table-column prop="sort" label="排序" min-width="70" />
+      <el-table-column prop="component" label="文件路径" min-width="360" />
+      <el-table-column fixed="right" label="操作" :width="'auto'">
         <template #default="scope">
           <!-- 添加子菜单 -->
           <el-button

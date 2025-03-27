@@ -79,24 +79,15 @@ export  function getCode(){
   })
 }
 
-// 获取角色Api信息
-export const getAllApis = () => {
+// 获取角色菜单信息
+export const getBaseMenuTree = () => {
   return request({
-    url: '/api/getAllApis',
+    url: '/menu/getBaseMenuTree',
     method: 'POST',
   })
 }
 
-// 获取角色权限信息
-export const getPolicyPathByAuthorityId = (data) => {
-  return request({
-    url: '/casbin/getPolicyPathByAuthorityId',
-    method: 'POST',
-    data
-  })
-}
-
-// 角色权限信息
+// 角色菜单选中信息
 export const getMenuAuthority = (data) => {
   return request({
     url: '/menu/getMenuAuthority',
@@ -105,6 +96,22 @@ export const getMenuAuthority = (data) => {
   })
 }
 
+// 获取角色Api信息
+export const getAllApis = () => {
+  return request({
+    url: '/api/getAllApis',
+    method: 'POST',
+  })
+}
+
+// 获取角色Api选中信息
+export const getPolicyPathByAuthorityId = (data) => {
+  return request({
+    url: '/casbin/getPolicyPathByAuthorityId',
+    method: 'POST',
+    data
+  })
+}
 
 // 获取菜单页面数据，绑定table
 export const getMenuList = () => {

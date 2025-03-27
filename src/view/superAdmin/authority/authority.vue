@@ -57,9 +57,9 @@
       }"
     >
       <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
-      <el-table-column prop="authorityId" label="角色ID" width="200" />
-      <el-table-column prop="authorityName" label="角色名称" width="200" />
-      <el-table-column label="操作">
+      <el-table-column prop="authorityId" label="角色ID" min-width="200" />
+      <el-table-column prop="authorityName" label="角色名称" min-width="200" />
+      <el-table-column label="操作" width="460">
         <template #default="scope">
           <!-- 设置权限 -->
           <el-button
@@ -126,10 +126,10 @@
         @tab-click="tabClickAuthority"
       >
         <el-tab-pane label="角色菜单">
-          <tabReview />
+          <tabReview :authorityId="form.authorityId" />
         </el-tab-pane>
         <el-tab-pane label="角色api">
-          <tabApis />
+          <tabApis :authorityId="form.authorityId" />
         </el-tab-pane>
         <el-tab-pane label="资源权限">
           <tabResource :selectedName="form.authorityName" />
@@ -301,7 +301,6 @@ import {
   copyAuthority,
   updateAuthority,
   deleteAuthority,
-  getMenuAuthority,
 } from "@/api/user";
 import { ref } from "vue";
 import { reactive } from "vue";
@@ -404,7 +403,6 @@ const handleClickSetting = async (row) => {
   form.value.authorityId = row.authorityId;
   form.value.authorityName = row.authorityName;
   form.value.parentId = row.parentId;
-  await getMenuAuthority({ authorityId: form.value.authorityId });
 };
 
 const handleClickEdit = async (row) => {

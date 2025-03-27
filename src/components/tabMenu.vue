@@ -4,7 +4,6 @@
   <el-tabs
     v-model="activeMenu"
     type="card"
-    class="demo-tabs"
     :default-active="1"
     @tab-remove="deleteTab"
     @tab-click="TabClick"
@@ -89,9 +88,21 @@ const deleteTab = (targetName) => {
 </script>
 
 <style scoped>
+/* 调整标签页的 padding */
+:deep(.el-tabs__item) {
+  border: 1px solid var(--el-border-color-darker);
+  border-radius: 2px;
+  margin-right: 5px;
+  margin-left: 2px;
+  /* 效果：鼠标悬停时，内边距在 0.3 秒内按自定义曲线平滑扩展。 */
+  transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+  height: 34px;
+}
+
 :deep(.el-tabs__item.is-active) {
   color: #409eff; /* 文字颜色为蓝色 */
   background-color: #e6f7ff; /* 背景色为浅蓝色 */
+  border: black;
   font-weight: bold;
 }
 </style>

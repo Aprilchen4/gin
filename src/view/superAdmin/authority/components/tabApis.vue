@@ -19,7 +19,7 @@
       style="max-width: 600px"
       :data="apiTreeDatas"
       show-checkbox
-      node-key="id"
+      node-key="path"
       default-expand-all
       highlight-current
       :default-checked-keys="defaultCheckedKeys"
@@ -38,24 +38,48 @@
 </template>
 
 <script setup>
-import { getAllApis } from "@/api/user";
-import { reactive, ref, onMounted } from "vue";
-const allApis = reactive({
-  values: [], // 初始化 values 数组
-});
-const apiTreeDatas = ref([]); // 使用 ref 让 apiTreeDatas 响应式
-const defaultCheckedKeys = ref([]); // 改为 ref 而不是 computed
+import { getAllApis, getPolicyPathByAuthorityId } from "@/api/user";
+import { reactive, ref, watch, computed } from "vue";
+import { defineProps } from "vue";
 
+const apiTreeDatas = ref([]); // 使用 ref 让 apiTreeDatas 响应式
 // 输入框的筛选值
 const filterTextName = ref("");
 const filterTextPath = ref("");
+const allApis = reactive({
+  values: [], // 初始化 values 数组
+});
+const authorityApi = reactive({
+  values: [], // 初始化 values 数组
+});
 
+// 在 apiDefaultProps 中明确告诉 <el-tree>：“请把每个节点对象中的 apis 字段当作子节点数组来处理。
+// children是一个约定，你可以用 apiDefaultProps 自定义映射。
 const apiDefaultProps = {
-  label: "label", // flatToTree 中的字段名一致
-  // 在 apiDefaultProps 中明确告诉 <el-tree>：“请把每个节点对象中的 apis 字段当作子节点数组来处理。
-  // children是一个约定，你可以用 apiDefaultProps 自定义映射。
+  label: "description", // flatToTree 中的字段名一致
   children: "apis", // apis是原始数据的106个节点，children是默认字段，
 };
+
+const props = defineProps({
+  authorityId: Object,
+});
+
+watch(
+  () => props.authorityId,
+  async (id) => {
+    const [response, resAuthorityApi] = await Promise.all([
+      getAllApis(),
+      getPolicyPathByAuthorityId({ authorityId: id }),
+    ]);
+
+    allApis.values = response.data.apis;
+    apiTreeDatas.value = flatToTree(allApis.values);
+    authorityApi.values = resAuthorityApi.data.paths;
+    console.log("apiTreeDatas", apiTreeDatas.value);
+    console.log("authorityApi", authorityApi.values);
+  },
+  { immediate: true }
+);
 
 // 平级数据转为树形结构
 function flatToTree(data) {
@@ -88,18 +112,9 @@ function flatToTree(data) {
   return tree;
 }
 
-// 初始化数据，使用 onMounted 钩子确保组件挂载后才请求数据
-onMounted(async () => {
-  const response = await getAllApis();
-  allApis.values = response.data.apis; // 更新数据
-  console.log("allApis.values:", allApis.values); // 检查数据
-  apiTreeDatas.value = flatToTree(allApis.values); // 更新树形结构
-
-  // 设置默认选中,这里不用computed，原因和用onMounted理由一致
-  const allIds = apiTreeDatas.value
-    .flatMap((group) => [group.id, ...group.apis.map((api) => api.id)])
-    .filter(Boolean); // 包含父节点和子节点的 ID
-  defaultCheckedKeys.value = allIds;
+// 选中Api
+const defaultCheckedKeys = computed(() => {
+  return authorityApi.values.map((item) => item.path) || [];
 });
 </script>
 
