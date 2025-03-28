@@ -130,6 +130,14 @@ export const updateCasbin = (data) => {
   })
 }
 
+// 设置角色资源权限
+export const setDataAuthority = (data) => {
+  return request({
+    url: '/authority/setDataAuthority',
+    method: 'POST',
+    data
+  })
+}
 
 // 获取菜单页面数据，绑定table
 export const getMenuList = () => {

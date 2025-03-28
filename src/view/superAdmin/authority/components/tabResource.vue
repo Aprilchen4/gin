@@ -7,28 +7,24 @@
     <div>
       <el-button type="primary" @click="all">全选</el-button>
       <el-button type="primary" @click="self">本角色</el-button>
-      <el-button type="primary" @click="selfAndChildren">
-        本角色及子角色
-      </el-button>
+      <el-button type="primary" @click="selfAndChildren"
+        >本角色及子角色</el-button
+      >
     </div>
-    <el-button type="primary" @click="authDataEnter">确 定</el-button>
+    <el-button type="primary" @click="authDataEnter">确定</el-button>
   </div>
-
   <el-checkbox v-model="normalUser" label="普通用户" size="large" />
   <el-checkbox v-model="normalUserChild" label="普通用户子角色" size="large" />
   <el-checkbox v-model="testRole" label="测试角色" size="large" />
 </template>
+
 <script setup>
 import warningTip from "@/components/WarningTip.vue";
-import { ref } from "vue";
-import { defineProps, toRefs } from "vue";
+import { ref, defineProps } from "vue";
+import { setDataAuthority } from "@/api/user";
 
 // 定义 props
-const props = defineProps({
-  selectedName: String,
-});
-// 使用 toRefs 将 props 对象中的 selectedName 属性转换为独立的ref对象
-const { selectedName } = toRefs(props);
+const props = defineProps({ authorityForm: Object });
 
 // 定义响应式变量（替代原来的 data）
 const normalUser = ref(false); // 普通用户复选框状态
@@ -48,32 +44,34 @@ const self = () => {
     普通用户子角色: normalUserChild,
     测试角色: testRole,
   };
-
   // 先全部置为 false
   normalUser.value = false;
   normalUserChild.value = false;
   testRole.value = false;
-
   // 设置匹配的为 true
-  if (roleMap[selectedName.value]) {
-    roleMap[selectedName.value].value = true;
-  }
+  if (roleMap[props.authorityForm.authorityName])
+    roleMap[props.authorityForm.authorityName].value = true;
 };
 
 const selfAndChildren = () => {
-  if (selectedName.value === "普通用户") {
+  if (props.authorityForm.authorityName === "普通用户") {
     normalUser.value = true;
     normalUserChild.value = true;
     testRole.value = false;
-  } else if (selectedName.value === "测试角色") {
+  } else if (props.authorityForm.authorityName === "测试角色") {
     normalUser.value = false;
     normalUserChild.value = false;
     testRole.value = true;
   } else {
-    normalUser.value = false;
+    normalUser.value = true;
     normalUserChild.value = true;
     testRole.value = false;
   }
+};
+
+// 点击确认
+const authDataEnter = () => {
+  setDataAuthority(props.authorityForm);
 };
 </script>
 

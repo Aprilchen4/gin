@@ -14,28 +14,26 @@
     />
     <el-button type="primary" @click="apisButt">确定</el-button>
   </div>
-  <div>
-    <el-tree
-      style="max-width: 600px"
-      :data="apiTreeDatas"
-      show-checkbox
-      node-key="path"
-      default-expand-all
-      highlight-current
-      :default-checked-keys="defaultCheckedKeys"
-      :props="apiDefaultProps"
-      :filter-node-method="filterNode"
-      @check="handleApiChange"
-    >
-      <!-- 自定义节点内容 -->
-      <template #default="{ data }">
-        <div class="node-container">
-          <span class="node-label">{{ data.label }}</span>
-          <span class="node-path">{{ data.path }}</span>
-        </div>
-      </template>
-    </el-tree>
-  </div>
+  <el-tree
+    ref="apiTree"
+    style="max-width: 600px"
+    :data="apiTreeDatas"
+    show-checkbox
+    node-key="path"
+    default-expand-all
+    :default-checked-keys="defaultCheckedKeys"
+    :props="apiDefaultProps"
+    :filter-node-method="filterNode"
+    @check="handleApiChange"
+  >
+    <!-- 自定义节点内容 -->
+    <template #default="{ data }">
+      <div class="node-container">
+        <span class="node-label">{{ data.label }}</span>
+        <span class="node-path">{{ data.path }}</span>
+      </div>
+    </template>
+  </el-tree>
 </template>
 
 <script setup>
@@ -47,16 +45,12 @@ import {
 import { reactive, ref, watch, computed } from "vue";
 import { defineProps } from "vue";
 
+const apiTree = ref(null); // 用于引用 <el-tree> 组件,为 <el-tree> 创建一个可操作的引用
 const apiTreeDatas = ref([]); // 使用 ref 让 apiTreeDatas 响应式
-// 输入框的筛选值
-const filterTextName = ref("");
+const filterTextName = ref(""); // 输入框的筛选值
 const filterTextPath = ref("");
-const allApis = reactive({
-  values: [], // 初始化 values 数组
-});
-const authorityApi = reactive({
-  values: [], // 初始化 values 数组
-});
+const allApis = reactive({ values: [] }); // 初始化 values 数组
+const authorityApi = reactive({ values: [] }); // 初始化 values 数组
 
 // 在 apiDefaultProps 中明确告诉 <el-tree>：“请把每个节点对象中的 apis 字段当作子节点数组来处理。
 // children是一个约定，你可以用 apiDefaultProps 自定义映射。
@@ -65,9 +59,7 @@ const apiDefaultProps = {
   children: "apis", // apis是原始数据的106个节点，children是默认字段，
 };
 
-const props = defineProps({
-  authorityForm: Object,
-});
+const props = defineProps({ authorityForm: Object });
 
 // watch 用于监听 props.authorityForm.authorityId 的变化，
 watch(
@@ -77,7 +69,6 @@ watch(
       getAllApis(),
       getPolicyPathByAuthorityId({ authorityId: id }),
     ]);
-
     allApis.values = response.data.apis;
     apiTreeDatas.value = flatToTree(allApis.values);
     authorityApi.values = resAuthorityApi.data.paths;
@@ -88,31 +79,21 @@ watch(
 // 平级数据转为树形结构
 function flatToTree(data) {
   const groupMap = new Map();
-
   data.forEach((item) => {
     const groupName = item.apiGroup;
-    if (!groupMap.has(groupName)) {
-      groupMap.set(groupName, []);
-    }
+    if (!groupMap.has(groupName)) groupMap.set(groupName, []);
     // 处理的是单个 API 对象。
-    groupMap.get(groupName).push({
-      id: item.ID,
-      label: item.description,
-      path: item.path,
-    });
+    groupMap
+      .get(groupName)
+      .push({ id: item.ID, label: item.description, path: item.path });
   });
 
   const tree = [];
   let idCounter = 200;
   groupMap.forEach((children, groupName) => {
     // 处理的是整个组（包括组名和子节点数组）。
-    tree.push({
-      id: ++idCounter,
-      label: groupName + "组",
-      apis: children,
-    });
+    tree.push({ id: ++idCounter, label: groupName + "组", apis: children });
   });
-
   return tree;
 }
 
@@ -120,21 +101,15 @@ function flatToTree(data) {
 const handleApiChange = (checkedNodes, { checkedKeys }) => {
   // 更新 authorityMenu.values 为当前选中的节点
   authorityApi.values = apiTreeDatas.value
-    .flatMap((menu) => [menu, ...(menu.children || [])]) // 扁平化树结构
+    .flatMap((menu) => [menu, ...(menu.apis || [])]) // 扁平化树结构
     .filter((node) => checkedKeys.includes(node.path)); // 过滤出选中的节点
 };
-// const handleApiChange = (checkedNodes, { checkedKeys }) => {
-//   authorityApi.values = allApis.values.filter((api) =>
-//     checkedKeys.includes(api.path)
-//   );
-// };
 
 // 选中Api
 const defaultCheckedKeys = computed(() => {
   // || [] 的短路求值只能在整个表达式为 undefined 或 null 时生效。
   // 如果 authorityApi.values 是 undefined，.map() 仍然会抛出错误
-  // return authorityApi.values.map((item) => item.path) || [];
-  return (authorityApi.values || []).map((item) => item.path); //注意这里.path和node-key="path"保持一致
+  return (authorityApi.values || []).map((item) => item.path); // 注意这里.path和node-key="path"保持一致
 });
 
 // 提交确定选中的Api
@@ -144,6 +119,24 @@ const apisButt = () => {
     casbinInfos: authorityApi.values,
   });
 };
+
+// 筛选节点
+// :filter-node-method 是 <el-tree> 组件的一个属性，
+// 用于指定一个函数，该函数决定在筛选时哪些节点应该显示或隐藏。
+
+// value：调用 filter 方法时传入的值（你的代码中未使用）。
+// data：当前节点的数据对象，包含 label（描述）和 path（路径）等字段。
+const filterNode = (value, data) =>
+  (!filterTextName.value ||
+    data.label.toLowerCase().includes(filterTextName.value.toLowerCase())) &&
+  (!filterTextPath.value ||
+    // ?. 防止 path 未定义
+    data.path?.toLowerCase().includes(filterTextPath.value.toLowerCase()));
+
+// 通过 watch 监听 filterTextName 或 filterTextPath 发生变化
+// filter 是 Element Plus <el-tree> 组件提供的一个内置方法，filter 方法触发，<el-tree> 会对每个节点调用 filterNode
+// apiTree.value是对树形组件的引用实例，
+watch([filterTextName, filterTextPath], () => apiTree.value.filter());
 </script>
 
 <style scoped>
@@ -152,7 +145,6 @@ const apisButt = () => {
   justify-content: space-between; /* 两端对齐：label 左，path 右 */
   width: 100%; /* 确保占满节点宽度 */
 }
-
 .node-path {
   color: #999; /* 可选：让 path 显示为灰色，区分 label */
   max-width: 200px; /* 限制 path 的最大宽度 */
