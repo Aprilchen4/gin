@@ -157,7 +157,7 @@
       </el-form-item>
     </el-form>
   </el-drawer>
-  <!-- 拷贝 -->
+  <!-- 拷贝抽屉 -->
   <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
     <template #header>
       <div
@@ -177,34 +177,15 @@
     <el-form :model="form" label-width="80px" :rules="rules">
       <el-form-item prop="parentId">
         <template #label><span>父级角色</span></template>
-        <el-select
+        <el-cascader
+          style="width: 580px"
+          :options="authorityOption"
+          :props="cascaderProps"
+          :show-all-levels="false"
           placeholder="根角色(严格模式下为当前用户角色)"
           v-model="form.parentId"
-        >
-          <el-option value="根角色(严格模式下为当前用户角色)">
-            <el-radio
-              v-model="form.parentId"
-              value="根角色(严格模式下为当前用户角色)"
-              >根角色(严格模式下为当前用户角色)</el-radio
-            >
-          </el-option>
-          <el-select placeholder="">
-            <!-- <template #prefix> 用于添加一个带有 普通用户 标签的单选框 el-radio： -->
-            <template #prefix>
-              <el-radio style="margin-left: 8px" value="普通用户"
-                >普通用户</el-radio
-              >
-            </template>
-            <el-option disabled value="普通用户子角色">
-              <el-radio value="普通用户子角色">普通用户子角色</el-radio>
-            </el-option>
-          </el-select>
-          <el-option value="测试角色">
-            <el-radio v-model="form.authorityId" value="测试角色"
-              >测试角色</el-radio
-            >
-          </el-option>
-        </el-select>
+          clearable
+        />
       </el-form-item>
       <el-form-item prop="authorityId">
         <template #label>角色ID</template>
@@ -238,7 +219,7 @@
         <template #label><span>父级角色</span></template>
         <el-cascader
           style="width: 580px"
-          :options="authorityList"
+          :options="authorityOption"
           :props="cascaderProps"
           :show-all-levels="false"
           placeholder="根角色(严格模式下为当前用户角色)"
@@ -278,9 +259,20 @@ import tabResource from "@/view/superAdmin/authority/components/tabResource.vue"
 import { useStore } from "vuex";
 
 const authorityList = ref([]); // 定义为全局变量，方便读取
+const authorityOption = ref([]);
 getAuthority().then((a) => {
   authorityList.value = a.data;
-  console.log("角色数据", authorityList);
+  console.log("角色数据", authorityList.value);
+
+  // 在 authorityList 的基础上添加新数据
+  authorityOption.value = [
+    {
+      authorityId: 0,
+      authorityName: "根角色(严格模式下为当前用户角色)",
+    },
+    ...authorityList.value, // 展开原始数据
+  ];
+  console.log("authorityOption", authorityOption.value);
 });
 
 // 弹窗
@@ -307,7 +299,7 @@ const cascaderProps = {
   value: "authorityId", // 对应数据的 ID 字段
   label: "authorityName", // 对应数据的 name 字段
   children: "children", // 对应数据的 children 字段
-  checkStrictly: true, // 关键设置：可以单独选择任意节点
+  checkStrictly: true, // 关键设置：可以单独选择任意节点，而不强制选中其子节点，注意这里格式前面有个圆形按钮
 };
 
 const handleClickAdd = () => {
@@ -337,7 +329,9 @@ const handleClickAddSub = (row) => {
 
 const handleClickCopy = async (row) => {
   drawerCopy.value = true;
+  // 旧的ID
   oldAuthorityId.value = Number(row.authorityId);
+  // 填充表单
   form.value.authorityId = row.authorityId;
   form.value.authorityName = row.authorityName;
   form.value.parentId = row.parentId;
