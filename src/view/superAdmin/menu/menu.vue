@@ -86,18 +86,16 @@
         "
       >
         <span>{{ dialogTitle }}</span>
-        <div>
+        <div style="display: flex; gap: 0px">
           <el-button @click="drawerChange = false">取消</el-button>
-          <div v-if="operationType === 'addRoot' || operationType === 'addSub'">
-            <el-button type="primary" @click="handleSubmitAdd">
-              确定
-            </el-button>
-          </div>
-          <div v-else-if="operationType === 'edit'">
-            <el-button type="primary" @click="handleSubmitEdit">
-              确定
-            </el-button>
-          </div>
+          <template
+            v-if="operationType === 'addRoot' || operationType === 'addSub'"
+          >
+            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
+          </template>
+          <template v-else-if="operationType === 'edit'">
+            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
+          </template>
         </div>
       </div>
     </template>
@@ -551,12 +549,12 @@ const operateClickAddSub = (row) => {
 
 // 操作-编辑
 const operateClickEdit = async (row) => {
+  drawerChange.value = true; // 首先打开抽屉
   operationType.value = "edit";
   const id = row.ID;
   const res = await getBaseMenuById({ id });
   form.value = res.data.menu;
   isEdit.value = true;
-  drawerChange.value = true;
   dialogTitle.value = "编辑菜单";
 };
 
