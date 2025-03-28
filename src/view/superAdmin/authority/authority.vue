@@ -217,6 +217,8 @@
     <el-form :model="form" label-width="80px" :rules="rules">
       <el-form-item prop="parentId">
         <template #label><span>父级角色</span></template>
+        <!-- 级联选择器 (el-cascader) 会自动将 v-model 绑定的值转换为数组
+          这是因为它需要记录完整的路径选择（从根节点到当前选中节点） -->
         <el-cascader
           style="width: 580px"
           :options="authorityOption"
@@ -285,6 +287,7 @@ const store = useStore();
 const parentDisplay = ref("");
 const oldAuthorityId = ref(0);
 
+// 即使你初始化 form.parentId 为字符串，el-cascader 也会强制将其转换为数组。
 const form = ref({ authorityId: "", authorityName: "", parentId: "" });
 
 // 表格规则
@@ -344,7 +347,8 @@ const handleSubmitCopy = async () => {
     authority: {
       authorityId: form.value.authorityId,
       authorityName: form.value.authorityName,
-      parentId: form.value.parentId,
+      //级联选择器 (el-cascader) 会自动将 v-model 绑定的值转换为数组
+      parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
     },
     oldAuthorityId: oldAuthorityId.value,
   });
@@ -373,7 +377,7 @@ const handleSubmitEdit = async () => {
   await updateAuthority({
     authorityId: form.value.authorityId,
     authorityName: form.value.authorityName,
-    parentId: form.value.parentId,
+    parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
   });
   const { data } = await getAuthority();
   authorityList.value = data;
