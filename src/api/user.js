@@ -183,3 +183,11 @@ export const deleteBaseMenu = (data) => {
   })
 }
 
+// api管理相关请求
+export const getApiList = () => {
+  return request({
+    url: '/api/getApiList',
+    method: 'POST',
+  })
+}
+

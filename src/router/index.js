@@ -35,7 +35,7 @@ const routes = [
       {
         path: 'admin/authority',
         name: 'authority',
-        component: () => import('@/view/superAdmin/authority/authority.vue'),
+        component: () => import('@/view/superAdmin/authority/index.vue'),
         // component: () => {
         //   const componentName = store.state.rComponent; // 从 Vuex 获取组件名称
         //   return import(`@/${componentName}`);
@@ -44,27 +44,27 @@ const routes = [
       {
         path: 'admin/menu',
         name: 'menu',
-        component: () => import('@/view/superAdmin/menu/menu.vue'),
+        component: () => import('@/view/superAdmin/menu/index.vue'),
       },
       {
         path: 'admin/api',
         name: 'api',
-        component: () => import('@/view/superAdmin/api/api.vue'),
+        component: () => import('@/view/superAdmin/api/index.vue'),
       },
       {
         path: 'admin/user',
         name: 'user',
-        component: () => import('@/view/superAdmin/user/user.vue'),
+        component: () => import('@/view/superAdmin/user/index.vue'),
       },
       {
         path: 'admin/dictionary',
         name: 'dictionary',
-        component: () => import('@/view/superAdmin/dictionary/sysDictionary.vue'),
+        component: () => import('@/view/superAdmin/dictionary/index.vue'),
       },
       {
         path: 'admin/operation',
         name: 'operation',
-        component: () => import('@/view/superAdmin/operation/sysOperationRecord.vue'),
+        component: () => import('@/view/superAdmin/operation/index.vue'),
       },
     ]
   },

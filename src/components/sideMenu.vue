@@ -183,7 +183,7 @@ const breadMake = (tree, targetId) => {
 
 // 路由函数
 const routeMake = (tree, targetId) => {
-  // 查找节点及其父节点
+  // 查找节点及其父节点,return的数据也是节点全部信息，不是路径
   function findNodeRoute(tree, targetId, path = []) {
     for (const node of tree) {
       const route = [...path, node];
@@ -210,7 +210,7 @@ const routeMake = (tree, targetId) => {
         routeComponent: null,
       };
     }
-    // 主逻辑
+    // 主逻辑，每个节点的path属性用/连接
     const routePath = route.map((node) => node.path).join("/");
     const routeName = route[route.length - 1].name;
     const routeComponent = route[route.length - 1].component;
