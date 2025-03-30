@@ -129,7 +129,7 @@
       </el-form-item>
     </el-form>
   </el-drawer>
-
+  <!-- 同步Api抽屉 -->
   <el-drawer v-model="drawerAsync" :with-header="true" size="700px">
     <template #header>
       <div style="display: flex; justify-content: space-between; align-items: center">
@@ -162,9 +162,11 @@
     >
       <el-table-column prop="path" label="API路径" />
       <el-table-column prop="apiGroup" label="API分组">
-        <el-select v-model="searchInfo.apiGroup" clearable placeholder="请选择">
-          <el-option v-for="item in apiGroupOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
+        <template #default="{ row }">
+          <el-select v-model="row.apiGroup" clearable placeholder="请选择">
+            <el-option v-for="item in apiGroupOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </template>
       </el-table-column>
       <el-table-column prop="description" label="API简介">
         <template #default="{ row }">
@@ -225,7 +227,7 @@
       </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
-          <el-button link type="primary" size="small" @click="operateIgnore(scope.row)"> 取掉忽略</el-button>
+          <el-button link type="primary" size="small" @click="operateIgnore(scope.row)">取消忽略</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -238,8 +240,22 @@ import exportExcel from "@/components/apiExportImport/exportExcel.vue";
 import importExcel from "@/components/apiExportImport/importExcel.vue";
 import warningTip from "@/components/WarningTip.vue";
 
-import { getApiList, getApiGroups, syncApi } from "@/api/user";
+import {
+  getApiList,
+  getApiGroups,
+  syncApi,
+  llmAuto,
+  createApi,
+  ignoreApi,
+  enterSyncApi,
+  deleteApi,
+  getApiById,
+  updateApi,
+  freshCasbin,
+  deleteApisByIds,
+} from "@/api/user";
 import { ref, reactive } from "vue";
+import { ElMessageBox, ElMessage } from "element-plus";
 
 //删除按钮勾选响应
 const apis = ref([]);
@@ -247,6 +263,7 @@ const apis = ref([]);
 const apiGroupOptions = ref([]);
 const dialogTitle = ref("");
 const operationType = ref("");
+const selectedIds = ref([]);
 
 const page = ref(1);
 const pageSize = ref(10);
@@ -258,6 +275,7 @@ const drawerAsync = ref(false);
 const deleteApis = ref([]);
 const ignoreApis = ref([]);
 const newApis = ref([]);
+const pathArray = ref([]);
 
 const searchInfo = reactive({
   value: [], // 统一使用value作为表格数据
@@ -300,17 +318,25 @@ getApiGroups().then((res) => {
   }));
 });
 
-// 其他方法
-const onSubmit = () => {
-  // 查询逻辑
+// 查询逻辑
+const onSubmit = async () => {
+  await getApiList({
+    page: page.value,
+    pageSize: pageSize.value,
+    path: searchInfo.path,
+    description: searchInfo.description,
+    apiGroup: searchInfo.apiGroup,
+    method: searchInfo.method,
+  });
 };
 
-const onReset = () => {
-  // 重置逻辑
+// 重置逻辑
+const onReset = async () => {
+  await fetchTableData();
 };
 
-// 新增抽屉
-const addApi = () => {
+// 新增按钮抽屉
+const addApi = async () => {
   drawerChange.value = true;
   dialogTitle.value = "新增Api";
   operationType.value = "addApi";
@@ -321,7 +347,68 @@ const addApi = () => {
   searchInfo.method = "";
 };
 
-// 同步抽屉，这里syncApi是GEt请求，方法不对，会提示请求资源不存在
+// 新增按钮确认提交
+const handleSubmitAdd = async () => {
+  await createApi({
+    path: searchInfo.path,
+    description: searchInfo.description,
+    apiGroup: searchInfo.apiGroup,
+    method: searchInfo.method,
+  });
+  await fetchTableData();
+  await fetchApiGroups();
+};
+
+// 删除勾选 批量操作
+const handleSelectionChange = (val) => {
+  // 选中的数组元素
+  apis.value = val;
+  // 从勾选的行数据中提取所有 ID 字段，组成一个新数组，
+  selectedIds.value = val.map((item) => item.ID); // 提取所有ID
+};
+
+// 中间删除逻辑
+const onDelete = async () => {
+  try {
+    await ElMessageBox.confirm("确定删除吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await deleteApisByIds({ ids: selectedIds.value });
+    await fetchTableData();
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消删除!",
+        type: "info",
+      });
+    }
+  }
+};
+
+// 刷新缓存逻辑
+const onFresh = async () => {
+  try {
+    await ElMessageBox.confirm("确定要刷新缓存吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await freshCasbin();
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消删除!",
+        type: "info",
+      });
+    }
+  }
+};
+
+// 同步按钮抽屉，这里syncApi是GEt请求，方法不对，会提示请求资源不存在
 // 注意这里数组赋值，不是data.deleteApis.value
 const onSync = async () => {
   drawerAsync.value = true;
@@ -329,11 +416,15 @@ const onSync = async () => {
   deleteApis.value = data.deleteApis;
   ignoreApis.value = data.ignoreApis;
   newApis.value = data.newApis;
+  // 获取ai自动填充请求函数的参数
+  // 从newApis.value中提取path字段，组成一个新数组
+  pathArray.value = newApis.value.map((item) => item.path);
 };
 
-// 编辑抽屉
-const operateClickEdit = (row) => {
+// 编辑按钮抽屉
+const operateClickEdit = async (row) => {
   drawerChange.value = true;
+  await getApiById({ id: row.ID });
   dialogTitle.value = "编辑Api";
   operationType.value = "editApi";
   // searchInfo.value = row.value; // 不能这么写，直接赋值属性
@@ -343,21 +434,118 @@ const operateClickEdit = (row) => {
   searchInfo.description = row.description;
 };
 
-// 删除勾选 批量操作
-const handleSelectionChange = (val) => {
-  apis.value = val;
+// 编辑按钮确定提交,注意这里的表单绑定的是searchInfo，和row区别
+const handleSubmitEdit = async () => {
+  await updateApi({
+    ID: searchInfo.ID,
+    path: searchInfo.path,
+    method: searchInfo.method,
+    apiGroup: searchInfo.apiGroup,
+    description: searchInfo.description,
+    CreatedAt: "2024-07-31T11:25:31.486+08:00",
+    UpdatedAt: "2024-07-31T11:25:31.486+08:00",
+  });
+  await fetchTableData();
+  ElMessage.success("编辑成功");
 };
 
-const onDelete = () => {
-  // 删除逻辑
+// 表格删除逻辑
+const deleteApiFunc = async (row) => {
+  try {
+    await ElMessageBox.confirm("此操作将永久删除所有角色下该api, 是否继续?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await deleteApi({
+      ID: row.ID,
+      apiGroup: row.apiGroup,
+      description: row.description,
+      method: row.method,
+      path: row.path,
+    });
+    await fetchTableData();
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消删除!",
+        type: "info",
+      });
+    }
+  }
 };
 
-const onFresh = () => {
-  // 刷新缓存逻辑
+//  同步抽屉确定提交
+const handleSubmitAsync = async () => {
+  if (!newApis.value.length === 0) {
+    ElMessage.error(`存在API未分组或未填写描述`);
+    return;
+  }
+  await enterSyncApi({
+    deleteApis: deleteApis.value,
+    ignoreApis: ignoreApis.value,
+    newApis: newApis.value,
+  });
+  await fetchTableData();
+  ElMessage.success("操作成功");
 };
 
-const deleteApiFunc = () => {
-  // 删除逻辑
+const apiAutoCompletion = async () => {
+  await llmAuto({
+    command: "apiCompletion",
+    mode: "butler",
+    data: pathArray.value,
+  });
+  ElMessage.error(`请先前往插件市场个人中心获取AiPath并填入config.yaml中，再进行同步`);
+};
+
+// 单条新增
+const SingleAdd = async (row) => {
+  if (!row.apiGroup) {
+    ElMessage.error(`请先填写api分组`);
+    return;
+  }
+  // 2. 检查 description 是否为空
+  if (!row.description) {
+    ElMessage.error("请先填写 API 简介");
+    return;
+  }
+  try {
+    await createApi({
+      ID: 0,
+      apiGroup: row.apiGroup,
+      description: row.description,
+      method: row.method,
+      path: row.path,
+    });
+    await fetchTableData();
+    await fetchApiGroups();
+    ElMessage.success("添加成功");
+    // 可以在这里刷新数据或关闭抽屉
+  } catch (error) {
+    ElMessage.error("添加失败：" + error.message);
+  }
+};
+
+// 忽略
+const handleIgnore = async (row) => {
+  await ignoreApi({
+    flag: true,
+    method: row.method,
+    path: row.path,
+  });
+  ElMessage.success("操作成功");
+};
+
+// 取消忽略
+const operateIgnore = async (row) => {
+  await ignoreApi({
+    flag: false,
+    method: row.method,
+    path: row.path,
+  });
+  ElMessage.success("操作成功");
 };
 
 // 每页条数变化时触发
@@ -387,6 +575,19 @@ const fetchTableData = async () => {
     total.value = res.data.total; // 更新总数
   } catch (error) {
     console.error("Failed to fetch table data:", error);
+  }
+};
+
+const fetchApiGroups = async () => {
+  try {
+    const res = await getApiGroups(); // 等待请求完成
+    apiGroupOptions.value = res.data.groups.map((item) => ({
+      label: item,
+      value: item,
+    }));
+  } catch (error) {
+    console.error("获取API分组失败:", error);
+    // 可以在这里显示错误提示，如 ElMessage.error("获取API分组失败");
   }
 };
 </script>
