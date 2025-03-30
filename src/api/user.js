@@ -184,10 +184,20 @@ export const deleteBaseMenu = (data) => {
 }
 
 // api管理相关请求
-export const getApiList = () => {
+export const getApiList = (data) => {
   return request({
     url: '/api/getApiList',
     method: 'POST',
+    data
   })
 }
+
+export const getApiGroups = () => {
+  return request({
+    url: '/api/getApiGroups',
+    method: 'GET',
+  })
+}
+
+
 

@@ -1,5 +1,9 @@
 {
   "name": "gin",
+  "prettier": {
+    "printWidth": 120,
+    "singleLineTernary": true
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
