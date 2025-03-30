@@ -30,7 +30,7 @@
   </div>
   <div style="margin-top: 20px">
     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 20px">
-      <el-button type="primary" icon="plus" @click="openDialog('addApi')"> 新增 </el-button>
+      <el-button type="primary" icon="plus" @click="addApi"> 新增 </el-button>
       <el-button icon="delete" @click="onDelete" :disabled="!apis.length"> 删除 </el-button>
       <el-button icon="Refresh" @click="onFresh"> 刷新缓存 </el-button>
       <el-button icon="Compass" @click="onSync"> 同步API </el-button>
@@ -38,7 +38,7 @@
       <exportExcel template-id="api" :limit="9999" />
       <importExcel template-id="api" @on-success="getTableData" />
     </div>
-
+    <!-- 注意这里：表格绑定数组 ，prop对应数组元素===对象的属性-->
     <el-table
       :data="searchInfo.value"
       @selection-change="handleSelectionChange"
@@ -57,7 +57,7 @@
       <el-table-column prop="method" label="请求" sortable />
       <el-table-column label="操作">
         <template #default="scope">
-          <el-button link type="primary" size="small" @click="operateClickAddSub(scope.row)"
+          <el-button link type="primary" size="small" @click="operateClickEdit(scope.row)"
             ><el-icon><edit /></el-icon>编辑
           </el-button>
           <el-button link type="primary" size="small" @click="deleteApiFunc(scope.row)">
@@ -83,12 +83,71 @@
     >
     </el-pagination>
   </div>
+
+  <el-drawer v-model="drawerChange" :with-header="true" size="700px">
+    <template #header>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span>{{ dialogTitle }}</span>
+        <div>
+          <el-button @click="drawerChange = false">取消</el-button>
+          <template v-if="operationType === 'addApi'">
+            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
+          </template>
+          <template v-else-if="operationType === 'editApi'">
+            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
+          </template>
+        </div>
+      </div>
+    </template>
+    <warningTip title="新增API，需要在角色管理内配置权限才可使用" style="margin-bottom: 10px" />
+    <!-- 注意这里，表单绑定对象 -->
+    <el-form :model="searchInfo" label-width="80px" :rules="rules">
+      <el-form-item prop="path">
+        <template #label>路径</template>
+        <el-input v-model="searchInfo.path" />
+      </el-form-item>
+      <el-form-item prop="method">
+        <template #label>请求</template>
+        <el-select v-model="searchInfo.method" clearable placeholder="请选择">
+          <el-option
+            v-for="item in methodOptions"
+            :key="item.value"
+            :label="`${item.label}(${item.value})`"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="apiGroup">
+        <template #label>api分组</template>
+        <el-select v-model="searchInfo.apiGroup" clearable placeholder="请选择或新增">
+          <el-option v-for="item in apiGroupOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="description">
+        <template #label>api简介</template>
+        <el-input v-model="searchInfo.description" placeholder="请输入角色名称" />
+      </el-form-item>
+    </el-form>
+  </el-drawer>
+
+  <el-drawer v-model="drawerAsync" :with-header="true" size="700px">
+    <template #header>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span>同步路由</span>
+        <div>
+          <el-button @click="drawerAsync = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmitAsync">确定</el-button>
+        </div>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <script setup>
 import exportTemplate from "@/components/apiExportImport/exportTemplate.vue";
 import exportExcel from "@/components/apiExportImport/exportExcel.vue";
 import importExcel from "@/components/apiExportImport/importExcel.vue";
+import warningTip from "@/components/WarningTip.vue";
 
 import { getApiList, getApiGroups } from "@/api/user";
 import { ref, reactive } from "vue";
@@ -97,10 +156,15 @@ import { ref, reactive } from "vue";
 const apis = ref([]);
 //抬头选择器
 const apiGroupOptions = ref([]);
+const dialogTitle = ref("");
+const operationType = ref("");
 
 const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
+
+const drawerChange = ref(false);
+const drawerAsync = ref(false);
 
 const searchInfo = reactive({
   value: [], // 统一使用value作为表格数据
@@ -118,12 +182,12 @@ const methodOptions = ref([
 ]);
 
 // 用于抽屉部分
-// const rules = ref({
-//   path: [{ required: true, message: "请输入api路径", trigger: "blur" }],
-//   apiGroup: [{ required: true, message: "请输入组名称", trigger: "blur" }],
-//   method: [{ required: true, message: "请选择请求方式", trigger: "blur" }],
-//   description: [{ required: true, message: "请输入api介绍", trigger: "blur" }],
-// });
+const rules = ref({
+  path: [{ required: true, message: "请输入api路径", trigger: "blur" }],
+  apiGroup: [{ required: true, message: "请输入组名称", trigger: "blur" }],
+  method: [{ required: true, message: "请选择请求方式", trigger: "blur" }],
+  description: [{ required: true, message: "请输入api介绍", trigger: "blur" }],
+});
 
 getApiList({ page: 1, pageSize: 10 }).then((res) => {
   searchInfo.value = res.data.list;
@@ -146,6 +210,35 @@ const onReset = () => {
   // 重置逻辑
 };
 
+// 新增抽屉
+const addApi = () => {
+  drawerChange.value = true;
+  dialogTitle.value = "新增Api";
+  operationType.value = "addApi";
+  // 重置 searchInfo 的表单字段，而不是 searchInfo.value
+  searchInfo.path = "";
+  searchInfo.description = "";
+  searchInfo.apiGroup = "";
+  searchInfo.method = "";
+};
+
+// 同步抽屉
+const onSync = () => {
+  drawerAsync.value = true;
+};
+
+// 编辑抽屉
+const operateClickEdit = (row) => {
+  drawerChange.value = true;
+  dialogTitle.value = "编辑Api";
+  operationType.value = "editApi";
+  // searchInfo.value = row.value; // 不能这么写，直接赋值属性
+  searchInfo.path = row.path;
+  searchInfo.apiGroup = row.apiGroup;
+  searchInfo.method = row.method;
+  searchInfo.description = row.description;
+};
+
 // 删除勾选 批量操作
 const handleSelectionChange = (val) => {
   apis.value = val;
@@ -157,14 +250,6 @@ const onDelete = () => {
 
 const onFresh = () => {
   // 刷新缓存逻辑
-};
-
-const onSync = () => {
-  // 同步API逻辑
-};
-
-const operateClickAddSub = () => {
-  // 编辑逻辑
 };
 
 const deleteApiFunc = () => {
