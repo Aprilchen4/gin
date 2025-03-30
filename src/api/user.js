@@ -199,5 +199,11 @@ export const getApiGroups = () => {
   })
 }
 
+export const syncApi = () => {
+  return request({
+    url: '/api/syncApi',
+    method: 'GET',
+  })
+}
 
 

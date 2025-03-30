@@ -1,9 +1,7 @@
 <template>
   <div>
     <!-- <el-drawer> 组件和 <el-button> 之间的关系是通过 v-model 指令来实现的。 -->
-    <el-button type="primary" @click="handleClickRootAdd">
-      + 新增根菜单
-    </el-button>
+    <el-button type="primary" @click="handleClickRootAdd"> + 新增根菜单 </el-button>
   </div>
   <!-- 表格 -->
   <div>
@@ -22,18 +20,8 @@
       <el-table-column prop="ID" label="ID" min-width="100" />
       <el-table-column prop="meta.title" label="展示名称" min-width="120" />
       <el-table-column prop="meta.icon" label="图标" min-width="80" />
-      <el-table-column
-        prop="name"
-        show-overflow-tooltip
-        label="路由Name"
-        min-width="160"
-      />
-      <el-table-column
-        prop="path"
-        show-overflow-tooltip
-        label="路由Path"
-        min-width="160"
-      />
+      <el-table-column prop="name" show-overflow-tooltip label="路由Name" min-width="160" />
+      <el-table-column prop="path" show-overflow-tooltip label="路由Path" min-width="160" />
       <el-table-column prop="hidden" label="是否隐藏" min-width="100">
         <template #default="scope">
           <span>{{ scope.row.hidden ? "隐藏" : "显示" }}</span>
@@ -45,30 +33,13 @@
       <el-table-column fixed="right" label="操作" :width="'auto'">
         <template #default="scope">
           <!-- 添加子菜单 -->
-          <el-button
-            link
-            type="primary"
-            size="small"
-            @click="operateClickAddSub(scope.row)"
-          >
-            + 添加子菜单
-          </el-button>
+          <el-button link type="primary" size="small" @click="operateClickAddSub(scope.row)"> + 添加子菜单 </el-button>
           <!-- 编辑 -->
-          <el-button
-            link
-            type="primary"
-            size="small"
-            @click="operateClickEdit(scope.row)"
-          >
+          <el-button link type="primary" size="small" @click="operateClickEdit(scope.row)">
             <el-icon><edit /></el-icon>编辑
           </el-button>
           <!-- 删除 -->
-          <el-button
-            link
-            type="primary"
-            size="small"
-            @click="operateClickDelete(scope.row)"
-          >
+          <el-button link type="primary" size="small" @click="operateClickDelete(scope.row)">
             <el-icon><delete /></el-icon>删除
           </el-button>
         </template>
@@ -78,19 +49,11 @@
   </div>
   <el-drawer v-model="drawerChange" :with-header="true" size="700px">
     <template #header>
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        "
-      >
+      <div style="display: flex; justify-content: space-between; align-items: center">
         <span>{{ dialogTitle }}</span>
         <div style="display: flex; gap: 0px">
           <el-button @click="drawerChange = false">取消</el-button>
-          <template
-            v-if="operationType === 'addRoot' || operationType === 'addSub'"
-          >
+          <template v-if="operationType === 'addRoot' || operationType === 'addSub'">
             <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
           </template>
           <template v-else-if="operationType === 'edit'">
@@ -109,9 +72,7 @@
               <div>
                 <template v-if="mode === '快捷选择'">
                   <MenuCascade />
-                  <el-button @click="switchMode('手动输入')">
-                    手动输入
-                  </el-button>
+                  <el-button @click="switchMode('手动输入')"> 手动输入 </el-button>
                 </template>
                 <template v-else>
                   <el-input
@@ -119,15 +80,11 @@
                     placeholder="页面：view/xxx/xx.vue 插件：plugin/xxx/xx.vue"
                     style="width: 320px"
                   />
-                  <el-button @click="switchMode('快捷选择')">
-                    快捷选择
-                  </el-button>
+                  <el-button @click="switchMode('快捷选择')"> 快捷选择 </el-button>
                 </template>
               </div>
               <div>
-                <span style="font-size: xx-small">
-                  如果菜单包含子菜单，请创建router-view二级路由页面或者
-                </span>
+                <span style="font-size: xx-small"> 如果菜单包含子菜单，请创建router-view二级路由页面或者 </span>
                 <el-button>点我设置</el-button>
               </div>
             </div>
@@ -140,11 +97,7 @@
               <div v-if="operationType === 'edit'" style="width: 200px">
                 <el-input v-model="form.meta.title" />
               </div>
-              <div
-                v-else-if="
-                  operationType === 'addRoot' || operationType === 'addSub'
-                "
-              >
+              <div v-else-if="operationType === 'addRoot' || operationType === 'addSub'">
                 <el-input v-model="form.meta.title" />
               </div>
             </div>
@@ -165,27 +118,14 @@
             <div class="custom-layout">
               <div>
                 <span style="color: red">*</span> 路由Path
-                <el-checkbox
-                  style="margin-left: 12px; height: auto"
-                  v-model="isAddParams"
-                >
-                  添加参数
-                </el-checkbox>
+                <el-checkbox style="margin-left: 12px; height: auto" v-model="isAddParams"> 添加参数 </el-checkbox>
               </div>
               <div>
                 <div v-if="operationType === 'edit'">
                   <el-input v-model="form.path" :disabled="!isAddParams" />
                 </div>
-                <div
-                  v-else-if="
-                    operationType === 'addRoot' || operationType === 'addSub'
-                  "
-                >
-                  <el-input
-                    v-model="form.path"
-                    :disabled="!isAddParams"
-                    placeholder="建议只在后方拼接参数"
-                  />
+                <div v-else-if="operationType === 'addRoot' || operationType === 'addSub'">
+                  <el-input v-model="form.path" :disabled="!isAddParams" placeholder="建议只在后方拼接参数" />
                 </div>
               </div>
             </div>
@@ -194,11 +134,7 @@
         <el-col span="8" style="margin-left: 20px">
           <el-form-item label="是否隐藏" prop="hidden">
             <div class="custom-layout">
-              <el-select
-                v-model="form.hidden"
-                style="width: 200px"
-                placeholder="否"
-              >
+              <el-select v-model="form.hidden" style="width: 200px" placeholder="否">
                 <el-option :value="false" label="否" />
                 <el-option :value="true" label="是" />
               </el-select>
@@ -215,10 +151,7 @@
             <div v-else-if="operationType === 'addSub'" style="width: 200px">
               <el-input v-model="subDisplay" disabled />
             </div>
-            <div
-              v-else-if="operationType === 'edit' && form.parentId === 0"
-              style="width: 200px"
-            >
+            <div v-else-if="operationType === 'edit' && form.parentId === 0" style="width: 200px">
               <el-input v-model="rootDisplay" />
             </div>
             <el-cascader
@@ -288,11 +221,7 @@
             <div class="custom-layout">
               <div>
                 <span> 是否为基础页面 </span>
-                <el-tooltip
-                  content="此项选择为是，则不会展示左侧菜单以及顶部信息。"
-                  placement="top"
-                  effect="light"
-                >
+                <el-tooltip content="此项选择为是，则不会展示左侧菜单以及顶部信息。" placement="top" effect="light">
                   <el-icon><QuestionFilled /></el-icon>
                 </el-tooltip>
               </div>
@@ -307,18 +236,11 @@
     </el-form>
     <!-- 写在表单外面 -->
     <div>
-      <el-button type="primary" icon="edit" @click="addParameter(form)">
-        新增菜单参数
-      </el-button>
+      <el-button type="primary" icon="edit" @click="addParameter(form)"> 新增菜单参数 </el-button>
       <!-- 表单行，新增一行的逻辑是 form.parameters新增数据，牛-->
       <div>
         <el-table :data="form.parameters">
-          <el-table-column
-            align="left"
-            prop="type"
-            label="参数类型"
-            width="180"
-          >
+          <el-table-column align="left" prop="type" label="参数类型" width="180">
             <template #default="scope">
               <el-select v-model="scope.row.type" placeholder="请选择">
                 <el-option value="query" label="query" />
@@ -341,11 +263,7 @@
           <el-table-column align="left">
             <template #default="scope">
               <div>
-                <el-button
-                  type="danger"
-                  icon="delete"
-                  @click="deleteParameter(form.parameters, scope.$index)"
-                >
+                <el-button type="danger" icon="delete" @click="deleteParameter(form.parameters, scope.$index)">
                   删除
                 </el-button>
               </div>
@@ -356,9 +274,7 @@
     </div>
     <div>
       <div>
-        <el-button type="primary" icon="edit" @click="addBtn(form)">
-          新增可控按钮
-        </el-button>
+        <el-button type="primary" icon="edit" @click="addBtn(form)"> 新增可控按钮 </el-button>
         <a
           placement="top"
           effect="light"
@@ -369,12 +285,7 @@
         </a>
         <div>
           <el-table :data="form.menuBtn">
-            <el-table-column
-              align="left"
-              prop="name"
-              label="按钮名称"
-              width="180"
-            >
+            <el-table-column align="left" prop="name" label="按钮名称" width="180">
               <template #default="scope">
                 <div>
                   <el-input v-model="scope.row.name" />
@@ -391,11 +302,7 @@
             <el-table-column align="left">
               <template #default="scope">
                 <div>
-                  <el-button
-                    type="danger"
-                    icon="delete"
-                    @click="deleteBtn(form.menuBtn, scope.$index)"
-                  >
+                  <el-button type="danger" icon="delete" @click="deleteBtn(form.menuBtn, scope.$index)">
                     删除
                   </el-button>
                 </div>
@@ -409,13 +316,7 @@
 </template>
 
 <script setup>
-import {
-  getMenuList,
-  getBaseMenuById,
-  addBaseMenu,
-  updateBaseMenu,
-  deleteBaseMenu,
-} from "@/api/user";
+import { getMenuList, getBaseMenuById, addBaseMenu, updateBaseMenu, deleteBaseMenu } from "@/api/user";
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import WarningTip from "@/components/WarningTip.vue";
@@ -475,9 +376,7 @@ const rules = reactive({
   name: [{ required: true, message: "请输入路由name", trigger: "blur" }],
   path: [{ required: true, message: "请输入路由path", trigger: "blur" }],
   component: [{ required: true, message: "请输入文件路径", trigger: "blur" }],
-  "meta.title": [
-    { required: true, message: "请输入菜单展示名称", trigger: "blur" },
-  ],
+  "meta.title": [{ required: true, message: "请输入菜单展示名称", trigger: "blur" }],
 });
 
 // 新增根菜单按钮

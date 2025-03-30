@@ -140,6 +140,95 @@
         </div>
       </div>
     </template>
+    <warningTip
+      title="同步API，不输入路由分组将不会被自动同步，如果api不需要参与鉴权，可以按忽略按钮进行忽略。"
+      style="margin-bottom: 10px"
+    />
+    <div style="display: flex; align-items: center; gap: 8px">
+      <div style="font-weight: 500">新增路由</div>
+      <span style="font-size: 12px; color: #666">存在于当前路由中，但是不存在于api表</span>
+      <el-button type="primary" size="small" @click="apiAutoCompletion">自动填充</el-button>
+    </div>
+    <!-- 同步Api抽屉表格 ，绑定数组，而不是newApis.value-->
+    <el-table
+      :data="newApis"
+      style="margin-top: 10px"
+      :header-row-style="{
+        backgroundColor: '#f5f7fa',
+        color: '#000',
+        fontSize: '13px',
+        fontWeight: 'bold',
+      }"
+    >
+      <el-table-column prop="path" label="API路径" />
+      <el-table-column prop="apiGroup" label="API分组">
+        <el-select v-model="searchInfo.apiGroup" clearable placeholder="请选择">
+          <el-option v-for="item in apiGroupOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-table-column>
+      <el-table-column prop="description" label="API简介">
+        <template #default="{ row }">
+          <el-input v-model="row.description" autocomplete="off" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="method" label="请求">
+        <template #default="{ row }"> {{ row.method }}/{{ getMethodLabel(row.method) }} </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template #default="scope">
+          <el-button link type="primary" size="small" @click="SingleAdd(scope.row)"> 单条新增 </el-button>
+          <el-button link type="primary" size="small" @click="handleIgnore(scope.row)"> 忽略 </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px">
+      <div style="font-weight: 500">已删除路由</div>
+      <span style="font-size: 12px; color: #666">已经不存在于当前项目的路由中，确定同步后会自动从apis表删除</span>
+    </div>
+    <!-- 已删除表格 -->
+    <el-table
+      :data="deleteApis"
+      style="margin-top: 10px"
+      :header-row-style="{
+        backgroundColor: '#f5f7fa',
+        color: '#000',
+        fontSize: '13px',
+        fontWeight: 'bold',
+      }"
+    >
+      <el-table-column prop="path" label="API路径" />
+      <el-table-column prop="apiGroup" label="API分组"> </el-table-column>
+      <el-table-column prop="description" label="API简介"> </el-table-column>
+      <el-table-column prop="method" label="请求">
+        <template #default="{ row }"> {{ row.method }}/{{ getMethodLabel(row.method) }} </template>
+      </el-table-column>
+    </el-table>
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px">
+      <div style="font-weight: 500">忽略路由</div>
+      <span style="font-size: 12px; color: #666">忽略路由不参与api同步，常见为不需要进行鉴权行为的路由</span>
+    </div>
+    <el-table
+      :data="ignoreApis"
+      style="margin-top: 10px"
+      :header-row-style="{
+        backgroundColor: '#f5f7fa',
+        color: '#000',
+        fontSize: '13px',
+        fontWeight: 'bold',
+      }"
+    >
+      <el-table-column prop="path" label="API路径" />
+      <el-table-column prop="apiGroup" label="API分组"> </el-table-column>
+      <el-table-column prop="description" label="API简介"> </el-table-column>
+      <el-table-column prop="method" label="请求">
+        <template #default="{ row }"> {{ row.method }}/{{ getMethodLabel(row.method) }} </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template #default="scope">
+          <el-button link type="primary" size="small" @click="operateIgnore(scope.row)"> 取掉忽略</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </el-drawer>
 </template>
 
@@ -149,7 +238,7 @@ import exportExcel from "@/components/apiExportImport/exportExcel.vue";
 import importExcel from "@/components/apiExportImport/importExcel.vue";
 import warningTip from "@/components/WarningTip.vue";
 
-import { getApiList, getApiGroups } from "@/api/user";
+import { getApiList, getApiGroups, syncApi } from "@/api/user";
 import { ref, reactive } from "vue";
 
 //删除按钮勾选响应
@@ -166,6 +255,10 @@ const total = ref(0);
 const drawerChange = ref(false);
 const drawerAsync = ref(false);
 
+const deleteApis = ref([]);
+const ignoreApis = ref([]);
+const newApis = ref([]);
+
 const searchInfo = reactive({
   value: [], // 统一使用value作为表格数据
   path: "",
@@ -180,6 +273,12 @@ const methodOptions = ref([
   { value: "PUT", label: "更新", type: "warning" },
   { value: "DELETE", label: "删除", type: "danger" },
 ]);
+
+// 同步抽屉请求列
+const getMethodLabel = (method) => {
+  const found = methodOptions.value.find((item) => item.value === method);
+  return found ? found.label : method; // 如果找不到，返回原始 method
+};
 
 // 用于抽屉部分
 const rules = ref({
@@ -222,9 +321,14 @@ const addApi = () => {
   searchInfo.method = "";
 };
 
-// 同步抽屉
-const onSync = () => {
+// 同步抽屉，这里syncApi是GEt请求，方法不对，会提示请求资源不存在
+// 注意这里数组赋值，不是data.deleteApis.value
+const onSync = async () => {
   drawerAsync.value = true;
+  const { data } = await syncApi();
+  deleteApis.value = data.deleteApis;
+  ignoreApis.value = data.ignoreApis;
+  newApis.value = data.newApis;
 };
 
 // 编辑抽屉
