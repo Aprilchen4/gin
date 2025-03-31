@@ -285,3 +285,14 @@ export const deleteApisByIds = (data) => {
     data
   })
 }
+
+// 用户管理
+export const getUserList = (data) => {
+  return request({
+    url: '/user/getUserList',
+    method: 'POST',
+    data
+  })
+}
+
+

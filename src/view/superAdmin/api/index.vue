@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 注意这里绑定数据和表格部分不是同一个响应式 -->
     <el-form :inline="true" :model="searchInfo" style="font-size: small" class="search-form">
       <el-form-item label="路径">
         <el-input v-model="searchInfo.path" placeholder="路径" />
@@ -40,7 +41,7 @@
     </div>
     <!-- 注意这里：表格绑定数组 ，prop对应数组元素===对象的属性-->
     <el-table
-      :data="searchInfo.value"
+      :data="tableInfo"
       @selection-change="handleSelectionChange"
       :header-row-style="{
         backgroundColor: '#f5f7fa',
@@ -101,14 +102,14 @@
     </template>
     <warningTip title="新增API，需要在角色管理内配置权限才可使用" style="margin-bottom: 10px" />
     <!-- 注意这里，表单绑定对象 -->
-    <el-form :model="searchInfo" label-width="80px" :rules="rules">
+    <el-form :model="formInfo" label-width="80px" :rules="rules">
       <el-form-item prop="path">
         <template #label>路径</template>
-        <el-input v-model="searchInfo.path" />
+        <el-input v-model="formInfo.path" />
       </el-form-item>
       <el-form-item prop="method">
         <template #label>请求</template>
-        <el-select v-model="searchInfo.method" clearable placeholder="请选择">
+        <el-select v-model="formInfo.method" clearable placeholder="请选择">
           <el-option
             v-for="item in methodOptions"
             :key="item.value"
@@ -119,13 +120,13 @@
       </el-form-item>
       <el-form-item prop="apiGroup">
         <template #label>api分组</template>
-        <el-select v-model="searchInfo.apiGroup" clearable placeholder="请选择或新增">
+        <el-select v-model="formInfo.apiGroup" clearable placeholder="请选择或新增">
           <el-option v-for="item in apiGroupOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item prop="description">
         <template #label>api简介</template>
-        <el-input v-model="searchInfo.description" placeholder="请输入角色名称" />
+        <el-input v-model="formInfo.description" placeholder="请输入角色名称" />
       </el-form-item>
     </el-form>
   </el-drawer>
@@ -278,7 +279,16 @@ const newApis = ref([]);
 const pathArray = ref([]);
 
 const searchInfo = reactive({
-  value: [], // 统一使用value作为表格数据
+  path: "",
+  description: "",
+  apiGroup: "",
+  method: "",
+});
+
+// 注意这里，将表格数据和表单数据分开管理。
+const tableInfo = ref([]);
+const formInfo = reactive({
+  // value: [], // 统一使用value作为表格数据
   path: "",
   description: "",
   apiGroup: "",
@@ -307,7 +317,7 @@ const rules = ref({
 });
 
 getApiList({ page: 1, pageSize: 10 }).then((res) => {
-  searchInfo.value = res.data.list;
+  tableInfo.value = res.data.list;
   total.value = res.data.total;
 });
 
@@ -323,10 +333,10 @@ const onSubmit = async () => {
   await getApiList({
     page: page.value,
     pageSize: pageSize.value,
-    path: searchInfo.path,
-    description: searchInfo.description,
-    apiGroup: searchInfo.apiGroup,
-    method: searchInfo.method,
+    path: formInfo.path,
+    description: formInfo.description,
+    apiGroup: formInfo.apiGroup,
+    method: formInfo.method,
   });
 };
 
@@ -340,20 +350,20 @@ const addApi = async () => {
   drawerChange.value = true;
   dialogTitle.value = "新增Api";
   operationType.value = "addApi";
-  // 重置 searchInfo 的表单字段，而不是 searchInfo.value
-  searchInfo.path = "";
-  searchInfo.description = "";
-  searchInfo.apiGroup = "";
-  searchInfo.method = "";
+  // 重置 formInfo 的表单字段，而不是 formInfo.value
+  formInfo.path = "";
+  formInfo.description = "";
+  formInfo.apiGroup = "";
+  formInfo.method = "";
 };
 
 // 新增按钮确认提交
 const handleSubmitAdd = async () => {
   await createApi({
-    path: searchInfo.path,
-    description: searchInfo.description,
-    apiGroup: searchInfo.apiGroup,
-    method: searchInfo.method,
+    path: formInfo.path,
+    description: formInfo.description,
+    apiGroup: formInfo.apiGroup,
+    method: formInfo.method,
   });
   await fetchTableData();
   await fetchApiGroups();
@@ -427,21 +437,21 @@ const operateClickEdit = async (row) => {
   await getApiById({ id: row.ID });
   dialogTitle.value = "编辑Api";
   operationType.value = "editApi";
-  // searchInfo.value = row.value; // 不能这么写，直接赋值属性
-  searchInfo.path = row.path;
-  searchInfo.apiGroup = row.apiGroup;
-  searchInfo.method = row.method;
-  searchInfo.description = row.description;
+  // formInfo.value = row.value; // 不能这么写，直接赋值属性
+  formInfo.path = row.path;
+  formInfo.apiGroup = row.apiGroup;
+  formInfo.method = row.method;
+  formInfo.description = row.description;
 };
 
-// 编辑按钮确定提交,注意这里的表单绑定的是searchInfo，和row区别
+// 编辑按钮确定提交,注意这里的表单绑定的是formInfo，和row区别
 const handleSubmitEdit = async () => {
   await updateApi({
-    ID: searchInfo.ID,
-    path: searchInfo.path,
-    method: searchInfo.method,
-    apiGroup: searchInfo.apiGroup,
-    description: searchInfo.description,
+    ID: formInfo.ID,
+    path: formInfo.path,
+    method: formInfo.method,
+    apiGroup: formInfo.apiGroup,
+    description: formInfo.description,
     CreatedAt: "2024-07-31T11:25:31.486+08:00",
     UpdatedAt: "2024-07-31T11:25:31.486+08:00",
   });
@@ -571,7 +581,7 @@ const fetchTableData = async () => {
       orderKey: "method",
       desc: false,
     });
-    searchInfo.value = res.data.list; // 更新表格数据
+    formInfo.value = res.data.list; // 更新表格数据
     total.value = res.data.total; // 更新总数
   } catch (error) {
     console.error("Failed to fetch table data:", error);

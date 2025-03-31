@@ -2,18 +2,10 @@
   <!-- 左上角按钮 -->
   <div>
     <!-- <el-drawer> 组件和 <el-button> 之间的关系是通过 v-model 指令来实现的。 -->
-    <el-button class="buttonBelow" type="primary" @click="handleClickAdd"
-      >+ 新增角色</el-button
-    >
+    <el-button class="buttonBelow" type="primary" @click="handleClickAdd">+ 新增角色</el-button>
     <el-drawer v-model="drawerAdd" :with-header="true" size="700px">
       <template #header>
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
+        <div style="display: flex; justify-content: space-between; align-items: center">
           <span>新增角色</span>
           <div>
             <el-button @click="drawerAdd = false">取消</el-button>
@@ -56,85 +48,36 @@
     <el-table-column label="操作" width="460">
       <template #default="scope">
         <!-- 设置权限 -->
-        <el-button
-          link
-          type="primary"
-          size="small"
-          @click="handleClickSetting(scope.row)"
-        >
+        <el-button link type="primary" size="small" @click="handleClickSetting(scope.row)">
           <el-icon><Setting /></el-icon>设置权限
         </el-button>
         <!-- 新增子角色 -->
-        <el-button
-          link
-          type="primary"
-          size="small"
-          @click="handleClickAddSub(scope.row)"
-        >
-          + 新增子角色
-        </el-button>
+        <el-button link type="primary" size="small" @click="handleClickAddSub(scope.row)"> + 新增子角色 </el-button>
         <!-- 拷贝 -->
-        <el-button
-          link
-          type="primary"
-          size="small"
-          @click="handleClickCopy(scope.row)"
-        >
+        <el-button link type="primary" size="small" @click="handleClickCopy(scope.row)">
           <el-icon><CopyDocument /></el-icon>拷贝
         </el-button>
         <!-- 编辑 -->
-        <el-button
-          link
-          type="primary"
-          size="small"
-          @click="handleClickEdit(scope.row)"
-        >
+        <el-button link type="primary" size="small" @click="handleClickEdit(scope.row)">
           <el-icon><Edit /></el-icon>编辑
         </el-button>
         <!-- 删除 -->
-        <el-button
-          link
-          type="primary"
-          size="small"
-          @click="handleClickDelete(scope.row)"
-        >
+        <el-button link type="primary" size="small" @click="handleClickDelete(scope.row)">
           <el-icon><Delete /></el-icon>删除
         </el-button>
       </template>
     </el-table-column>
   </el-table>
-  <el-drawer
-    v-model="drawerSetting"
-    :with-header="true"
-    size="700px"
-    title="角色配置"
-  >
-    <el-tabs
-      :before-leave="autoEnter"
-      type="border-card"
-      v-model="activeAuthorityTab"
-      @tab-click="tabClickAuthority"
-    >
-      <el-tab-pane label="角色菜单"
-        ><tabReview :authorityForm="form"
-      /></el-tab-pane>
-      <el-tab-pane label="角色api"
-        ><tabApis :authorityForm="form"
-      /></el-tab-pane>
-      <el-tab-pane label="资源权限"
-        ><tabResource :authorityForm="form"
-      /></el-tab-pane>
+  <el-drawer v-model="drawerSetting" :with-header="true" size="700px" title="角色配置">
+    <el-tabs :before-leave="autoEnter" type="border-card" v-model="activeAuthorityTab" @tab-click="tabClickAuthority">
+      <el-tab-pane label="角色菜单"><tabReview :authorityForm="form" /></el-tab-pane>
+      <el-tab-pane label="角色api"><tabApis :authorityForm="form" /></el-tab-pane>
+      <el-tab-pane label="资源权限"><tabResource :authorityForm="form" /></el-tab-pane>
     </el-tabs>
   </el-drawer>
   <el-drawer v-model="drawerAddSub" :with-header="true" size="700px">
     <template #header>
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        "
-      >
+      <div style="display: flex; justify-content: space-between; align-items: center">
         <span>新增子角色</span>
         <div>
           <el-button @click="drawerAdd = false">取消</el-button>
@@ -160,13 +103,7 @@
   <!-- 拷贝抽屉 -->
   <el-drawer v-model="drawerCopy" :with-header="true" size="700px">
     <template #header>
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        "
-      >
+      <div style="display: flex; justify-content: space-between; align-items: center">
         <span>拷贝角色</span>
         <div>
           <el-button @click="drawerCopy = false">取消</el-button>
@@ -200,13 +137,7 @@
   <!-- 编辑抽屉 -->
   <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
     <template #header>
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        "
-      >
+      <div style="display: flex; justify-content: space-between; align-items: center">
         <span>编辑角色</span>
         <div>
           <el-button @click="drawerEdit = false">取消</el-button>
@@ -231,11 +162,7 @@
       </el-form-item>
       <el-form-item prop="authorityId">
         <template #label>角色ID</template>
-        <el-input
-          v-model="form.authorityId"
-          disabled
-          placeholder="请输入角色ID"
-        />
+        <el-input v-model="form.authorityId" disabled placeholder="请输入角色ID" />
       </el-form-item>
       <el-form-item prop="authorityName">
         <template #label><span>角色名称</span></template>
@@ -246,13 +173,7 @@
 </template>
 
 <script setup>
-import {
-  getAuthority,
-  createAuthority,
-  copyAuthority,
-  updateAuthority,
-  deleteAuthority,
-} from "@/api/user";
+import { getAuthority, createAuthority, copyAuthority, updateAuthority, deleteAuthority } from "@/api/user";
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import tabReview from "@/view/superAdmin/authority/components/tabReview.vue";
@@ -260,7 +181,7 @@ import tabApis from "@/view/superAdmin/authority/components/tabApis.vue";
 import tabResource from "@/view/superAdmin/authority/components/tabResource.vue";
 import { useStore } from "vuex";
 
-const authorityList = ref([]); // 定义为全局变量，方便读取
+const authorityList = ref([]); // 定义为全局变量，方便读取，赋值的data是树形结构
 const authorityOption = ref([]);
 getAuthority().then((a) => {
   authorityList.value = a.data;
