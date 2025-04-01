@@ -295,4 +295,19 @@ export const getUserList = (data) => {
   })
 }
 
+// 点击抽屉上传
+export const getFileList = (data) => {
+  return request({
+    url: '/fileUploadAndDownload/getFileList',
+    method: 'POST',
+    data
+  })
+}
 
+
+export const getCategoryList = () => {
+  return request({
+    url: '/attachmentCategory/getCategoryList',
+    method: 'GET',
+  })
+}

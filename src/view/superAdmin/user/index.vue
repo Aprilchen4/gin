@@ -100,22 +100,59 @@
               <el-icon><search /></el-icon>
             </el-button>
           </div>
+          <!-- 点击上传图片 -->
           <div class="button-group" style="margin-top: 20px">
             <el-button type="danger" disabled>
               <el-icon><ArrowLeft /></el-icon>选定
             </el-button>
-            <el-button type="primary">
+            <el-button type="primary" @click="triggerUpload">
               <el-icon><Upload /></el-icon>普通上传
             </el-button>
-            <el-button type="primary">
+            <el-button type="primary" @click="triggerUpload">
               <el-icon><Scissor /></el-icon>裁剪上传
             </el-button>
             <el-button type="primary">
               <el-icon><Grid /></el-icon>扫码上传
             </el-button>
-            <el-button type="primary">
+            <el-button type="primary" @click="triggerUpload">
               <el-icon><Upload /></el-icon>压缩上传
             </el-button>
+            <el-upload
+              ref="uploadRef"
+              action=""
+              :show-file-list="false"
+              :before-upload="beforeUpload"
+              :http-request="handleUpload"
+              style="display: none"
+            >
+            </el-upload>
+            <!-- 图片列表,注意v-for是对数组，数组里的对象属性写法 -->
+            <div class="image-list" v-if="uploadPicFile.length">
+              <div v-for="item in uploadPicFile" :key="item.ID" class="image-item">
+                <img :src="item.url" class="image" />
+                <el-icon class="delete-icon" @click="deleteImage(item.ID)">
+                  <Close />
+                </el-icon>
+              </div>
+            </div>
+          </div>
+          <div>
+            <!-- 上传图片页码 -->
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px">
+              <el-pagination
+                v-model:current-page="pagePic"
+                v-model:page-size="pageSizePic"
+                :page-sizes="[10, 30, 50, 100]"
+                :size="size"
+                :disabled="disabled"
+                :background="background"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalUploadPic"
+                @size-change="handleSizeChangePic"
+                @current-change="handleCurrentChangePic"
+              >
+              </el-pagination>
+            </div>
           </div>
         </el-main>
       </el-container>
@@ -204,7 +241,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { getAuthority, getUserList } from "@/api/user";
+import { getAuthority, getUserList, getFileList, getCategoryList } from "@/api/user";
 import customPic from "@/components/customPic.vue";
 import { ElMessage } from "element-plus";
 // import { ElMessageBox} from "element-plus";
@@ -213,12 +250,18 @@ const drawerChange = ref(false);
 const drawerUpload = ref(false);
 const operationType = ref("");
 const dialogTitle = ref("");
+const totalUploadPic = ref(2);
 
 const total = ref(0);
 const page = ref(1);
 const pageSize = ref(10);
+const pagePic = ref(1);
+const pageSizePic = ref(10);
 const userAuthority = ref([]);
 const userList = ref([]);
+const uploadPicFile = ref([]);
+// 获取 el-upload 组件的引用
+const uploadRef = ref(null);
 
 const searchInfo = ref({
   userName: "",
@@ -304,7 +347,14 @@ const openClickUpload = async () => {
     message: `权限不足`,
   });
   dialogTitle.value = "媒体库 | 点击“文件名”可以编辑，选择的类别即是上传的类别";
+  const res = await getFileList({ page: page.value, pageSize: pageSize.value, keyword: null, classId: 0 });
+  totalUploadPic.value = res.data.total;
+  uploadPicFile.value = res.data.list;
+
+  console.log("res.data", res.data.total, res.data.list);
+  await getCategoryList();
 };
+
 // 表格选择器勾选
 const handleAuthorityChange = (row) => {
   console.log("row.authorityIds", row.authorityIds);
@@ -323,6 +373,46 @@ const switchEnable = (row) => {
       message: `启用成功`,
     });
   }
+};
+
+// 上传图片触发上传
+const triggerUpload = () => {
+  uploadRef.value.$el.querySelector("input").click();
+};
+
+// 限制文件类型和大小
+const beforeUpload = (file) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt2M = file.size / 1024 / 1024 < 2; // 限制 2MB
+
+  if (!isImage) {
+    ElMessage.error("只能上传图片文件！");
+    return false;
+  }
+  if (!isLt2M) {
+    ElMessage.error("图片大小不能超过 2MB！");
+    return false;
+  }
+  return true;
+};
+
+// 自定义上传逻辑
+const handleUpload = async (options) => {
+  const file = options.file;
+  try {
+    // 模拟上传：将图片转为本地预览 URL
+    const imageUrl = URL.createObjectURL(file);
+    uploadPicFile.value.push(imageUrl); // 添加到图片列表
+    ElMessage.success("上传成功");
+  } catch (error) {
+    ElMessage.error("上传失败");
+  }
+};
+
+// 删除图片
+const deleteImage = (index) => {
+  uploadPicFile.value.splice(index, 1); // 从数组中移除
+  ElMessage.success("删除成功");
 };
 </script>
 <style>
@@ -358,5 +448,40 @@ const switchEnable = (row) => {
 .custom-button .el-icon {
   margin-right: 5px; /* 图标和文字之间的间距 */
   font-size: 14px; /* 图标大小 */
+}
+
+.image-list {
+  display: flex;
+  flex-wrap: wrap; /* 自动换行 */
+  gap: 10px; /* 图片之间的间距 */
+  margin-top: 10px; /* 与按钮的间距 */
+}
+
+.image-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 图片自适应 */
+  border-radius: 4px;
+}
+
+.delete-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.delete-icon:hover {
+  background: rgba(255, 0, 0, 0.8);
 }
 </style>
