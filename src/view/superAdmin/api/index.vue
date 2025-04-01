@@ -452,8 +452,6 @@ const handleSubmitEdit = async () => {
     method: formInfo.method,
     apiGroup: formInfo.apiGroup,
     description: formInfo.description,
-    CreatedAt: "2024-07-31T11:25:31.486+08:00",
-    UpdatedAt: "2024-07-31T11:25:31.486+08:00",
   });
   await fetchTableData();
   ElMessage.success("编辑成功");

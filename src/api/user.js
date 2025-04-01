@@ -311,3 +311,40 @@ export const getCategoryList = () => {
     method: 'GET',
   })
 }
+
+// 用户新增抽屉 确定按钮
+export const adminRegister = (data) => {
+  return request({
+    url: '/user/admin_register',
+    method: 'POST',
+    data
+  })
+}
+
+// 表格删除
+export const deleteUser = (data) => {
+  return request({
+    url: '/user/deleteUser',
+    method: 'DELETE',
+    data
+  })
+}
+
+// 用户表格编辑
+export const setUserInfo = (data) => {
+  return request({
+    url: '/user/setUserInfo',
+    method: 'PUT',
+    data
+  })
+}
+
+// 用户重置密码
+export const resetPassword = (data) => {
+  return request({
+    url: '/user/resetPassword',
+    method: 'POST',
+    data
+  })
+}
+
