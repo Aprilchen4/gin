@@ -348,3 +348,11 @@ export const resetPassword = (data) => {
   })
 }
 
+// 上传图片到服务器
+export const uploadPicture = (data) => {
+  return request({
+    url: '/fileUploadAndDownload/upload',
+    method: 'POST',
+    data
+  })
+}

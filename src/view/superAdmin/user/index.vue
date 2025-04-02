@@ -54,6 +54,8 @@
         <el-input v-model="userForm.email" placeholder="333333@qq.com" />
       </el-form-item>
       <el-form-item label="用户角色" prop="authorityIds">
+        <!-- checkStrictly: true 可以单独勾选任意节点（无需依赖父子关系）。 -->
+        <!-- collapse-tags：多选时，显示一个折叠标签，而不是所有选中项。 -->
         <el-cascader
           style="width: 100%"
           v-model="userForm.authorityIds"
@@ -134,6 +136,9 @@
             </el-upload>
             <!-- 图片列表,注意v-for是对数组，数组里的对象属性写法 -->
             <!-- item.selected: 这是一个布尔值，表示当前 item 是否被选中。 -->
+            <!-- selected是:class 绑定语法中的动态类名。不是自定义属性。
+             select是div部分整体的属性：卡片级"的交互 -->
+            <!-- item.selected 为 true，则 selected 类将被添加到该 <div> 中。 -->
             <div class="image-list" v-if="uploadPicFile.length">
               <div
                 v-for="item in uploadPicFile"
@@ -195,8 +200,8 @@
       <el-table-column prop="email" label="邮箱" show-overflow-tooltip min-width="50px" />
       <el-table-column label="用户角色">
         <template #default="scope">
-          <!-- 返回的是数组authorityIds,代表默认勾选项-->
-          <!--  emitPath: true // 重要：存储完整路径 -->
+          <!-- v-model绑定一个数组authorityIds(对应数据value)，选中项绑定值，代表默认勾选项-->
+          <!--  emitPath: true // 重要：存储完整路径 ,会返回完整的路径数组-->
           <el-cascader
             v-model="scope.row.authorityIds"
             :options="userAuthority"
@@ -205,7 +210,7 @@
               checkStrictly: true,
               label: 'authorityName',
               value: 'authorityId',
-              emitPath: true,
+              emitPath: false,
             }"
             collapse-tags
             @change="handleAuthorityChange(scope.row)"
@@ -264,6 +269,7 @@ import {
   deleteUser,
   setUserInfo,
   resetPassword,
+  uploadPicture,
 } from "@/api/user";
 import customPic from "@/components/customPic.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -437,7 +443,7 @@ const handleSubmitAdd = async () => {
   drawerChange.value = false;
   total.value += 1; // 更新总数
   // 防御性编程
-  if (resTableDate.msg === "注册失败，用户名已存在") {
+  if (resTableDate.msg === "注册失败") {
     ElMessage({
       type: "error",
       message: `创建失败`,
@@ -457,10 +463,11 @@ const handleSubmitAdd = async () => {
 
 // 点击“选定”按钮的处理函数
 const handleConfirmSelection = () => {
+  // 过滤出数组中 selected 属性为 true 的图片对象，返回一个新数组，selectedImages
   const selectedImages = uploadPicFile.value.filter((item) => item.selected);
   if (selectedImages.length > 0) {
-    // 假设只取第一张选中的图片
-    userForm.value.headerImg = selectedImages[0].url;
+    // 假设只取第一张选中的图片，每次只选一张，取[0]刚好，赋值给表单属性
+    userForm.value.headerImg = selectedImages[0].url || "https://qmplusimg.henrongyi.top/gva_header.jpg";
     ElMessage.success("头像已选定");
     drawerUpload.value = false; // 关闭上传抽屉
   } else {
@@ -484,9 +491,10 @@ const openClickUpload = async () => {
   await getCategoryList();
 };
 
-// 表格选择器勾选
-const handleAuthorityChange = (row) => {
-  console.log("row.authorityIds", row.authorityIds);
+// 表格选择器勾选，emitPath: true 会返回完整的路径数组，导致返回的是嵌套数组 [[888], [9528]]。
+// 置了 emitPath: false，所以返回的是扁平数组 [888, 9528]。
+const handleAuthorityChange = async (row) => {
+  await setUserInfo({ ID: 1, authorityIds: row.authorityIds });
 };
 
 // 开关,错误的 userForm.value.enable。用 row.enable 判断状态。
@@ -611,9 +619,11 @@ const searchPic = async () => {
   totalUploadPic.value = res.data.total;
 };
 
-// 点击图片上传按钮触发上传
-const triggerUpload = () => {
+// 点击图片上传按钮触发上传，关联上传按钮和<upload组件>
+// 通过uploadRef实例访问 <el-upload> 组件的 DOM，找到其内部的 <input type="file"> 并模拟点击
+const triggerUpload = async () => {
   uploadRef.value.$el.querySelector("input").click();
+  await uploadPicture();
 };
 
 // 限制文件类型和大小
@@ -645,7 +655,7 @@ const handleUpload = async (options) => {
       name: file.name, // 添加文件名属性
       selected: false, // 新增选中状态字段
     };
-    uploadPicFile.value.push(newImage); // 添加到图片列表
+    uploadPicFile.value.push(newImage); // 添加到图片列表，这里只是保存在前端的 uploadPicFile.value，没有上传到服务器
     ElMessage.success("上传成功");
   } catch (error) {
     ElMessage.error("上传失败");
@@ -657,13 +667,15 @@ const hasSelected = computed(() => {
   return uploadPicFile.value.some((item) => item.selected);
 });
 
-// 点击图片切换选中状态
+// 点击图片切换选中状态,item是 uploadPicFile 数组中每个元素的代表。
 const toggleImageSelection = (item) => {
   item.selected = !item.selected; // 切换选中状态
 };
 
 // 删除图片
 const deleteImage = (id) => {
+  // 在 uploadPicFile 数组中查找 ID 等于变量 id 的元素，并返回其索引位置。
+  // findIndex是数组的一个方法，找到符合条件的索引
   const index = uploadPicFile.value.findIndex((item) => item.ID === id);
   if (index !== -1) {
     uploadPicFile.value.splice(index, 1);
@@ -778,13 +790,6 @@ const scanUploadFunc = async () => {
   gap: 10px; /* 图片之间的间距 */
   margin-top: 10px; /* 与按钮的间距 */
 }
-
-.image-item {
-  position: relative;
-  width: 100px;
-  height: 100px;
-}
-
 .image {
   width: 100%;
   height: 100%;
@@ -792,10 +797,17 @@ const scanUploadFunc = async () => {
   border-radius: 4px;
 }
 
+/* 以下决定delete图标在图片右上方 */
+.image-item {
+  position: relative; /* 为绝对定位的子元素提供锚点 */
+  width: 100px;
+  height: 100px;
+}
+
 .delete-icon {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+  position: absolute; /* 根据父元素定位，无视文档流顺序  */
+  top: 5px; /* 相对于父元素顶部定位 */
+  right: 5px; /*  删除操作属于高风险操作，放在显眼位置（图片右上角）符合设计惯例*/
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
