@@ -494,7 +494,7 @@ const openClickUpload = async () => {
 // 表格选择器勾选，emitPath: true 会返回完整的路径数组，导致返回的是嵌套数组 [[888], [9528]]。
 // 置了 emitPath: false，所以返回的是扁平数组 [888, 9528]。
 const handleAuthorityChange = async (row) => {
-  await setUserInfo({ ID: 1, authorityIds: row.authorityIds });
+  await setUserInfo({ ID: row.ID, authorityIds: row.authorityIds });
 };
 
 // 开关,错误的 userForm.value.enable。用 row.enable 判断状态。
@@ -529,6 +529,7 @@ const onClickDelete = async (row) => {
       await deleteUser({ id: row.ID });
       const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
       userList.value = (res.data.list || []).map((user) => ({
+        // ...user （展开运算符）复制 user 对象的所有原有属性。
         ...user,
         authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
       }));
