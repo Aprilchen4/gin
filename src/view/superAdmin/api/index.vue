@@ -330,14 +330,16 @@ getApiGroups().then((res) => {
 
 // 查询逻辑
 const onSubmit = async () => {
-  await getApiList({
+  const res = await getApiList({
     page: page.value,
     pageSize: pageSize.value,
-    path: formInfo.path,
-    description: formInfo.description,
-    apiGroup: formInfo.apiGroup,
-    method: formInfo.method,
+    path: searchInfo.path,
+    description: searchInfo.description,
+    apiGroup: searchInfo.apiGroup,
+    method: searchInfo.method,
   });
+  tableInfo.value = res.data.list; // 更新表格数据
+  total.value = res.data.total; // 更新总数
 };
 
 // 重置逻辑
@@ -565,7 +567,7 @@ const fetchTableData = async () => {
       orderKey: "method",
       desc: false,
     });
-    formInfo.value = res.data.list; // 更新表格数据
+    tableInfo.value = res.data.list; // 更新表格数据
     total.value = res.data.total; // 更新总数
   } catch (error) {
     console.error("Failed to fetch table data:", error);
