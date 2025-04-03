@@ -420,3 +420,30 @@ export const deleteSysDictionary = (data) => {
     data
   });
 }
+
+
+export const createSysDictionaryDetail = (data) => {
+  return request({
+    url: '/sysDictionaryDetail/createSysDictionaryDetail',
+    method: 'POST',
+    data
+  });
+};
+
+
+export const updateSysDictionaryDetail = (data) => {
+  return request({
+    url: '/sysDictionaryDetail/updateSysDictionaryDetail',
+    method: 'PUT',
+    data 
+  })
+}
+
+
+export const deleteSysDictionaryDetail = (data) => {
+  return request({
+    url: '/sysDictionaryDetail/deleteSysDictionaryDetail',
+    method: 'DELETE',
+    data
+  })
+}

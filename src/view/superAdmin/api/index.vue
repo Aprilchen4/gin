@@ -556,20 +556,6 @@ const operateIgnore = async (row) => {
   ElMessage.success("操作成功");
 };
 
-// 每页条数变化时触发
-const handleSizeChange = async (val) => {
-  pageSize.value = val;
-  console.log(`每页 ${val} 条`);
-  await fetchTableData();
-};
-
-// 当前页码变化时触发
-const handleCurrentChange = async (val) => {
-  page.value = val;
-  console.log(`当前页: ${val}`);
-  await fetchTableData();
-};
-
 //创建函数赋值并统一调用
 const fetchTableData = async () => {
   try {

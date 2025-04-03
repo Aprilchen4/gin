@@ -30,7 +30,7 @@
       <el-main>
         <div style="display: flex; justify-content: space-between">
           <span style="margin-top: 5px; font-weight: bold">字典详细内容</span>
-          <el-button type="primary" size="auto">+ 新增字典项</el-button>
+          <el-button type="primary" size="auto" @click="OnClickAddDetails">+ 新增字典项</el-button>
         </div>
         <div>
           <el-table
@@ -44,22 +44,37 @@
               fontWeight: 'bold',
             }"
           >
+            <el-table-column type="selection" width="55" />
             <el-table-column prop="UpdatedAt" label="日期" min-width="80px">
               <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
             </el-table-column>
             <el-table-column prop="label" label="展示值" min-width="50px"> </el-table-column>
-            <el-table-column prop="sysDictionaryID" label="字典值" min-width="50px"> </el-table-column>
-            <el-table-column prop="value" label="扩展值" min-width="50px"> </el-table-column>
+            <el-table-column prop="value" label="字典值" min-width="50px"> </el-table-column>
             <el-table-column prop="status" label="启用状态" min-width="50px"> </el-table-column>
-            <el-table-column prop="value" label="扩展值" min-width="50px"> </el-table-column>
+            <el-table-column prop="extend" label="扩展值" min-width="50px"> </el-table-column>
             <el-table-column prop="sort" label="排序" min-width="50px"> </el-table-column>
-            <el-table-column prop="action" label="操作" min-width="50px">
+            <el-table-column label="操作" min-width="50px">
               <template #default="scope">
-                <el-button type="text" @click="openDicEditDrawer(scope.row)">变更</el-button>
-                <el-button type="text" @click="openDicDeleteDrawer(scope.row)">删除</el-button>
+                <el-button type="text" @click="handleDetailEdit(scope.row)">变更</el-button>
+                <el-button type="text" @click="handleDetailDelete(scope.row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 10px">
+          <el-pagination
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 30, 50, 100]"
+            :size="size"
+            :disabled="disabled"
+            :background="background"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="tableTotal"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          >
+          </el-pagination>
         </div>
       </el-main>
     </el-container>
@@ -98,6 +113,43 @@
       </el-form-item>
     </el-form>
   </el-drawer>
+  <!-- 表格抽屉 -->
+  <el-drawer v-model="drawerTable" :with-header="true" size="700px">
+    <template #header>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span>{{ tableDrawerTitle }}</span>
+        <div>
+          <el-button @click="drawerTable = false">取消</el-button>
+          <template v-if="operationDicType === 'addDetails'">
+            <el-button type="primary" @click="handleSubmitAddDetails">确定</el-button>
+          </template>
+          <template v-else-if="operationDicType === 'editDetails'">
+            <el-button type="primary" @click="handleSubmitEditDetails">确定</el-button>
+          </template>
+        </div>
+      </div>
+    </template>
+    <!-- 表格表单 -->
+    <el-form :model="tableForm" :rules="rulesTable" label-width="100px">
+      <el-form-item label="展示值" prop="label">
+        <el-input v-model="tableForm.label" placeholder="请输入展示值" />
+      </el-form-item>
+      <el-form-item label="字典值" prop="value">
+        <el-input v-model="tableForm.value" placeholder="请输入字典值" />
+      </el-form-item>
+      <el-form-item label="扩展值" prop="extend">
+        <el-input v-model="tableForm.extend" placeholder="请输入扩展值" />
+      </el-form-item>
+      <el-form-item label="启用状态" prop="status">
+        <span>停用</span>
+        <el-switch v-model="tableForm.status" style="margin-left: 10px; margin-right: 10px" />
+        <span>开启</span>
+      </el-form-item>
+      <el-form-item label="排序标记" prop="sort">
+        <el-input-number v-model.number="tableForm.sort" placeholder="排序标记" />
+      </el-form-item>
+    </el-form>
+  </el-drawer>
 </template>
 
 <script setup>
@@ -109,6 +161,10 @@ import {
   findSysDictionary,
   updateSysDictionary,
   deleteSysDictionary,
+  createSysDictionaryDetail,
+  findSysDictionaryDetail,
+  updateSysDictionaryDetail,
+  deleteSysDictionaryDetail,
 } from "@/api/user";
 import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -116,6 +172,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 // activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
 const activeDicIndex = ref(1);
 const dicTotal = ref(0);
+const tableTotal = ref(0);
 const page = ref(1);
 const pageSize = ref(10);
 
@@ -123,7 +180,9 @@ const tableLoading = ref(false);
 const tableData = ref([]);
 
 const drawerDic = ref(false);
+const drawerTable = ref(false);
 const dialogTitle = ref("添加字典");
+const tableDrawerTitle = ref("添加字典项");
 const operationDicType = ref("addDictionary");
 
 const sysDictionaryDetails = ref([]);
@@ -136,12 +195,32 @@ const dicForm = ref({
   type: "",
 });
 
+// 表格抽屉，这里不想写数字，可以写null
+const tableForm = ref({
+  ID: null,
+  label: "",
+  sort: null,
+  status: true,
+  sysDictionaryID: null,
+  value: "",
+  extend: "",
+  UpdateAt: "",
+});
+
 // 字典表单规则
 const rulesDic = reactive({
   name: [{ required: true, message: "请输入name", trigger: "blur" }],
   type: [{ required: true, message: "请输入type", trigger: "blur" }],
-  desc: [{ required: true, message: "请输入描述", trigger: "blur" }],
+  desc: [{ required: true }],
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+// 表格表单规则
+const rulesTable = reactive({
+  label: [{ required: true, message: "请输入展示值", trigger: "blur" }],
+  value: [{ required: true, message: "请输入字典值", trigger: "blur" }],
+  status: [{ required: true, message: "请输入", trigger: "blur" }],
+  sort: [{ required: true, message: "请输入排序标记", trigger: "blur" }],
 });
 
 // 点进页面
@@ -161,12 +240,14 @@ const fetchDicData = async () => {
 // 点进页面
 getSysDictionaryDetailList(1, 10, 1).then((res) => {
   tableData.value = res.data.list;
+  tableTotal.value = res.data.list.length;
 });
 
 // 调用
 const fetchtableData = async () => {
   const res = await getSysDictionaryDetailList(page.value, pageSize.value, activeDicIndex.value);
   tableData.value = res.data.list;
+  tableTotal.value = res.data.list.length;
 };
 
 // 点击菜单更新表格
@@ -242,7 +323,7 @@ const handleSubmitEdit = async () => {
   ElMessage({ type: "success", message: `操作成功` });
 };
 
-// 删除+确定
+// 字典删除+确定
 const handleDicDelete = async (item) => {
   activeDicIndex.value = item.ID;
   await fetchtableData();
@@ -289,6 +370,110 @@ const formatDate = (dateStr) => {
   const seconds = String(date.getSeconds()).padStart(2, "0");
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
+
+// 新增字典项
+const OnClickAddDetails = () => {
+  drawerTable.value = true;
+  tableDrawerTitle.value = "添加字典项";
+  operationDicType.value = "addDetails";
+  tableForm.value = {
+    label: "",
+    sort: null,
+    status: true,
+    sysDictionaryID: null,
+    value: "",
+    extend: "",
+    UpdataAt: "",
+  };
+};
+
+// 新增字典项确定按钮
+const handleSubmitAddDetails = async () => {
+  await createSysDictionaryDetail({
+    label: tableForm.value.label,
+    sort: tableForm.value.sort,
+    status: tableForm.value.status,
+    sysDictionaryID: activeDicIndex.value,
+    value: tableForm.value.value,
+    extend: tableForm.value.extend,
+  });
+  drawerTable.value = false;
+  await fetchtableData();
+  ElMessage({ type: "success", message: `创建/更改成功` });
+};
+
+// 表格变更
+const handleDetailEdit = async (item) => {
+  drawerTable.value = true;
+  tableDrawerTitle.value = "修改字典项";
+  operationDicType.value = "editDetails";
+  tableData.value.ID = item.ID;
+  tableForm.value.label = item.label;
+  tableForm.value.sort = item.sort;
+  tableForm.value.status = item.status;
+  tableForm.value.sysDictionaryID = activeDicIndex.value;
+  tableForm.value.value = item.value;
+  tableForm.value.extend = item.extend;
+  await findSysDictionaryDetail(item.ID);
+};
+
+// 表格变更确定
+const handleSubmitEditDetails = async () => {
+  await updateSysDictionaryDetail({
+    ID: tableData.value.ID,
+    label: tableForm.value.label,
+    sort: tableForm.value.sort,
+    status: tableForm.value.status,
+    sysDictionaryID: activeDicIndex.value,
+    value: tableForm.value.value,
+    extend: tableForm.value.extend,
+  });
+  drawerTable.value = false;
+  await fetchtableData();
+  ElMessage({ type: "success", message: `创建/更改成功` });
+};
+
+// 表格删除+确定
+const handleDetailDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm("确定删除吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    // 执行删除逻辑
+    await deleteSysDictionaryDetail({ ID: item.ID });
+    await fetchtableData();
+    ElMessage({
+      message: "删除成功!",
+      type: "success",
+    });
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消重置!",
+        type: "info",
+      });
+    }
+  }
+};
+
+// 每页条数变化时触发
+const handleSizeChange = async (val) => {
+  pageSize.value = val;
+  console.log(`每页 ${val} 条`);
+  await fetchtableData();
+};
+
+// 当前页码变化时触发
+const handleCurrentChange = async (val) => {
+  page.value = val;
+  console.log(`当前页: ${val}`);
+  await fetchtableData();
+};
+
+// 新增字典项
 </script>
 <style>
 .menu-name {
