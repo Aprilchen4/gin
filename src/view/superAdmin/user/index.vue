@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <WarningTip title="注：右上角头像下拉可切换角色" />
+  <div style="margin-top: 10px">
     <el-form :inline="true" :model="searchInfo" style="font-size: small" class="search-form">
       <el-form-item label="用户名">
         <el-input v-model="searchInfo.userName" placeholder="用户名" />
@@ -259,6 +260,7 @@
 </template>
 
 <script setup>
+import WarningTip from "@/components/WarningTip.vue";
 import { ref, computed } from "vue"; // 引入 computed
 import {
   getAuthority,

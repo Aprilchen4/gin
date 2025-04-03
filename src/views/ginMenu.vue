@@ -4,9 +4,7 @@
       <el-image class="logo" :src="require('@/assets/logo1.png')"></el-image>
       <div class="title">Gin-Vue-Admin</div>
       <!-- v-model 会将组件中的 activeMenu 绑定到 <el-input> 的 value 属性 -->
-      <el-breadCrumb-item class="titleInput">{{
-        breadCrumb
-      }}</el-breadCrumb-item>
+      <el-breadCrumb-item class="titleInput">{{ breadCrumb }}</el-breadCrumb-item>
     </div>
     <div class="top-right">
       <!-- 右侧第一个按钮 -->
@@ -27,18 +25,12 @@
                   ></el-dropdown-item
                 >
                 <el-dropdown-item
-                  ><a
-                    href="https://www.bilibili.com/video/BV1sr421K7sv/"
-                    class="web"
-                    target="_blank"
+                  ><a href="https://www.bilibili.com/video/BV1sr421K7sv/" class="web" target="_blank"
                     >2.初始化项目</a
                   ></el-dropdown-item
                 >
                 <el-dropdown-item
-                  ><a
-                    href="https://www.bilibili.com/video/BV1iH4y1c7Na/"
-                    class="web"
-                    target="_blank"
+                  ><a href="https://www.bilibili.com/video/BV1iH4y1c7Na/" class="web" target="_blank"
                     >3.开启调试工具+创建初始化包</a
                   ></el-dropdown-item
                 >
@@ -87,9 +79,7 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item
-              ><strong>当前角色:普通用户</strong></el-dropdown-item
-            >
+            <el-dropdown-item><strong>当前角色:普通用户</strong></el-dropdown-item>
             <el-dropdown-item>切换为：普通用户子用户</el-dropdown-item>
             <el-dropdown-item>切换为：测试角色</el-dropdown-item>
             <el-dropdown-item
@@ -111,9 +101,8 @@
       <el-container>
         <el-header>
           <tabMenu />
-          <WarningTip title="注：右上角头像下拉可切换角色" />
         </el-header>
-        <el-main>
+        <el-main style="padding-top: 0px">
           <router-view />
         </el-main>
       </el-container>
@@ -134,7 +123,6 @@ const breadCrumb = computed(() => store.state.breadCrumb);
 import { computed } from "vue";
 const store = useStore();
 import { useStore } from "vuex";
-import WarningTip from "@/components/WarningTip.vue";
 
 // 标签页
 // import { computed } from 'vue';

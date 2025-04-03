@@ -1,6 +1,7 @@
 <template>
   <!-- 左上角按钮 -->
-  <div>
+  <WarningTip title="注：右上角头像下拉可切换角色" />
+  <div style="margin-top: 10px">
     <!-- <el-drawer> 组件和 <el-button> 之间的关系是通过 v-model 指令来实现的。 -->
     <el-button class="buttonBelow" type="primary" @click="handleClickAdd">+ 新增角色</el-button>
     <el-drawer v-model="drawerAdd" :with-header="true" size="700px">
@@ -175,6 +176,7 @@
 <script setup>
 import { getAuthority, createAuthority, copyAuthority, updateAuthority, deleteAuthority } from "@/api/user";
 import { ref, reactive } from "vue";
+import WarningTip from "@/components/WarningTip.vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import tabReview from "@/view/superAdmin/authority/components/tabReview.vue";
 import tabApis from "@/view/superAdmin/authority/components/tabApis.vue";

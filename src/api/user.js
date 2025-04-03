@@ -356,3 +356,67 @@ export const uploadPicture = (data) => {
     data
   })
 }
+
+
+
+// 字典页面进入请求
+export const getSysDictionaryList = () => {
+  return request({
+    url: '/sysDictionary/getSysDictionaryList',
+    method: 'GET'
+  });
+  
+}
+
+
+// 字典字符串请求
+// 调用：const response = await getDictionaryList(1, 10, 'some-id');
+export const getSysDictionaryDetailList = (page, pageSize, sysDictionaryID) => {
+  return request({
+    url: `/sysDictionaryDetail/getSysDictionaryDetailList?page=${page}&pageSize=${pageSize}&sysDictionaryID=${sysDictionaryID}`,
+    method: 'GET'
+  });
+};
+
+// 字典表格变更
+export const findSysDictionaryDetail = (id) => {
+  return request({
+    url: `/sysDictionaryDetail/findSysDictionaryDetail?ID=${id}`,
+    method: 'GET'
+  });
+};
+
+// 编辑左侧字典
+export const findSysDictionary = (id, status) => {
+  return request({
+    url: `/sysDictionary/findSysDictionary?ID=${id}&status=${status}`,
+    method: 'GET'
+  });
+};
+
+// 字典
+export const createSysDictionary = (data) => {
+  return request({
+    url: '/sysDictionary/createSysDictionary',
+    method: 'POST',
+    data
+  });
+};
+
+// 字典
+export const updateSysDictionary = (data) => {
+  return request({
+    url: '/sysDictionary/updateSysDictionary',
+    method: 'PUT',
+    data
+  });
+};
+
+
+export const deleteSysDictionary = (data) => {
+  return request({
+    url: '/sysDictionary/deleteSysDictionary',
+    method: 'DELETE',
+    data
+  });
+}
