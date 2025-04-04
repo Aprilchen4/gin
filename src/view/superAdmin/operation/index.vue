@@ -49,8 +49,41 @@
       <el-table-column prop="ip" label="请求ip" min-width="70px" />
       <el-table-column prop="method" label="请求方法" min-width="70px" />
       <el-table-column prop="path" label="请求路径" min-width="110px" />
-      <el-table-column prop="" label="请求" min-width="40px"> </el-table-column>
-      <el-table-column prop="" label="响应" in-width="20px"></el-table-column>
+      <el-table-column align="left" label="请求" prop="path" width="80">
+        <template #default="scope">
+          <div>
+            <el-popover v-if="scope.row.body" placement="left-start" :width="444">
+              <div class="popover-box">
+                <pre>{{ formatJson(scope.row.body) }}</pre>
+              </div>
+              <template #reference>
+                <el-icon style="cursor: pointer"><warning /></el-icon>
+              </template>
+            </el-popover>
+            <span v-else>无</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column align="left" label="响应" prop="path" width="80">
+        <!-- <el-table-column> 的默认插槽，用于自定义表格列的渲染内容。 -->
+        <template #default="scope">
+          <div>
+            <el-popover v-if="scope.row.resp" placement="left-start" :width="444">
+              <div class="popover-box">
+                <!-- 全称是 "preformatted text"（预格式化文本）。
+                 它的作用是保留文本的原始格式，包括空格、换行和缩进 -->
+                <pre>{{ formatJson(scope.row.resp) }}</pre>
+              </div>
+              <!-- 是 <el-popover> 组件的 reference 插槽，负责定义弹出框的触发器，即警告图标 -->
+              <!-- 是可选的。如果不提供，默认会使用 <el-popover> 的直接子元素作为触发器。 -->
+              <template #reference>
+                <el-icon style="cursor: pointer"><warning /></el-icon>
+              </template>
+            </el-popover>
+            <span v-else>无</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
           <el-button type="text" @click="handleDetailDelete(scope.row)">删除</el-button>
@@ -155,30 +188,7 @@ const handleSelectionChange = async (val) => {
   selectedIds.value = val.map((item) => item.ID);
 };
 
-// 选中删除逻辑
-const handleDetailDelete = async (row) => {
-  try {
-    await ElMessageBox.confirm("确定删除吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await deleteSysOperationRecord({ ids: row.ID });
-    // 清空搜索内容
-    params.value = "";
-    await fetchtableData();
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
-      });
-    }
-  }
-};
-
-// 表格删除
+// 表格选中删除
 const handleDelete = async () => {
   try {
     await ElMessageBox.confirm("确定删除吗?", "提示", {
@@ -190,6 +200,47 @@ const handleDelete = async () => {
     // 清空搜索内容
     params.value = "";
     await fetchtableData();
+    ElMessage({
+      message: "删除成功!",
+      type: "success",
+    });
+  } catch (error) {
+    // 处理取消逻辑
+    if (error === "cancel") {
+      ElMessage({
+        message: "已取消删除!",
+        type: "info",
+      });
+    }
+  }
+};
+
+// 请求/响应表格
+function formatJson(jsonString) {
+  try {
+    return JSON.stringify(JSON.parse(jsonString), null, 2);
+  } catch (e) {
+    console.error("Invalid JSON:", e);
+    return jsonString; // 如果不是合法JSON，返回原字符串
+  }
+}
+
+// 删除逻辑
+const handleDetailDelete = async (row) => {
+  try {
+    await ElMessageBox.confirm("确定删除吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await deleteSysOperationRecord({ id: row.ID });
+    // 清空历史搜索内容
+    params.value = "";
+    await fetchtableData();
+    ElMessage({
+      message: "删除成功!",
+      type: "success",
+    });
   } catch (error) {
     // 处理取消逻辑
     if (error === "cancel") {
@@ -231,9 +282,20 @@ const handleCurrentChange = async (val) => {
 };
 </script>
 <style>
-.mode {
+/* .mode {
   font-weight: bold;
   font-weight: bold;
   color: rgb(255, 0, 140);
+} */
+
+.popover-box {
+  background: #112435;
+  color: #f08047;
+  height: 600px;
+  width: 420px;
+  overflow: auto;
+}
+.popover-box::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
 }
 </style>
