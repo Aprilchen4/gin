@@ -258,13 +258,14 @@ import {
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 
-//删除按钮勾选响应
+//删除按钮勾选响应，apis表示数组元素（对象
 const apis = ref([]);
+// 表示元素ID
+const selectedIds = ref([]);
 //抬头选择器
 const apiGroupOptions = ref([]);
 const dialogTitle = ref("");
 const operationType = ref("");
-const selectedIds = ref([]);
 
 const page = ref(1);
 const pageSize = ref(10);
@@ -375,7 +376,7 @@ const handleSubmitAdd = async () => {
 const handleSelectionChange = (val) => {
   // 选中的数组元素
   apis.value = val;
-  // 从勾选的行数据中提取所有 ID 字段，组成一个新数组，
+  // 从勾选的元素中提取所有 ID 字段，组成一个新数组，
   selectedIds.value = val.map((item) => item.ID); // 提取所有ID
 };
 

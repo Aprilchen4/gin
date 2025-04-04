@@ -447,3 +447,28 @@ export const deleteSysDictionaryDetail = (data) => {
     data
   })
 }
+
+// 操作历史
+export const getSysOperationRecordList = (page,pageSize,params) => {
+  return request({
+    url: `/sysOperationRecord/getSysOperationRecordList?page=${page}&pageSize=${pageSize}${params}`,
+    method: 'GET',
+  })
+}
+
+// 操作历史删除选中表格项
+export const deleteSysOperationRecordByIds = (data) => {
+  return request({
+    url: '/sysOperationRecord/deleteSysOperationRecordByIds',
+    method: 'DELETE',
+    data
+  })
+}
+
+export const deleteSysOperationRecord = (data) => {
+  return request({
+    url: '/sysOperationRecord/deleteSysOperationRecord',
+    method: 'DELETE',
+    data
+  })
+}
