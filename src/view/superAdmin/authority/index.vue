@@ -282,9 +282,7 @@ const handleClickCopy = async (row) => {
   // 旧的ID
   oldAuthorityId.value = Number(row.authorityId);
   // 填充表单
-  form.value.authorityId = row.authorityId;
-  form.value.authorityName = row.authorityName;
-  form.value.parentId = row.parentId;
+  form.value = row;
 };
 
 const handleSubmitCopy = async () => {
@@ -320,9 +318,8 @@ const handleClickEdit = async (row) => {
   drawerEdit.value = true;
   await nextTick();
   editFormRef.value.clearValidate();
-  form.value.authorityId = row.authorityId;
-  form.value.authorityName = row.authorityName;
-  form.value.parentId = row.parentId;
+  // 整体赋值，ref定义
+  form.value = row;
 };
 
 const handleSubmitEdit = async () => {

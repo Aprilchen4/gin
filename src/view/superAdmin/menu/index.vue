@@ -461,6 +461,7 @@ const operateClickEdit = async (row) => {
   menuFormRef.value.clearValidate(); // 确保每次都有清除校验
   const id = row.ID;
   const res = await getBaseMenuById({ id });
+  // 整体赋值
   form.value = res.data.menu;
   isEdit.value = true;
 };

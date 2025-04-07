@@ -462,7 +462,8 @@ const operateClickEdit = async (row) => {
   await nextTick(); //等待dom加载
   apiFormRef.value.clearValidate(); // 确保每次都有清除校验
   await getApiById({ id: row.ID });
-  // formInfo.value = row; // 不能这么写，formInfo是对象，没有value属性
+  // formInfo.value = row; 不能这么写，formInfo是reactive定义的对象，只能单个属性赋值
+  // ref定义的对象可以整体赋值
   formInfo.ID = row.ID;
   formInfo.path = row.path;
   formInfo.apiGroup = row.apiGroup;
@@ -609,6 +610,20 @@ const fetchApiGroups = async () => {
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ message: res.msg, type: type });
   }
+};
+
+// 每页条数变化时触发
+const handleSizeChange = async (val) => {
+  pageSize.value = val;
+  console.log(`每页 ${val} 条`);
+  await fetchTableData();
+};
+
+// 当前页码变化时触发
+const handleCurrentChange = async (val) => {
+  page.value = val;
+  console.log(`当前页: ${val}`);
+  await fetchTableData();
 };
 </script>
 

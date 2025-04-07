@@ -306,11 +306,8 @@ const openDicEditDrawer = async (item) => {
   operationDicType.value = "editDictionary";
   await nextTick();
   dicFormRef.value.clearValidate();
-  dicForm.value.ID = item.ID;
-  dicForm.value.desc = item.desc;
-  dicForm.value.name = item.name;
-  dicForm.value.type = item.type;
-  dicForm.value.status = item.status;
+  // 整体赋值
+  dicForm.value = item;
   const res = await findSysDictionary(item.ID, item.status);
   // 返回的详细，用作参数
   sysDictionaryDetails.value = res.data.resysDictionary.sysDictionaryDetails;
@@ -426,15 +423,8 @@ const handleDetailEdit = async (item) => {
   operationDicType.value = "editDetails";
   await nextTick();
   tableFormRef.value.clearValidate();
-  // 赋值
-  tableFormRef.value.clearValidate();
-  tableData.value.ID = item.ID;
-  tableForm.value.label = item.label;
-  tableForm.value.sort = item.sort;
-  tableForm.value.status = item.status;
-  tableForm.value.sysDictionaryID = activeDicIndex.value;
-  tableForm.value.value = item.value;
-  tableForm.value.extend = item.extend;
+  // 赋值,这里是表单对象。ref定义可以整体赋值
+  tableForm.value = item;
   await findSysDictionaryDetail(item.ID);
 };
 
@@ -452,9 +442,11 @@ const handleSubmitEditDetails = async () => {
       extend: tableForm.value.extend,
     });
     drawerTable.value = false;
-    await fetchtableData();
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ type: type, message: res.msg });
+    if (res.code == 0) {
+      await fetchtableData();
+    }
   });
 };
 

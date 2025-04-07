@@ -530,21 +530,15 @@ const onClickEdit = async (row) => {
   operationType.value = "editUser";
   await nextTick();
   userFormRef.value.clearValidate();
-  userForm.value.userName = row.userName;
-  userForm.value.nickName = row.nickName;
-  userForm.value.phone = row.phone;
-  userForm.value.email = row.email;
-  userForm.value.headerImg = row.headerImg;
-  userForm.value.authorityId = row.authorityId;
-  userForm.value.authorityIds = row.authorityIds;
-  userForm.value.enable = row.enable;
+  // 赋值，ref定义的对象可以整体赋值
+  userForm.value = row;
 };
 
 // 表格编辑提交
 const handleSubmitEdit = async () => {
   userFormRef.value.validate(async (valid) => {
     if (!valid) return; // 验证不通过则停止
-    await setUserInfo({
+    const res = await setUserInfo({
       ID: userForm.value.ID,
       email: userForm.value.email,
       nickName: userForm.value.nickName,
@@ -556,15 +550,17 @@ const handleSubmitEdit = async () => {
       authorityIds: userForm.value.authorityIds,
       authorities: userAuthority.value,
     });
-    // 这里要用到res，不简化
-    const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-    userList.value = (res.data.list || []).map((user) => ({
-      ...user,
-      authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-    }));
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ type: type, message: res.msg });
-    drawerChange.value = false;
+    if (res.code == 0) {
+      // 这里要用到res，不简化
+      const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
+      userList.value = (res.data.list || []).map((user) => ({
+        ...user,
+        authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
+      }));
+      drawerChange.value = false;
+    }
   });
 };
 
