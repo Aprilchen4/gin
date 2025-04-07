@@ -158,9 +158,16 @@ export default {
 
         // 编程式导航
         // router.push({ path: "/ginmenu" });
-        router.push("/ginmenu").then(() => {
-          window.location.reload(); // 强制刷新（不推荐长期使用）
-        });
+        // router.push("/ginmenu").then(() => {
+        //   window.location.reload(); // 强制刷新（不推荐长期使用）
+        // });
+        // 导航到目标页面
+        await router.push({ path: "/ginmenu" });
+
+        // 强制刷新视图
+        setTimeout(() => {
+          window.dispatchEvent(new Event("resize"));
+        }, 100); // 延迟 100ms 触发 resize 事件，确保布局重新计算
 
         // 假设返回的数据中有 token，存储在 localStorage
         // response.token 是响应对象中的一个字段，表示用户的身份验证令牌（Token）

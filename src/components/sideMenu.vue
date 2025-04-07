@@ -1,16 +1,18 @@
 <template>
   <!-- 滚动条 -->
   <!-- :default-active="1" 用于设置 el-menu [组件初始化时默认,不对]高亮选中的菜单项 ，需要引入activeMenu计算属性-->
-  <el-scrollbar height="400px">
+  <!--   unique-opened一次只打开一个菜单 -->
+  <el-scrollbar class="scrollbar-container">
     <el-menu
       class="bottom-left"
       :default-active="activeMenu"
+      unique-opened
       @select="handleMenuSelect"
       @open="menuOpenEvent"
       @click="sendData"
     >
       <!-- 递归组件，把遍历的值传回子组件，完成递归调用 -->
-      <menuItems :navMenus="sideData.values" />
+      <menuItems :navMenus="sideData.values" class="tight-menu" />
     </el-menu>
   </el-scrollbar>
   <!-- 布局容器，注意组件名称 -->
@@ -51,10 +53,7 @@ onMounted(() => {
     store.commit("setBreadCrumb", breadCrumbValue);
     store.commit("setTabName", tabNameValue);
     // 路由
-    const { routePath, routeName, routeComponent } = routeMake(
-      sideData.values,
-      msg
-    );
+    const { routePath, routeName, routeComponent } = routeMake(sideData.values, msg);
     console.log("当前路由信息", routePath, routeName, routeComponent);
     // store.commit("setRoute", { routePath, routeName, routeComponent });
     router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
@@ -72,10 +71,7 @@ const deleteMessage = ref("");
 onMounted(() => {
   emitter.on("deleteEvent", (msg) => {
     deleteMessage.value = msg;
-    const { routePath, routeName, routeComponent } = routeMake(
-      sideData.values,
-      msg
-    );
+    const { routePath, routeName, routeComponent } = routeMake(sideData.values, msg);
     console.log("当前路由信息", routePath, routeName, routeComponent);
     // store.commit("setRoute", { routePath, routeName, routeComponent });
     router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
@@ -107,10 +103,7 @@ const handleMenuSelect = (menuId) => {
   console.log("标签页名称:", tabNameValue);
 
   // 调用路由生成函数
-  const { routePath, routeName, routeComponent } = routeMake(
-    sideData.values,
-    menuId
-  );
+  const { routePath, routeName, routeComponent } = routeMake(sideData.values, menuId);
 
   console.log("当前路由信息", routePath);
   console.log("当前路由名称", routeName);
@@ -216,10 +209,7 @@ const routeMake = (tree, targetId) => {
     const routeComponent = route[route.length - 1].component;
     return { routePath, routeName, routeComponent };
   };
-  const { routePath, routeName, routeComponent } = generateRoutePath(
-    tree,
-    targetId
-  );
+  const { routePath, routeName, routeComponent } = generateRoutePath(tree, targetId);
   return { routePath, routeName, routeComponent };
 };
 
@@ -228,9 +218,7 @@ const addRouteOneByOne = (routePath, routeName, routeComponent) => {
   // 获取当前所有路由
   const existingRoutes = router.getRoutes();
   // 检查是否已存在相同的 routeName 或 routePath
-  const routeExists = existingRoutes.some(
-    (route) => route.name === routeName || route.path === routePath
-  );
+  const routeExists = existingRoutes.some((route) => route.name === routeName || route.path === routePath);
   // 如果路由不存在，则添加
   if (!routeExists) {
     router.addRoute("ginmenu", {
@@ -254,5 +242,10 @@ watchEffect(() => {
 .bottom-left {
   width: 280px;
   height: 680px;
+}
+
+.scrollbar-container {
+  /* height: 100vh; 限制高度为视口高度 这一行写了就会出现一个粗的滚动条*/
+  background-color: #ffffff; /* 确保滚动条容器背景为白色 */
 }
 </style>

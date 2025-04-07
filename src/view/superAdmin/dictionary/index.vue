@@ -96,7 +96,7 @@
       </div>
     </template>
     <!-- label-width="100px"保证label长度 -->
-    <el-form :model="dicForm" :rules="rulesDic" label-width="100px">
+    <el-form ref="dicFormRef" :model="dicForm" :rules="rulesDic" label-width="100px">
       <el-form-item label="字典名(中)" prop="name">
         <el-input v-model="dicForm.name" placeholder="请输入" />
       </el-form-item>
@@ -130,7 +130,7 @@
       </div>
     </template>
     <!-- 表格表单 -->
-    <el-form :model="tableForm" :rules="rulesTable" label-width="100px">
+    <el-form ref="tableFormRef" :model="tableForm" :rules="rulesTable" label-width="100px">
       <el-form-item label="展示值" prop="label">
         <el-input v-model="tableForm.label" placeholder="请输入展示值" />
       </el-form-item>
@@ -166,7 +166,7 @@ import {
   updateSysDictionaryDetail,
   deleteSysDictionaryDetail,
 } from "@/api/user";
-import { ref, reactive } from "vue";
+import { ref, reactive, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 // activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
@@ -178,6 +178,8 @@ const pageSize = ref(10);
 
 const tableLoading = ref(false);
 const tableData = ref([]);
+const dicFormRef = ref(null);
+const tableFormRef = ref(null);
 
 const drawerDic = ref(false);
 const drawerTable = ref(false);
@@ -211,7 +213,7 @@ const tableForm = ref({
 const rulesDic = reactive({
   name: [{ required: true, message: "请输入name", trigger: "blur" }],
   type: [{ required: true, message: "请输入type", trigger: "blur" }],
-  desc: [{ required: true }],
+  desc: [{ required: true, message: "请输入type", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
@@ -258,10 +260,12 @@ const handleMenuSelect = async (menuId) => {
 };
 
 // 新增字典
-const onAddDic = () => {
+const onAddDic = async () => {
   drawerDic.value = true;
   dialogTitle.value = "添加字典";
   operationDicType.value = "addDictionary";
+  await nextTick();
+  dicFormRef.value.clearValidate();
   dicForm.value = {
     ID: 0,
     desc: "",
@@ -273,20 +277,26 @@ const onAddDic = () => {
 
 // 新增确定
 const handleSubmitAdd = async () => {
-  await createSysDictionary({
-    ID: dicTotal.value + 1,
-    desc: dicForm.value.desc,
-    name: dicForm.value.name,
-    statue: dicForm.value.status,
-    type: dicForm.value.type,
+  dicFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
+    const res = await createSysDictionary({
+      ID: dicTotal.value + 1,
+      desc: dicForm.value.desc,
+      name: dicForm.value.name,
+      statue: dicForm.value.status,
+      type: dicForm.value.type,
+    });
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ type: type, message: res.msg });
+    if (res.code == 0) {
+      drawerDic.value = false;
+      await fetchDicData();
+      if (activeDicIndex.value !== 1) {
+        activeDicIndex.value = 1;
+        await fetchtableData();
+      }
+    }
   });
-  drawerDic.value = false;
-  await fetchDicData();
-  if (activeDicIndex.value !== 1) {
-    activeDicIndex.value = 1;
-    await fetchtableData();
-  }
-  ElMessage({ type: "success", message: `操作成功` });
 };
 
 // 编辑字典
@@ -294,6 +304,8 @@ const openDicEditDrawer = async (item) => {
   drawerDic.value = true;
   dialogTitle.value = "修改字典";
   operationDicType.value = "editDictionary";
+  await nextTick();
+  dicFormRef.value.clearValidate();
   dicForm.value.ID = item.ID;
   dicForm.value.desc = item.desc;
   dicForm.value.name = item.name;
@@ -306,56 +318,53 @@ const openDicEditDrawer = async (item) => {
 
 // 编辑字典确定
 const handleSubmitEdit = async () => {
-  await updateSysDictionary({
-    ID: dicForm.value.ID,
-    desc: dicForm.value.desc,
-    name: dicForm.value.name,
-    statue: dicForm.value.status,
-    type: dicForm.value.type,
-    sysDictionaryDetails: sysDictionaryDetails.value,
+  dicFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
+    const res = await updateSysDictionary({
+      ID: dicForm.value.ID,
+      desc: dicForm.value.desc,
+      name: dicForm.value.name,
+      statue: dicForm.value.status,
+      type: dicForm.value.type,
+      sysDictionaryDetails: sysDictionaryDetails.value,
+    });
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ type: type, message: res.msg });
+    if (res.code == 0) {
+      drawerDic.value = false;
+      await fetchDicData();
+      if (activeDicIndex.value !== 1) {
+        activeDicIndex.value = 1;
+        await fetchtableData();
+      }
+    }
   });
-  drawerDic.value = false;
-  await fetchDicData();
-  if (activeDicIndex.value !== 1) {
-    activeDicIndex.value = 1;
-    await fetchtableData();
-  }
-  ElMessage({ type: "success", message: `操作成功` });
 };
 
-// 字典删除+确定
+// 字典删除+确定,这里没有取消逻辑，程序会报错
 const handleDicDelete = async (item) => {
   activeDicIndex.value = item.ID;
-  await fetchtableData();
-  try {
-    await ElMessageBox.confirm("确定删除吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+  ElMessageBox.confirm("确定要删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      // 执行删除逻辑
+      const res = await deleteSysDictionary({ ID: item.ID });
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ type: type, message: res.msg });
+      // 三元运算符
+      activeDicIndex.value = activeDicIndex.value !== 1 ? 1 : 2;
+      if (res.code == 0) {
+        await fetchDicData();
+        await fetchtableData();
+      }
+    })
+    .catch(() => {
+      // 用户取消删除操作
+      ElMessage({ type: "info", message: "已取消删除" });
     });
-    // 执行删除逻辑
-    await deleteSysDictionary({ ID: item.ID });
-    await fetchDicData();
-    if (activeDicIndex.value !== 1) {
-      activeDicIndex.value = 1;
-      await fetchtableData();
-    } else {
-      activeDicIndex.value = 2;
-      await fetchtableData();
-    }
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消重置!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 表格日期
@@ -372,10 +381,12 @@ const formatDate = (dateStr) => {
 };
 
 // 新增字典项
-const OnClickAddDetails = () => {
+const OnClickAddDetails = async () => {
   drawerTable.value = true;
   tableDrawerTitle.value = "添加字典项";
   operationDicType.value = "addDetails";
+  await nextTick();
+  tableFormRef.value.clearValidate();
   tableForm.value = {
     label: "",
     sort: null,
@@ -389,17 +400,23 @@ const OnClickAddDetails = () => {
 
 // 新增字典项确定按钮
 const handleSubmitAddDetails = async () => {
-  await createSysDictionaryDetail({
-    label: tableForm.value.label,
-    sort: tableForm.value.sort,
-    status: tableForm.value.status,
-    sysDictionaryID: activeDicIndex.value,
-    value: tableForm.value.value,
-    extend: tableForm.value.extend,
+  await tableFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止，注意这里和下面的是并列的，后续不可运行
+    const res = await createSysDictionaryDetail({
+      label: tableForm.value.label,
+      sort: tableForm.value.sort,
+      status: tableForm.value.status,
+      sysDictionaryID: activeDicIndex.value,
+      value: tableForm.value.value,
+      extend: tableForm.value.extend,
+    });
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ type: type, message: res.msg });
+    if (res.code == 0) {
+      drawerTable.value = false;
+      await fetchtableData();
+    }
   });
-  drawerTable.value = false;
-  await fetchtableData();
-  ElMessage({ type: "success", message: `创建/更改成功` });
 };
 
 // 表格变更
@@ -407,6 +424,10 @@ const handleDetailEdit = async (item) => {
   drawerTable.value = true;
   tableDrawerTitle.value = "修改字典项";
   operationDicType.value = "editDetails";
+  await nextTick();
+  tableFormRef.value.clearValidate();
+  // 赋值
+  tableFormRef.value.clearValidate();
   tableData.value.ID = item.ID;
   tableForm.value.label = item.label;
   tableForm.value.sort = item.sort;
@@ -419,44 +440,45 @@ const handleDetailEdit = async (item) => {
 
 // 表格变更确定
 const handleSubmitEditDetails = async () => {
-  await updateSysDictionaryDetail({
-    ID: tableData.value.ID,
-    label: tableForm.value.label,
-    sort: tableForm.value.sort,
-    status: tableForm.value.status,
-    sysDictionaryID: activeDicIndex.value,
-    value: tableForm.value.value,
-    extend: tableForm.value.extend,
+  await tableFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止，注意这里和下面的是并列的，后续不可运行
+    const res = await updateSysDictionaryDetail({
+      ID: tableData.value.ID,
+      label: tableForm.value.label,
+      sort: tableForm.value.sort,
+      status: tableForm.value.status,
+      sysDictionaryID: activeDicIndex.value,
+      value: tableForm.value.value,
+      extend: tableForm.value.extend,
+    });
+    drawerTable.value = false;
+    await fetchtableData();
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ type: type, message: res.msg });
   });
-  drawerTable.value = false;
-  await fetchtableData();
-  ElMessage({ type: "success", message: `创建/更改成功` });
 };
 
-// 表格删除+确定
+// 表格删除+确定,这里写了取消逻辑，不会报错
 const handleDetailDelete = async (item) => {
-  try {
-    await ElMessageBox.confirm("确定删除吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+  // 同步，无需await
+  ElMessageBox.confirm("确定删除吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      // 执行删除逻辑
+      const res = await deleteSysDictionaryDetail({ ID: item.ID });
+      // 三元运算符+消息提示
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+      if (res.code == 0) {
+        await fetchtableData();
+      }
+    })
+    .catch(() => {
+      ElMessage({ type: "info", message: " 已取消删除" });
     });
-    // 执行删除逻辑
-    await deleteSysDictionaryDetail({ ID: item.ID });
-    await fetchtableData();
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消重置!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 每页条数变化时触发

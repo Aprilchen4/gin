@@ -1,27 +1,23 @@
 <template>
-  <!-- v-model 属性是用来绑定当前激活的标签页，需要写activeMenu计算属性 -->
-  <!--:default-active后面跟el-tab-pane的name属性的类型  -->
-  <el-tabs
-    v-model="activeMenu"
-    type="card"
-    :default-active="1"
-    @tab-remove="deleteTab"
-    @tab-click="TabClick"
-  >
-    <!--  :default-active用于设置 el-tabs 初始化时默认选中的标签页 ;  v-model用于动态切换-->
-    <!-- 这里key的逻辑，代表列表内元素对象的唯一标识tabIndex -->
-    <!-- editableTabs是数组，item是数值里面的元素 -->
-    <!-- 控制第一个元素不能删除：:closable ='item.label!==1' -->
-    <el-tab-pane
-      v-for="item in tabs"
-      :key="item.label"
-      :label="item.name"
-      :name="item.label"
-      :closable="item.label !== 1"
-    >
-      {{ item.content }}
-    </el-tab-pane>
-  </el-tabs>
+  <div class="gva-tabs">
+    <!-- v-model 属性是用来绑定当前激活的标签页，需要写activeMenu计算属性 -->
+    <!--:default-active后面跟el-tab-pane的name属性的类型  -->
+    <el-tabs v-model="activeMenu" type="card" :default-active="1" @tab-remove="deleteTab" @tab-click="TabClick">
+      <!--  :default-active用于设置 el-tabs 初始化时默认选中的标签页 ;  v-model用于动态切换-->
+      <!-- 这里key的逻辑，代表列表内元素对象的唯一标识tabIndex -->
+      <!-- editableTabs是数组，item是数值里面的元素 -->
+      <!-- 控制第一个元素不能删除：:closable ='item.label!==1' -->
+      <el-tab-pane
+        v-for="item in tabs"
+        :key="item.label"
+        :label="item.name"
+        :name="item.label"
+        :closable="item.label !== 1"
+      >
+        {{ item.content }}
+      </el-tab-pane>
+    </el-tabs>
+  </div>
 </template>
 
 <script setup>
@@ -88,21 +84,25 @@ const deleteTab = (targetName) => {
 </script>
 
 <style scoped>
-/* 调整标签页的 padding */
-:deep(.el-tabs__item) {
-  border: 1px solid var(--el-border-color-darker);
-  border-radius: 2px;
-  margin-right: 5px;
-  margin-left: 2px;
-  /* 效果：鼠标悬停时，内边距在 0.3 秒内按自定义曲线平滑扩展。 */
-  transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
-  height: 34px;
-}
+.gva-tabs {
+  /* 就是这句，组件库内部样式控制组件的外边缘边框线 */
+  :deep(.el-tabs__nav) {
+    border: 0;
+  }
 
-:deep(.el-tabs__item.is-active) {
-  color: #409eff; /* 文字颜色为蓝色 */
-  background-color: #e6f7ff; /* 背景色为浅蓝色 */
-  border: black;
-  font-weight: bold;
+  :deep(.el-tabs__item) {
+    border: 1px solid var(--el-border-color-darker) !important; /* 四边灰色边框 */
+    border-radius: 2px;
+    margin-right: 7px !important;
+    /* 效果：鼠标悬停时，内边距在 0.3 秒内按自定义曲线平滑扩展。 */
+    transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+    height: 34px;
+  }
+
+  :deep(.el-tabs__item.is-active) {
+    color: #409eff; /* 文字颜色为蓝色 */
+    border: 1px solid var(--el-color-primary) !important; /*!important保证 四边蓝色边框 */
+    position: relative; /*确保上边框不被遮挡 */
+  }
 }
 </style>

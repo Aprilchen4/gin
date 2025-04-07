@@ -14,7 +14,7 @@
           </div>
         </div>
       </template>
-      <el-form :model="form" label-width="80px" :rules="rules">
+      <el-form ref="addFormRef" :model="form" label-width="80px" :rules="rules">
         <el-form-item prop="parentId">
           <template #label>父级角色</template>
           <el-input placeholder="根角色(严格模式下为当前用户角色)" disabled />
@@ -81,12 +81,12 @@
       <div style="display: flex; justify-content: space-between; align-items: center">
         <span>新增子角色</span>
         <div>
-          <el-button @click="drawerAdd = false">取消</el-button>
+          <el-button @click="drawerAddSub = false">取消</el-button>
           <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
         </div>
       </div>
     </template>
-    <el-form :model="form" label-width="80px" :rules="rules">
+    <el-form ref="addFormRef" :model="form" label-width="80px" :rules="rules">
       <el-form-item prop="parentId">
         <template #label>父级角色</template>
         <el-input v-model="parentDisplay" disabled />
@@ -112,7 +112,7 @@
         </div>
       </div>
     </template>
-    <el-form :model="form" label-width="80px" :rules="rules">
+    <el-form ref="copyFormRef" :model="form" label-width="80px" :rules="rules">
       <el-form-item prop="parentId">
         <template #label><span>父级角色</span></template>
         <el-cascader
@@ -146,7 +146,7 @@
         </div>
       </div>
     </template>
-    <el-form :model="form" label-width="80px" :rules="rules">
+    <el-form ref="editFormRef" :model="form" label-width="80px" :rules="rules">
       <el-form-item prop="parentId">
         <template #label><span>父级角色</span></template>
         <!-- 级联选择器 (el-cascader) 会自动将 v-model 绑定的值转换为数组
@@ -182,6 +182,11 @@ import tabReview from "@/view/superAdmin/authority/components/tabReview.vue";
 import tabApis from "@/view/superAdmin/authority/components/tabApis.vue";
 import tabResource from "@/view/superAdmin/authority/components/tabResource.vue";
 import { useStore } from "vuex";
+import { nextTick } from "vue";
+
+const addFormRef = ref(null);
+const copyFormRef = ref(null);
+const editFormRef = ref(null);
 
 const authorityList = ref([]); // 定义为全局变量，方便读取，赋值的data是树形结构
 const authorityOption = ref([]);
@@ -228,25 +233,42 @@ const cascaderProps = {
   checkStrictly: true, // 关键设置：可以单独选择任意节点，而不强制选中其子节点，注意这里格式前面有个圆形按钮
 };
 
-const handleClickAdd = () => {
+// 新增角色
+const handleClickAdd = async () => {
   drawerAdd.value = true;
+  await nextTick();
+  addFormRef.value.clearValidate();
   form.value.authorityId = "";
   form.value.authorityName = "";
   form.value.parentId = 0; // 新增角色
 };
 
+// 新增角色确定
 const handleSubmitAdd = async () => {
-  drawerAddSub.value = false;
-  drawerAdd.value = false;
-  form.value.authorityId = Number(form.value.authorityId); // 转为数字
-  await createAuthority(form.value);
-  const { data } = await getAuthority();
-  authorityList.value = data;
-  ElMessage.success("添加成功!");
+  addFormRef.value.validate(async (valid) => {
+    if (!valid) return;
+    drawerAdd.value = false;
+    form.value.authorityId = Number(form.value.authorityId); // 转为数字
+    drawerAddSub.value = false;
+    drawerAdd.value = false;
+    form.value.authorityId = Number(form.value.authorityId); // 转为数字
+    const res = await createAuthority(form.value);
+    const type = res.code === 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code === 0) {
+      // 注意这里，返回是一个对象
+      // const {data} = await getAuthority();//这么写是可以的，data赋值给数组
+      // 直接赋值返回值，会报错data.includes not function
+      authorityList.value = (await getAuthority()).data;
+    }
+  });
 };
 
-const handleClickAddSub = (row) => {
+// ，注意实例要和表单绑定，否则提示clearValidate属性错误
+const handleClickAddSub = async (row) => {
   drawerAddSub.value = true;
+  await nextTick();
+  addFormRef.value.clearValidate();
   form.value.authorityId = "";
   form.value.authorityName = "";
   form.value.parentId = row.authorityId; // 函数参数
@@ -255,6 +277,8 @@ const handleClickAddSub = (row) => {
 
 const handleClickCopy = async (row) => {
   drawerCopy.value = true;
+  await nextTick();
+  copyFormRef.value.clearValidate();
   // 旧的ID
   oldAuthorityId.value = Number(row.authorityId);
   // 填充表单
@@ -264,20 +288,25 @@ const handleClickCopy = async (row) => {
 };
 
 const handleSubmitCopy = async () => {
-  drawerCopy.value = false;
-  form.value.authorityId = Number(form.value.authorityId); // 转为数字
-  await copyAuthority({
-    authority: {
-      authorityId: form.value.authorityId,
-      authorityName: form.value.authorityName,
-      //级联选择器 (el-cascader) 会自动将 v-model 绑定的值转换为数组
-      parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
-    },
-    oldAuthorityId: oldAuthorityId.value,
+  copyFormRef.value.validate(async (valid) => {
+    if (!valid) return;
+    drawerCopy.value = false;
+    form.value.authorityId = Number(form.value.authorityId); // 转为数字
+    const res = await copyAuthority({
+      authority: {
+        authorityId: form.value.authorityId,
+        authorityName: form.value.authorityName,
+        //级联选择器 (el-cascader) 会自动将 v-model 绑定的值转换为数组
+        parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
+      },
+      oldAuthorityId: oldAuthorityId.value,
+    });
+    const type = res.code === 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code === 0) {
+      authorityList.value = (await getAuthority()).data;
+    }
   });
-  const { data } = await getAuthority();
-  authorityList.value = data;
-  ElMessage.success("拷贝成功!");
 };
 
 const handleClickSetting = async (row) => {
@@ -289,22 +318,29 @@ const handleClickSetting = async (row) => {
 
 const handleClickEdit = async (row) => {
   drawerEdit.value = true;
+  await nextTick();
+  editFormRef.value.clearValidate();
   form.value.authorityId = row.authorityId;
   form.value.authorityName = row.authorityName;
   form.value.parentId = row.parentId;
 };
 
 const handleSubmitEdit = async () => {
-  drawerEdit.value = false;
-  form.value.authorityId = Number(form.value.authorityId); // 转为数字
-  await updateAuthority({
-    authorityId: form.value.authorityId,
-    authorityName: form.value.authorityName,
-    parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
+  editFormRef.value.validate(async (valid) => {
+    if (!valid) return;
+    drawerEdit.value = false;
+    form.value.authorityId = Number(form.value.authorityId); // 转为数字
+    const res = await updateAuthority({
+      authorityId: form.value.authorityId,
+      authorityName: form.value.authorityName,
+      parentId: form.value.parentId[form.value.parentId.length - 1], // 取最后一位,0可能报错
+    });
+    const type = res.code === 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code === 0) {
+      authorityList.value = (await getAuthority()).data;
+    }
   });
-  const { data } = await getAuthority();
-  authorityList.value = data;
-  ElMessage.success("编辑成功!");
 };
 
 // 删除按钮

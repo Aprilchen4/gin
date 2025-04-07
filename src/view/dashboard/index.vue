@@ -1,5 +1,5 @@
 <template>
-  <div>仪表盘的抽象行为</div>
+  <div>仪表盘</div>
 </template>
 
 <style>

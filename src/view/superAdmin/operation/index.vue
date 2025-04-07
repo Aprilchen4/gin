@@ -190,29 +190,25 @@ const handleSelectionChange = async (val) => {
 
 // 表格选中删除
 const handleDelete = async () => {
-  try {
-    await ElMessageBox.confirm("确定删除吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+  ElMessageBox.confirm("确定删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await deleteSysOperationRecordByIds({ ids: selectedIds.value });
+      // 清空搜索内容
+      params.value = "";
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+      if (res.code == 0) {
+        await fetchtableData();
+      }
+    })
+    .catch(() => {
+      // 处理取消逻辑
+      ElMessage({ message: "已取消删除!", type: "info" });
     });
-    await deleteSysOperationRecordByIds({ ids: selectedIds.value });
-    // 清空搜索内容
-    params.value = "";
-    await fetchtableData();
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 请求/响应表格
@@ -227,29 +223,25 @@ function formatJson(jsonString) {
 
 // 删除逻辑
 const handleDetailDelete = async (row) => {
-  try {
-    await ElMessageBox.confirm("确定删除吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+  ElMessageBox.confirm("确定删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await deleteSysOperationRecord({ id: row.ID });
+      // 清空历史搜索内容
+      params.value = "";
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+      if (res.code == 0) {
+        await fetchtableData();
+      }
+    })
+    .catch(() => {
+      // 处理取消逻辑
+      ElMessage({ message: "已取消删除!", type: "info" });
     });
-    await deleteSysOperationRecord({ id: row.ID });
-    // 清空历史搜索内容
-    params.value = "";
-    await fetchtableData();
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 表格日期

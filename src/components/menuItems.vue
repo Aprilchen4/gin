@@ -19,12 +19,7 @@
       </el-menu-item>
 
       <!--有多级菜单-->
-      <el-sub-menu
-        v-if="navMenu.children"
-        :key="navMenu.menuId"
-        :data="navMenu"
-        :index="navMenu.menuId"
-      >
+      <el-sub-menu v-if="navMenu.children" :key="navMenu.menuId" :data="navMenu" :index="navMenu.menuId">
         <i :class="navMenu.meta.icon"></i>
         <template #title>
           {{ navMenu.meta.title }}
@@ -50,4 +45,15 @@ const { navMenus } = toRefs(props);
 // })
 </script>
 
-<style scoped></style>
+<style scoped>
+.el-menu-item {
+  line-height: 1.5; /* 这个最重要，减小菜单项间距*/
+}
+
+.el-dialog .el-menu-item {
+  padding: 8px 10px; /* 默认可能是 20px 上下，调整为更小的值 */
+  margin: 0; /* 移除可能的默认外边距 */
+  line-height: 1.5; /* 这个最重要，减小菜单项间距*/
+  height: auto; /* 确保高度自适应内容 */
+}
+</style>

@@ -63,7 +63,7 @@
       </div>
     </template>
     <WarningTip title="新增菜单，需要在角色管理内配置权限才可使用" />
-    <el-form label-position="top" :rules="rules" :model="form">
+    <el-form ref="menuFormRef" label-position="top" :rules="rules" :model="form">
       <el-row>
         <el-col span="12">
           <el-form-item prop="component">
@@ -322,6 +322,7 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import WarningTip from "@/components/WarningTip.vue";
 import MenuCascade from "@/components/menuCascade.vue";
 import menuIcon from "@/components/menuIcon.vue";
+import { nextTick } from "vue";
 
 const drawerChange = ref(false);
 const menuList = ref([]);
@@ -333,6 +334,8 @@ const isEdit = ref(false);
 const operationType = ref(""); // "addRoot", "addSub", "edit"
 const rootDisplay = ref("根目录");
 const subDisplay = ref("");
+
+const menuFormRef = ref(null);
 
 const switchMode = (newMode) => {
   mode.value = newMode;
@@ -380,10 +383,12 @@ const rules = reactive({
 });
 
 // 新增根菜单按钮
-const handleClickRootAdd = () => {
+const handleClickRootAdd = async () => {
   operationType.value = "addRoot";
   drawerChange.value = true;
   dialogTitle.value = "新增菜单";
+  await nextTick(); //等待dom加载
+  menuFormRef.value.clearValidate(); // 确保每次都有清除校验
   form.value = {
     ID: 0,
     path: "",
@@ -407,23 +412,24 @@ const handleClickRootAdd = () => {
 
 // 新增根菜单/子菜单确定按钮
 const handleSubmitAdd = async () => {
-  try {
+  menuFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
     drawerChange.value = false;
-    await addBaseMenu(form.value);
-    const { data } = await getMenuList(); // 等待数据加载
-    menuList.value = data;
-    ElMessage.success("添加成功!");
-  } catch (error) {
-    ElMessage.error(`添加失败: ${error.message}`);
-  }
+    const res = await addBaseMenu(form.value);
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    menuList.value = await getMenuList(); // 等待数据加载
+  });
 };
 
 // 新增子菜单按钮
-const operateClickAddSub = (row) => {
+const operateClickAddSub = async (row) => {
   operationType.value = "addSub";
   isEdit.value = false;
   dialogTitle.value = "新增菜单";
   drawerChange.value = true;
+  await nextTick(); //等待dom加载
+  menuFormRef.value.clearValidate(); // 确保每次都有清除校验
   console.log(row);
   form.value = {
     ID: 0,
@@ -450,64 +456,51 @@ const operateClickAddSub = (row) => {
 const operateClickEdit = async (row) => {
   drawerChange.value = true; // 首先打开抽屉
   operationType.value = "edit";
+  dialogTitle.value = "编辑菜单";
+  await nextTick(); //等待dom加载
+  menuFormRef.value.clearValidate(); // 确保每次都有清除校验
   const id = row.ID;
   const res = await getBaseMenuById({ id });
   form.value = res.data.menu;
   isEdit.value = true;
-  dialogTitle.value = "编辑菜单";
 };
 
 // 操作编辑-确定按钮
 const handleSubmitEdit = async () => {
-  drawerChange.value = false;
-  await updateBaseMenu(form.value);
-  getMenuList().then((a) => {
-    menuList.value = a.data;
-  });
-  ElMessage({
-    message: "编辑成功!",
-    type: "success",
-  });
-};
-
-// 操作栏删除按钮
-const operateClickDelete = async (row) => {
-  try {
-    await ElMessageBox.confirm("此操作将永久删除该角色，是否继续？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    // 确定后执行的逻辑
-    operateSubmitDelete(row); // 调用函数
-    ElMessage({
-      message: "删除成功!",
-      type: "success",
-    });
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
+  menuFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
+    drawerChange.value = false;
+    const res = await updateBaseMenu(form.value);
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code == 0) {
+      getMenuList().then((a) => {
+        menuList.value = a.data;
       });
     }
-  }
+  });
 };
 
-// 操作栏删除弹窗--确定
-const operateSubmitDelete = async (row) => {
-  if (row.ID) {
-    // 1. 先等待删除操作完成
-    await deleteBaseMenu({ ID: row.ID });
-    // 2. 删除成功后再获取最新数据
-    getMenuList().then((a) => {
-      menuList.value = a.data;
+// 操作栏删除按钮 + 确定
+const operateClickDelete = async (row) => {
+  ElMessageBox.confirm("此操作将永久删除所有角色下该菜单, 是否继续?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await deleteBaseMenu({ ID: row.ID });
+      // 注意这里，如果是提示首页删除失败，也会正确提示，嘿嘿嘿好
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ type: type, message: res.msg });
+      // 只有删除成功时才刷新列表
+      if (res.code === 0) {
+        getMenuList();
+      }
+    })
+    .catch(() => {
+      ElMessage({ type: "info", message: "已取消删除" });
     });
-  } else {
-    alert("请输入角色名称以删除角色");
-    console.error("请输入角色ID以删除角色");
-  }
 };
 
 // 抽屉新增菜单参数，对象格式

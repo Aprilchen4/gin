@@ -349,7 +349,7 @@ export const resetPassword = (data) => {
 }
 
 // 上传图片到服务器
-export const uploadPicture = (data) => {
+export const upload = (data) => {
   return request({
     url: '/fileUploadAndDownload/upload',
     method: 'POST',
@@ -357,7 +357,14 @@ export const uploadPicture = (data) => {
   })
 }
 
-
+// 删除上传用户照片
+export const deleteFile = (data) => {
+  return request({
+    url: '/fileUploadAndDownload/deleteFile',
+    method: 'POST',
+    data
+  })
+}
 
 // 字典页面进入请求
 export const getSysDictionaryList = () => {

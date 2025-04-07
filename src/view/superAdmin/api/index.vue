@@ -102,7 +102,7 @@
     </template>
     <warningTip title="新增API，需要在角色管理内配置权限才可使用" style="margin-bottom: 10px" />
     <!-- 注意这里，表单绑定对象 -->
-    <el-form :model="formInfo" label-width="80px" :rules="rules">
+    <el-form ref="apiFormRef" :model="formInfo" label-width="80px" :rules="rules">
       <el-form-item prop="path">
         <template #label>路径</template>
         <el-input v-model="formInfo.path" />
@@ -257,6 +257,7 @@ import {
 } from "@/api/user";
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
+import { nextTick } from "vue";
 
 //删除按钮勾选响应，apis表示数组元素（对象
 const apis = ref([]);
@@ -279,6 +280,8 @@ const ignoreApis = ref([]);
 const newApis = ref([]);
 const pathArray = ref([]);
 
+const apiFormRef = ref(null);
+
 const searchInfo = reactive({
   path: "",
   description: "",
@@ -289,7 +292,8 @@ const searchInfo = reactive({
 // 注意这里，将表格数据和表单数据分开管理。
 const tableInfo = ref([]);
 const formInfo = reactive({
-  // value: [], // 统一使用value作为表格数据
+  // value: [], // 统一使用value作为表格数据 ×
+  ID: null,
   path: "",
   description: "",
   apiGroup: "",
@@ -344,8 +348,16 @@ const onSubmit = async () => {
 };
 
 // 重置逻辑
+// ref 可以直接替换整个对象（xxx.value = {}）	reactive必须逐个修改属性（或使用 Object.assign）
 const onReset = async () => {
   await fetchTableData();
+  // 清空搜索表单,直接赋值
+  Object.assign(searchInfo, {
+    path: "",
+    description: "",
+    apiGroup: "",
+    method: "",
+  });
 };
 
 // 新增按钮抽屉
@@ -353,7 +365,11 @@ const addApi = async () => {
   drawerChange.value = true;
   dialogTitle.value = "新增Api";
   operationType.value = "addApi";
+  // 清除校验状态
+  await nextTick(); // 等待 DOM 更新
+  apiFormRef.value.clearValidate();
   // 重置 formInfo 的表单字段，而不是 formInfo.value
+  formInfo.ID = null;
   formInfo.path = "";
   formInfo.description = "";
   formInfo.apiGroup = "";
@@ -362,14 +378,21 @@ const addApi = async () => {
 
 // 新增按钮确认提交
 const handleSubmitAdd = async () => {
-  await createApi({
-    path: formInfo.path,
-    description: formInfo.description,
-    apiGroup: formInfo.apiGroup,
-    method: formInfo.method,
+  apiFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
+    const res = await createApi({
+      path: formInfo.path,
+      description: formInfo.description,
+      apiGroup: formInfo.apiGroup,
+      method: formInfo.method,
+    });
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code == 0) {
+      await fetchTableData();
+      await fetchApiGroups();
+    }
   });
-  await fetchTableData();
-  await fetchApiGroups();
 };
 
 // 删除勾选 批量操作
@@ -381,44 +404,41 @@ const handleSelectionChange = (val) => {
 };
 
 // 中间删除逻辑
-const onDelete = async () => {
-  try {
-    await ElMessageBox.confirm("确定删除吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+const onDelete = () => {
+  ElMessageBox.confirm("确定删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await deleteApisByIds({ ids: selectedIds.value });
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+      // 删除成功时调用函数
+      if (res.code == 0) {
+        await fetchTableData();
+      }
+    })
+    .catch(() => {
+      ElMessage({ message: "已取消删除!", type: "info" });
     });
-    await deleteApisByIds({ ids: selectedIds.value });
-    await fetchTableData();
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 刷新缓存逻辑
 const onFresh = async () => {
-  try {
-    await ElMessageBox.confirm("确定要刷新缓存吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
+  ElMessageBox.confirm("确定要刷新缓存吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await freshCasbin();
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+    })
+    .catch(() => {
+      ElMessage({ message: "已取消刷新!", type: "info" });
     });
-    await freshCasbin();
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
-      });
-    }
-  }
 };
 
 // 同步按钮抽屉，这里syncApi是GEt请求，方法不对，会提示请求资源不存在
@@ -437,10 +457,13 @@ const onSync = async () => {
 // 编辑按钮抽屉
 const operateClickEdit = async (row) => {
   drawerChange.value = true;
-  await getApiById({ id: row.ID });
   dialogTitle.value = "编辑Api";
   operationType.value = "editApi";
-  // formInfo.value = row.value; // 不能这么写，直接赋值属性
+  await nextTick(); //等待dom加载
+  apiFormRef.value.clearValidate(); // 确保每次都有清除校验
+  await getApiById({ id: row.ID });
+  // formInfo.value = row; // 不能这么写，formInfo是对象，没有value属性
+  formInfo.ID = row.ID;
   formInfo.path = row.path;
   formInfo.apiGroup = row.apiGroup;
   formInfo.method = row.method;
@@ -449,47 +472,52 @@ const operateClickEdit = async (row) => {
 
 // 编辑按钮确定提交,注意这里的表单绑定的是formInfo，和row区别
 const handleSubmitEdit = async () => {
-  await updateApi({
-    ID: formInfo.ID,
-    path: formInfo.path,
-    method: formInfo.method,
-    apiGroup: formInfo.apiGroup,
-    description: formInfo.description,
+  apiFormRef.value.validate(async (valid) => {
+    if (!valid) return; // 验证不通过则停止
+    const res = await updateApi({
+      ID: formInfo.ID,
+      path: formInfo.path,
+      method: formInfo.method,
+      apiGroup: formInfo.apiGroup,
+      description: formInfo.description,
+    });
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
+    if (res.code == 0) {
+      await fetchTableData();
+    }
   });
-  await fetchTableData();
-  ElMessage.success("编辑成功");
 };
 
 // 表格删除逻辑
 const deleteApiFunc = async (row) => {
-  try {
-    await ElMessageBox.confirm("此操作将永久删除所有角色下该api, 是否继续?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await deleteApi({
-      ID: row.ID,
-      apiGroup: row.apiGroup,
-      description: row.description,
-      method: row.method,
-      path: row.path,
-    });
-    await fetchTableData();
-  } catch (error) {
-    // 处理取消逻辑
-    if (error === "cancel") {
-      ElMessage({
-        message: "已取消删除!",
-        type: "info",
+  ElMessageBox.confirm("此操作将永久删除所有角色下该api, 是否继续?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const res = await deleteApi({
+        ID: row.ID,
+        apiGroup: row.apiGroup,
+        description: row.description,
+        method: row.method,
+        path: row.path,
       });
-    }
-  }
+      const type = res.code == 0 ? "success" : "error";
+      ElMessage({ message: res.msg, type: type });
+      if (res.code == 0) {
+        await fetchTableData();
+      }
+    })
+    .catch(() => {
+      ElMessage({ message: "已取消删除!", type: "info" });
+    });
 };
 
 //  同步抽屉确定提交
 const handleSubmitAsync = async () => {
-  if (!newApis.value.length === 0) {
+  if (!newApis.value.length == 0) {
     ElMessage.error(`存在API未分组或未填写描述`);
     return;
   }
@@ -503,88 +531,83 @@ const handleSubmitAsync = async () => {
 };
 
 const apiAutoCompletion = async () => {
-  await llmAuto({
+  const res = await llmAuto({
     command: "apiCompletion",
     mode: "butler",
     data: pathArray.value,
   });
-  ElMessage.error(`请先前往插件市场个人中心获取AiPath并填入config.yaml中，再进行同步`);
+  const type = res.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: res.msg });
 };
 
 // 单条新增
 const SingleAdd = async (row) => {
-  if (!row.apiGroup) {
-    ElMessage.error(`请先填写api分组`);
+  // 这里两个if写成三元运算符形式
+  if (!row.apiGroup || !row.description) {
+    ElMessage.error(!row.apiGroup ? "请先填写api分组" : "请先填写 API 简介");
     return;
   }
-  // 2. 检查 description 是否为空
-  if (!row.description) {
-    ElMessage.error("请先填写 API 简介");
-    return;
-  }
-  try {
-    await createApi({
-      ID: 0,
-      apiGroup: row.apiGroup,
-      description: row.description,
-      method: row.method,
-      path: row.path,
-    });
+  const res = await createApi({
+    ID: 0,
+    apiGroup: row.apiGroup,
+    description: row.description,
+    method: row.method,
+    path: row.path,
+  });
+  const type = res.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: res.msg });
+  if (res.code == 0) {
     await fetchTableData();
     await fetchApiGroups();
-    ElMessage.success("添加成功");
-    // 可以在这里刷新数据或关闭抽屉
-  } catch (error) {
-    ElMessage.error("添加失败：" + error.message);
   }
 };
 
 // 忽略
 const handleIgnore = async (row) => {
-  await ignoreApi({
+  const res = await ignoreApi({
     flag: true,
     method: row.method,
     path: row.path,
   });
-  ElMessage.success("操作成功");
+  const type = res.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: res.msg });
 };
 
 // 取消忽略
 const operateIgnore = async (row) => {
-  await ignoreApi({
+  const res = await ignoreApi({
     flag: false,
     method: row.method,
     path: row.path,
   });
-  ElMessage.success("操作成功");
+  const type = res.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: res.msg });
 };
 
-//创建函数赋值并统一调用
+//创建函数赋值并统一调用，res 变量在 then 和 catch 中不可见
+// 同时使用await 和 .then().catch()，导致作用域混乱
 const fetchTableData = async () => {
-  try {
-    const res = await getApiList({
-      page: page.value,
-      pageSize: pageSize.value,
-      orderKey: "method",
-      desc: false,
-    });
+  const res = await getApiList({
+    page: page.value,
+    pageSize: pageSize.value,
+    orderKey: "method",
+    desc: false,
+  });
+  if (res.code == 0) {
     tableInfo.value = res.data.list; // 更新表格数据
     total.value = res.data.total; // 更新总数
-  } catch (error) {
-    console.error("Failed to fetch table data:", error);
   }
 };
 
 const fetchApiGroups = async () => {
-  try {
-    const res = await getApiGroups(); // 等待请求完成
-    apiGroupOptions.value = res.data.groups.map((item) => ({
-      label: item,
-      value: item,
-    }));
-  } catch (error) {
-    console.error("获取API分组失败:", error);
-    // 可以在这里显示错误提示，如 ElMessage.error("获取API分组失败");
+  const res = await getApiGroups(); // 等待请求完成
+  apiGroupOptions.value = res.data.groups.map((item) => ({
+    label: item,
+    value: item,
+  }));
+  if (res.code == 0) {
+    const type = res.code == 0 ? "success" : "error";
+    ElMessage({ message: res.msg, type: type });
   }
 };
 </script>
