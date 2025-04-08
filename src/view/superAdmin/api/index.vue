@@ -29,7 +29,7 @@
       </el-form-item>
     </el-form>
   </div>
-  <div style="margin-top: 20px">
+  <div style="margin-top: 10px">
     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 20px">
       <el-button type="primary" icon="plus" @click="addApi"> 新增 </el-button>
       <el-button icon="delete" @click="onDelete" :disabled="!apis.length"> 删除 </el-button>
@@ -44,7 +44,6 @@
       :data="tableInfo"
       @selection-change="handleSelectionChange"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '16px',
         fontWeight: 'bold',
@@ -52,7 +51,7 @@
     >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="ID" label="id" min-width="35" sortable />
-      <el-table-column prop="path" label="API路径" sortable />
+      <el-table-column prop="path" label="API路径" show-overflow-tooltip sortable />
       <el-table-column prop="apiGroup" label="API分组" sortable />
       <el-table-column prop="description" label="API简介" sortable />
       <el-table-column prop="method" label="请求" sortable />
@@ -74,9 +73,9 @@
       v-model:current-page="page"
       v-model:page-size="pageSize"
       :page-sizes="[10, 30, 50, 100]"
-      :size="size"
+      size="small"
+      background
       :disabled="disabled"
-      :background="background"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
       @size-change="handleSizeChange"
@@ -91,12 +90,8 @@
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerChange = false">取消</el-button>
-          <template v-if="operationType === 'addApi'">
-            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
-          </template>
-          <template v-else-if="operationType === 'editApi'">
-            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
-          </template>
+          <el-button v-if="operationType === 'addApi'" type="primary" @click="handleSubmitAdd">确定</el-button>
+          <el-button v-else type="primary" @click="handleSubmitEdit">确定</el-button>
         </div>
       </div>
     </template>
@@ -155,7 +150,6 @@
       :data="newApis"
       style="margin-top: 10px"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '13px',
         fontWeight: 'bold',
@@ -193,7 +187,6 @@
       :data="deleteApis"
       style="margin-top: 10px"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '13px',
         fontWeight: 'bold',
@@ -214,7 +207,6 @@
       :data="ignoreApis"
       style="margin-top: 10px"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '13px',
         fontWeight: 'bold',
@@ -256,6 +248,7 @@ import {
   deleteApisByIds,
 } from "@/api/user";
 import { ref, reactive } from "vue";
+import { computed } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { nextTick } from "vue";
 
@@ -265,8 +258,9 @@ const apis = ref([]);
 const selectedIds = ref([]);
 //抬头选择器
 const apiGroupOptions = ref([]);
-const dialogTitle = ref("");
+// const dialogTitle = ref("");
 const operationType = ref("");
+const dialogTitle = computed(() => (operationType.value == "addApi" ? "新增Api" : "编辑Api"));
 
 const page = ref(1);
 const pageSize = ref(10);
@@ -363,17 +357,19 @@ const onReset = async () => {
 // 新增按钮抽屉
 const addApi = async () => {
   drawerChange.value = true;
-  dialogTitle.value = "新增Api";
+  // dialogTitle.value = "新增Api";
   operationType.value = "addApi";
   // 清除校验状态
   await nextTick(); // 等待 DOM 更新
   apiFormRef.value.clearValidate();
-  // 重置 formInfo 的表单字段，而不是 formInfo.value
-  formInfo.ID = null;
-  formInfo.path = "";
-  formInfo.description = "";
-  formInfo.apiGroup = "";
-  formInfo.method = "";
+  // 重置 formInfo 的表单字段
+  apiFormRef.value.resetFields();
+  // reactive定义的对象，没有value属性
+  // formInfo.ID = null;
+  // formInfo.path = "";
+  // formInfo.description = "";
+  // formInfo.apiGroup = "";
+  // formInfo.method = "";
 };
 
 // 新增按钮确认提交
@@ -391,6 +387,7 @@ const handleSubmitAdd = async () => {
     if (res.code == 0) {
       await fetchTableData();
       await fetchApiGroups();
+      drawerChange.value = false;
     }
   });
 };
@@ -457,7 +454,7 @@ const onSync = async () => {
 // 编辑按钮抽屉
 const operateClickEdit = async (row) => {
   drawerChange.value = true;
-  dialogTitle.value = "编辑Api";
+  // dialogTitle.value = "编辑Api";
   operationType.value = "editApi";
   await nextTick(); //等待dom加载
   apiFormRef.value.clearValidate(); // 确保每次都有清除校验
@@ -485,6 +482,7 @@ const handleSubmitEdit = async () => {
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ message: res.msg, type: type });
     if (res.code == 0) {
+      drawerChange.value = false;
       await fetchTableData();
     }
   });

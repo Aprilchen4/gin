@@ -24,7 +24,6 @@
       @selection-change="handleSelectionChange"
       :data="tableData"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '14px',
         fontWeight: 'bold',
@@ -95,9 +94,9 @@
         v-model:current-page="page"
         v-model:page-size="pageSize"
         :page-sizes="[10, 30, 50, 100]"
-        :size="size"
+        size="small"
+        background
         :disabled="disabled"
-        :background="background"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
         @size-change="handleSizeChange"
@@ -112,6 +111,7 @@
 import { ref } from "vue";
 import { getSysOperationRecordList, deleteSysOperationRecordByIds, deleteSysOperationRecord } from "@/api/user";
 import { ElMessageBox, ElMessage } from "element-plus";
+import { formatDate } from "@/utils/formatDate";
 
 const searchForm = ref({
   method: "",
@@ -242,19 +242,6 @@ const handleDetailDelete = async (row) => {
       // 处理取消逻辑
       ElMessage({ message: "已取消删除!", type: "info" });
     });
-};
-
-// 表格日期
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 补零
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
 // 每页条数变化时触发

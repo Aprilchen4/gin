@@ -29,12 +29,8 @@
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerChange = false">取消</el-button>
-          <template v-if="operationType === 'addUser'">
-            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
-          </template>
-          <template v-else-if="operationType === 'editUser'">
-            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
-          </template>
+          <el-button v-if="operationType === 'addUser'" type="primary" @click="handleSubmitAdd"> 确定 </el-button>
+          <el-button v-else type="primary" @click="handleSubmitEdit">确定</el-button>
         </div>
       </div>
     </template>
@@ -162,9 +158,9 @@
             <div style="display: flex; justify-content: center; margin-top: 10px; margin-top: 25px">
               <el-pagination
                 v-model:current-page="pagePic"
-                :size="size"
+                size="small"
+                background
                 :disabled="disabled"
-                :background="background"
                 layout="total,prev, pager, next, jumper"
                 :total="totalUploadPic"
                 @size-change="handleSizeChangePic"
@@ -183,7 +179,6 @@
       :data="userList"
       row-key="ID"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontSize: '14px',
         fontWeight: 'bold',
@@ -247,9 +242,9 @@
       v-model:current-page="page"
       v-model:page-size="pageSize"
       :page-sizes="[10, 30, 50, 100]"
-      :size="size"
+      size="small"
+      background
       :disabled="disabled"
-      :background="background"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
       @size-change="handleSizeChange"
@@ -282,10 +277,11 @@ import { nextTick } from "vue";
 
 const drawerChange = ref(false);
 const drawerUpload = ref(false);
-const operationType = ref("");
-const dialogTitle = ref("");
 const totalUploadPic = ref(2);
 const tableLoading = ref(false);
+const operationType = ref("");
+// const dialogTitle = ref("");
+const dialogTitle = computed(() => (operationType.value === "editUser" ? "编辑用户" : "新增用户"));
 
 const total = ref(0);
 const page = ref(1);
@@ -309,14 +305,14 @@ const searchInfo = ref({
 const userFormRef = ref(null);
 // 抽屉部分，注意这里 authorityId是数字不是字符串，注意密码是字符串，不是数字
 const userForm = ref({
-  ID: 1,
+  ID: null,
   userName: "",
   nickName: "",
   phone: "",
   passWord: "",
   email: "",
   headerImg: "",
-  authorityId: 888,
+  authorityId: null,
   authorityIds: [],
   enable: 1,
 });
@@ -406,6 +402,13 @@ const onReset = async () => {
   await fetchTableData();
 };
 
+// 校验函数
+const validateUserForm = (formRef) => {
+  return new Promise((resolve) => {
+    formRef.validate(resolve); // 直接使用 resolve 作为回调，// 返回校验结果 (true/false)
+  });
+};
+
 // 新增用户，注意密码是字符串，不是数字
 const onClickAdd = async () => {
   drawerChange.value = true;
@@ -413,50 +416,44 @@ const onClickAdd = async () => {
   dialogTitle.value = "用户";
   await nextTick();
   userFormRef.value.clearValidate();
+  // 这里用实例用户名无法重置
+  // 原因：条件渲染字段 (userName/passWord 只在operationType是 addUser 时显示)
+  userFormRef.value.resetFields();
   userForm.value = {
-    ID: 1,
     userName: "",
-    nickName: "",
-    phone: "",
     passWord: "",
-    email: "",
-    headerImg: "",
-    authorityId: 888,
-    authorityIds: [],
-    enable: 1,
   };
 };
 
 // 新增确定按钮
 const handleSubmitAdd = async () => {
-  userFormRef.value.validate(async (valid) => {
-    if (!valid) return; // 验证不通过则停止
-    // 这里传参数，是后台数据库处理getUserList的返回值
-    const resAdmin = await adminRegister({
-      ID: total.value + 1,
-      email: userForm.value.email,
-      nickName: userForm.value.nickName,
-      phone: userForm.value.phone,
-      userName: userForm.value.userName,
-      passWord: userForm.value.passWord,
-      enable: userForm.value.enable,
-      headerImg: userForm.value.headerImg,
-      authorityId: userForm.value.authorityId,
-      authorityIds: userForm.value.authorityIds,
-    });
-    drawerChange.value = false;
-    total.value += 1; // 更新总数
-    // 防御性编程
-    const type = resAdmin.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: resAdmin.msg });
-    if (resAdmin.code == 0) {
-      const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-      userList.value = (res.data.list || []).map((user) => ({
-        ...user,
-        authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-      }));
-    }
+  const isValid = await validateUserForm(userFormRef.value);
+  if (!isValid) return;
+  // 这里传参数，是后台数据库处理getUserList的返回值
+  const resAdmin = await adminRegister({
+    ID: total.value + 1,
+    email: userForm.value.email,
+    nickName: userForm.value.nickName,
+    phone: userForm.value.phone,
+    userName: userForm.value.userName,
+    passWord: userForm.value.passWord,
+    enable: userForm.value.enable,
+    headerImg: userForm.value.headerImg,
+    authorityId: userForm.value.authorityId,
+    authorityIds: userForm.value.authorityIds,
   });
+  drawerChange.value = false;
+  total.value += 1; // 更新总数
+  // 防御性编程
+  const type = resAdmin.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: resAdmin.msg });
+  if (resAdmin.code == 0) {
+    const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
+    userList.value = (res.data.list || []).map((user) => ({
+      ...user,
+      authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
+    }));
+  }
 };
 
 // 点击“选定”按钮的处理函数
@@ -536,32 +533,34 @@ const onClickEdit = async (row) => {
 
 // 表格编辑提交
 const handleSubmitEdit = async () => {
-  userFormRef.value.validate(async (valid) => {
-    if (!valid) return; // 验证不通过则停止
-    const res = await setUserInfo({
-      ID: userForm.value.ID,
-      email: userForm.value.email,
-      nickName: userForm.value.nickName,
-      userName: userForm.value.userName,
-      phone: userForm.value.phone,
-      enable: userForm.value.enable,
-      headerImg: userForm.value.headerImg,
-      authorityId: userForm.value.authorityId,
-      authorityIds: userForm.value.authorityIds,
-      authorities: userAuthority.value,
-    });
-    const type = res.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: res.msg });
-    if (res.code == 0) {
-      // 这里要用到res，不简化
-      const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-      userList.value = (res.data.list || []).map((user) => ({
-        ...user,
-        authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-      }));
-      drawerChange.value = false;
-    }
+  // 调用校验函数
+  const isValid = await validateUserForm(userFormRef.value);
+  if (!isValid) return;
+  // userFormRef.value.validate(async (valid) => {
+  //   if (!valid) return; // 验证不通过则停止
+  const res = await setUserInfo({
+    ID: userForm.value.ID,
+    email: userForm.value.email,
+    nickName: userForm.value.nickName,
+    userName: userForm.value.userName,
+    phone: userForm.value.phone,
+    enable: userForm.value.enable,
+    headerImg: userForm.value.headerImg,
+    authorityId: userForm.value.authorityId,
+    authorityIds: userForm.value.authorityIds,
+    authorities: userAuthority.value,
   });
+  const type = res.code == 0 ? "success" : "error";
+  ElMessage({ type: type, message: res.msg });
+  if (res.code == 0) {
+    // 这里要用到res，不简化
+    const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
+    userList.value = (res.data.list || []).map((user) => ({
+      ...user,
+      authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
+    }));
+    drawerChange.value = false;
+  }
 };
 
 // 表格重置密码

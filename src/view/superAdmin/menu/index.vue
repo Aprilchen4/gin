@@ -7,21 +7,20 @@
   <div>
     <el-table
       :data="menuList"
-      style="width: 100%; margin-top: 20px"
+      style="width: 100%; margin-top: 10px; margin-right: 30px"
       row-key="ID"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       :header-row-style="{
-        backgroundColor: '#f5f7fa',
         color: '#000',
         fontWeight: 'bold',
       }"
     >
       <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
-      <el-table-column prop="ID" label="ID" min-width="100" />
+      <el-table-column prop="ID" label="ID" min-width="60" />
       <el-table-column prop="meta.title" label="展示名称" min-width="120" />
       <el-table-column prop="meta.icon" label="图标" min-width="80" />
-      <el-table-column prop="name" show-overflow-tooltip label="路由Name" min-width="160" />
-      <el-table-column prop="path" show-overflow-tooltip label="路由Path" min-width="160" />
+      <el-table-column prop="name" show-overflow-tooltip label="路由Name" min-width="130" />
+      <el-table-column prop="path" show-overflow-tooltip label="路由Path" min-width="130" />
       <el-table-column prop="hidden" label="是否隐藏" min-width="100">
         <template #default="scope">
           <span>{{ scope.row.hidden ? "隐藏" : "显示" }}</span>
@@ -29,8 +28,8 @@
       </el-table-column>
       <el-table-column prop="parentId" label="父节点ID" min-width="90" />
       <el-table-column prop="sort" label="排序" min-width="70" />
-      <el-table-column prop="component" label="文件路径" min-width="360" />
-      <el-table-column fixed="right" label="操作" :width="'auto'">
+      <el-table-column prop="component" label="文件路径" min-width="180" />
+      <el-table-column align="left" fixed="right" label="操作" min-width="200">
         <template #default="scope">
           <!-- 添加子菜单 -->
           <el-button link type="primary" size="small" @click="operateClickAddSub(scope.row)"> + 添加子菜单 </el-button>
@@ -53,12 +52,14 @@
         <span>{{ dialogTitle }}</span>
         <div style="display: flex; gap: 0px">
           <el-button @click="drawerChange = false">取消</el-button>
-          <template v-if="operationType === 'addRoot' || operationType === 'addSub'">
-            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
-          </template>
-          <template v-else-if="operationType === 'edit'">
-            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
-          </template>
+          <el-button
+            v-if="operationType === 'addRoot' || operationType === 'addSub'"
+            type="primary"
+            @click="handleSubmitAdd"
+          >
+            确定
+          </el-button>
+          <el-button v-else type="primary" @click="handleSubmitEdit">确定</el-button>
         </div>
       </div>
     </template>
@@ -94,12 +95,11 @@
           <el-form-item prop="meta.title">
             <div class="custom-layout" style="margin-left: 30px">
               <div><span style="color: red">*</span> 展示名称</div>
-              <div v-if="operationType === 'edit'" style="width: 200px">
-                <el-input v-model="form.meta.title" />
-              </div>
-              <div v-else-if="operationType === 'addRoot' || operationType === 'addSub'">
-                <el-input v-model="form.meta.title" />
-              </div>
+              <el-input v-if="operationType === 'edit'" style="width: 200px" v-model="form.meta.title" />
+              <el-input
+                v-else-if="operationType === 'addRoot' || operationType === 'addSub'"
+                v-model="form.meta.title"
+              />
             </div>
           </el-form-item>
         </el-col>
@@ -121,12 +121,13 @@
                 <el-checkbox style="margin-left: 12px; height: auto" v-model="isAddParams"> 添加参数 </el-checkbox>
               </div>
               <div>
-                <div v-if="operationType === 'edit'">
-                  <el-input v-model="form.path" :disabled="!isAddParams" />
-                </div>
-                <div v-else-if="operationType === 'addRoot' || operationType === 'addSub'">
-                  <el-input v-model="form.path" :disabled="!isAddParams" placeholder="建议只在后方拼接参数" />
-                </div>
+                <el-input v-if="operationType === 'edit'" v-model="form.path" :disabled="!isAddParams" />
+                <el-input
+                  v-else-if="operationType === 'addRoot' || operationType === 'addSub'"
+                  v-model="form.path"
+                  :disabled="!isAddParams"
+                  placeholder="建议只在后方拼接参数"
+                />
               </div>
             </div>
           </el-form-item>
@@ -145,15 +146,14 @@
       <el-row>
         <el-col span="8">
           <el-form-item label="父节点ID" prop="parentId">
-            <div v-if="operationType === 'addRoot'" style="width: 200px">
-              <el-input v-model="rootDisplay" disabled />
-            </div>
-            <div v-else-if="operationType === 'addSub'" style="width: 200px">
-              <el-input v-model="subDisplay" disabled />
-            </div>
-            <div v-else-if="operationType === 'edit' && form.parentId === 0" style="width: 200px">
-              <el-input v-model="rootDisplay" />
-            </div>
+            <el-input v-if="operationType === 'addRoot'" style="width: 200px" v-model="rootDisplay" disabled />
+            <el-input v-else-if="operationType === 'addSub'" style="width: 200px" v-model="subDisplay" disabled />
+            <el-input
+              v-else-if="operationType === 'edit' && form.parentId === 0"
+              style="width: 200px"
+              v-model="rootDisplay"
+            />
+
             <el-cascader
               v-else
               v-model="form.parentId"
@@ -320,20 +320,30 @@ import { getMenuList, getBaseMenuById, addBaseMenu, updateBaseMenu, deleteBaseMe
 import { ref, reactive } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import WarningTip from "@/components/WarningTip.vue";
-import MenuCascade from "@/components/menuCascade.vue";
+// MenuCascade抽屉的级联选择器
+import MenuCascade from "@/components/menuCascade.vue"; //这里用到pathInfo.js文件
 import menuIcon from "@/components/menuIcon.vue";
-import { nextTick } from "vue";
+import { nextTick, computed } from "vue";
 
 const drawerChange = ref(false);
 const menuList = ref([]);
 const menuParentList = ref([]);
 const mode = ref("手动输入");
 const isAddParams = ref(false);
-const dialogTitle = ref("新增菜单");
+// const dialogTitle = ref("新增菜单");
 const isEdit = ref(false);
-const operationType = ref(""); // "addRoot", "addSub", "edit"
 const rootDisplay = ref("根目录");
 const subDisplay = ref("");
+const operationType = ref(""); // "addRoot", "addSub", "edit"
+// 适用对象映射
+const dialogTitle = computed(
+  () =>
+    ({
+      addRoot: "新增菜单",
+      addSub: "新增子菜单",
+      edit: "编辑菜单",
+    }[operationType.value])
+);
 
 const menuFormRef = ref(null);
 
@@ -356,7 +366,7 @@ getMenuList().then((a) => {
 });
 
 const form = ref({
-  ID: 0,
+  ID: null,
   path: "",
   name: "",
   hidden: false,
@@ -385,40 +395,26 @@ const rules = reactive({
 // 新增根菜单按钮
 const handleClickRootAdd = async () => {
   operationType.value = "addRoot";
+  rootDisplay.value = "根目录"; //父节点
   drawerChange.value = true;
-  dialogTitle.value = "新增菜单";
+  // dialogTitle.value = "新增菜单";
   await nextTick(); //等待dom加载
   menuFormRef.value.clearValidate(); // 确保每次都有清除校验
-  form.value = {
-    ID: 0,
-    path: "",
-    name: "",
-    hidden: false,
-    parentId: 0,
-    component: "",
-    meta: {
-      activeName: "",
-      title: "",
-      icon: "",
-      defaultMenu: false,
-      closeTab: false,
-      keepAlive: false,
-    },
-    parameters: [],
-    menuBtn: [],
-  };
-  rootDisplay.value = "根目录";
+  // 重置表单
+  menuFormRef.value.resetFields(); // 确保每次都有重置表单
 };
 
 // 新增根菜单/子菜单确定按钮
 const handleSubmitAdd = async () => {
   menuFormRef.value.validate(async (valid) => {
     if (!valid) return; // 验证不通过则停止
-    drawerChange.value = false;
     const res = await addBaseMenu(form.value);
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ message: res.msg, type: type });
-    menuList.value = await getMenuList(); // 等待数据加载
+    if (res.code == 0) {
+      drawerChange.value = false;
+      menuList.value = await getMenuList(); // 等待数据加载
+    }
   });
 };
 
@@ -426,37 +422,20 @@ const handleSubmitAdd = async () => {
 const operateClickAddSub = async (row) => {
   operationType.value = "addSub";
   isEdit.value = false;
-  dialogTitle.value = "新增菜单";
+  // dialogTitle.value = "新增菜单";
   drawerChange.value = true;
-  await nextTick(); //等待dom加载
+  subDisplay.value = row.meta.title || "未命名"; //父节点ID
+  await nextTick(); //等待 Vue 完成 DOM 更新,组件已挂载（确保抽屉已渲染且表单已挂载）
   menuFormRef.value.clearValidate(); // 确保每次都有清除校验
-  console.log(row);
-  form.value = {
-    ID: 0,
-    path: "",
-    name: "",
-    hidden: false,
-    parentId: row.ID,
-    component: "",
-    meta: {
-      activeName: "",
-      title: "",
-      icon: "",
-      defaultMenu: false,
-      closeTab: false,
-      keepAlive: false,
-    },
-    parameters: [], // 清空数组
-    menuBtn: [], // 清空数组
-  };
-  subDisplay.value = row.meta.title || "未命名";
+  // 重置表单
+  menuFormRef.value.resetFields(); // 确保每次都有重置表单
 };
 
 // 操作-编辑
 const operateClickEdit = async (row) => {
   drawerChange.value = true; // 首先打开抽屉
   operationType.value = "edit";
-  dialogTitle.value = "编辑菜单";
+  // dialogTitle.value = "编辑菜单";
   await nextTick(); //等待dom加载
   menuFormRef.value.clearValidate(); // 确保每次都有清除校验
   const id = row.ID;
@@ -470,11 +449,11 @@ const operateClickEdit = async (row) => {
 const handleSubmitEdit = async () => {
   menuFormRef.value.validate(async (valid) => {
     if (!valid) return; // 验证不通过则停止
-    drawerChange.value = false;
     const res = await updateBaseMenu(form.value);
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ message: res.msg, type: type });
     if (res.code == 0) {
+      drawerChange.value = false;
       getMenuList().then((a) => {
         menuList.value = a.data;
       });

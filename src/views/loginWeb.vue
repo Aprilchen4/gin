@@ -1,12 +1,11 @@
 <template>
-  <!-- <body class="page"> -->
   <div class="login-container">
-    <div class="content">
+    <div class="login-left">
       <!-- 左上 -->
       <div class="login-title">
         <el-image class="logo" :src="require('@/assets/logo1.png')"></el-image>
-        <h2 class="word1">Gin-Vue-Admin</h2>
-        <div class="word2">A management platform using Golang and Vue</div>
+        <h2 class="login-word-one">Gin-Vue-Admin</h2>
+        <div class="login-word-two">A management platform using Golang and Vue</div>
       </div>
       <!-- 左中 -->
       <div class="login-box">
@@ -34,7 +33,7 @@
             <el-input v-model="form.password" placeholder="请输入密码"> </el-input>
           </el-form-item>
           <el-form-item prop="usercode">
-            <div class="code">
+            <div class="verify-code">
               <div>
                 <el-input v-model="form.captcha" placeholder="请输入验证码" />
               </div>
@@ -49,12 +48,10 @@
         </el-form>
       </div>
       <!-- 左下 -->
-      <el-form-item>
-        <div class="button">
-          <!-- 一点点对不齐，源于自带的位移，所以单独加div -->
-          <div>
-            <el-button type="primary" @click="fetchData">登录</el-button>
-          </div>
+      <el-form-item class="login-button">
+        <div class="login-button">
+          <!-- 一点点对不齐，源于自带的位移，所以单独加div包裹块级元素 -->
+          <el-button type="primary" @click="fetchData">登录</el-button>
           <router-view></router-view>
           <div><el-button type="primary">前往初始化</el-button></div>
         </div>
@@ -68,8 +65,8 @@
       <!-- 最右侧否则填充不完全 -->
     </div>
   </div>
-  <div class="bottom">
-    <div>Powered by</div>
+  <div class="bottomIcon">
+    <div style="margin-right: 3px">Powered by</div>
     <a href="https://github.com/flipped-aurora/gin-vue-admin" class="bottom-a">Gin-Vue-Admin</a>
     <div class="icon-link">
       <!-- 颜色写在上一行里面，不行 -->
@@ -89,17 +86,13 @@
     <div>Copyright</div>
     <a href="https://github.com/flipped-aurora" class="bottom-a">flipped-aurora团队</a>
   </div>
-  <!-- </body> -->
 </template>
 
 <script>
 // setup写在script里面，后续内容直接定义变量，不需要多层包裹；
 import { ElInput, ElButton } from "element-plus";
-// import VerifyCode from '@/components/VerifyCode.vue'
 import { ref } from "vue";
 import { getCode, getlogin } from "@/api/user";
-//import { router } from '@/router'
-// import { nextTick } from "vue";
 
 // useRouter 只能在 setup 函数或 <script setup> 中使用，是一个局部工具函数
 // 每次在组件中使用 useRouter，都会返回当前的路由实例，即 router.js 中导出的 router
@@ -134,9 +127,6 @@ export default {
       password: [{ required: true, message: "请输入密码", trigger: "blur" }],
       usercode: [{ required: true, message: "请输入验证码", trigger: "blur" }],
     };
-
-    // **✅ 正确：fetchData 必须在 return 之前定义*
-    // 点击事件
 
     //获取实例
     const router = useRouter();
@@ -174,9 +164,6 @@ export default {
         // 注意这里respons.token无返回值；数据结构
         localStorage.setItem("userToken", response.data.token);
 
-        // const menuResponse = await getMenu(); // 调用函数，将返回的结果给menuResponse
-        // console.log("菜单数据:", menuResponse); // 打印菜单数据
-
         return true; // 登录成功
 
         // 当 Axios 请求发生错误时,错误信息会被传递到 catch 块中。
@@ -210,17 +197,7 @@ export default {
       console.log(picPath.value);
     });
 
-    //不同函数形式写法
-    // const fetchData2 = async () => {
-    //   const a = await getCode();
-    //   console.log(a);
-    // }
-    // fetchData2()
-
     // 2. 使用数据生成验证码组件
-    //在template里面增加
-    //return后面的代码不会被执行；
-    // fetchData, // 将 fetchData 绑定到组件实例return,在 Vue 3 的 setup 语法糖中，只有在 setup 返回的对象中暴露的属性和方法，才能在模板 (template) 中访问。
     return {
       form,
       rules,
@@ -232,7 +209,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 html,
 body,
 #app {
@@ -240,28 +217,22 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* 锁定全局滚动条 */
+  /* 意味着当内容的高度或宽度超出了元素的边界时，不会显示滚动条，也就禁止了页面的滚动 */
+  overflow: hidden; /* 超出可视区域时不会显示滚动条 */
 }
 
-.page {
-  width: 100vw; /* 使用视口单位代替百分比 */
-  height: 100vh;
-  /* 这么写老实了，不滚动了 */
-  overflow: hidden;
-}
 .login-container {
   /* overflow: hidden; 写这里没用，要写在父级 */
   display: flex;
   flex-direction: row;
 }
 
-.content {
+.login-left {
   display: flex;
   flex-direction: column;
   justify-content: center; /* 水平居中 */
-  align-items: center;
-  text-align: center;
-  /* 垂直居中 */
+  align-items: center; /* 水平居中。默认主轴是水瓶 */
+  text-align: center; /* 水平文本居中 */
   margin-bottom: 100px;
   margin-left: 160px;
   width: 600px;
@@ -281,10 +252,6 @@ body,
   margin-top: 60px;
 }
 
-.word2 {
-  font-size: 12.25px;
-}
-
 .login-box {
   width: 300px;
   /* padding: 40px; */
@@ -294,35 +261,31 @@ body,
   /* box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1); */
 }
 
-.word1 {
+.login-word-one {
   margin-top: 0px;
   margin-bottom: 5px;
 }
 
-/* .login-box .el-input {
-    /*这么写可新奇了 */
-/* margin-bottom: 20px;  */
-/* 这么写避免了提示错误的预留空间过大 */
-/* padding:10px; */
-/* 这个不是文字的规范
-  } */
+.login-word-two {
+  font-size: 12.25px;
+}
 
-.code {
+/* 输入框+图片，限制在login-box的宽度 */
+.verify-code {
   height: 35px;
   display: flex;
-  vertical-align: middle;
   justify-content: space-between;
-  /* 水平排列 */
+  align-items: center; /* 垂直居中 */
+  /* vertical-align: middle; 无效，用于行内块元素、表格单元格，调整文本、图片等行内内容*/
 }
 
-.button {
+.login-button {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  /* 垂直居中 */
+  align-items: center; /* 垂直居中 */
 }
 
+/* 这里scoped，否则会影响全局样式 */
 .el-button {
   width: 300px;
   height: auto;
@@ -335,7 +298,7 @@ body,
   align-items: center; /* 垂直居中 */
   height: 100vh;
   position: relative; /* 用于固定 picture 和 picture-fill */
-  overflow: hidden; /* 防止内容溢出 */
+  overflow: hidden; /* 防止内容溢出，防滚动 */
 }
 
 .picture-line {
@@ -359,7 +322,7 @@ body,
   /* flex-shrink: 0; 禁止缩放 */
 }
 
-.bottom {
+.bottomIcon {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -367,12 +330,11 @@ body,
   height: 80px; /* 或者设置成你需要的高度 */
   background-color: none; /* 设置背景色 */
   color: #150202; /* 设置文字颜色 */
-  margin: 0 0px;
   font-size: 14px;
-  font-family: "Microsoft YaHei", sans-serif;
-  /* 微软雅黑 */
-  position: absolute;
+  font-family: "Microsoft YaHei", sans-serif; /* 微软雅黑 */
   /* 设置为绝对定位。这样容器就可以相对于它的定位父元素page进行定位。 */
+  position: absolute !important;
+  margin: 0 0px;
   bottom: 0;
   left: 0;
 }

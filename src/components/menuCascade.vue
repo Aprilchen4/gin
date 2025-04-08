@@ -1,14 +1,10 @@
 <template>
-  <el-cascader
-    :options="menuPathData"
-    style="width: 320px"
-    placeholder="请选择文件路径"
-  />
+  <el-cascader :options="menuPathData" style="width: 320px" placeholder="请选择文件路径" />
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
-import pathInfo from "@/view/superAdmin/menu/pathInfo.json";
+import pathInfo from "@/utils/pathInfo.json";
 
 const menuPathData = ref([]);
 

@@ -2,7 +2,8 @@
   <WarningTip title="获取字典且缓存方法已在前端utils/dictionary 已经封装完成 不必自己书写 使用方法查看文件内注释" />
   <div style="margin-top: 15px">
     <el-container>
-      <el-aside width="200px" style="margin-top: 10px">
+      <!-- 这里el-aside组件写宽度没用，是因为有全局优先级的280px -->
+      <el-aside>
         <div style="display: flex; justify-content: space-between">
           <span style="margin-top: 5px; font-weight: bold">字典列表</span>
           <el-button type="primary" size="auto" @click="onAddDic">新增</el-button>
@@ -27,7 +28,7 @@
         </el-scrollbar>
       </el-aside>
       <!-- 表格 -->
-      <el-main>
+      <el-main style="margin-left: 15px; margin-right: 15px">
         <div style="display: flex; justify-content: space-between">
           <span style="margin-top: 5px; font-weight: bold">字典详细内容</span>
           <el-button type="primary" size="auto" @click="OnClickAddDetails">+ 新增字典项</el-button>
@@ -38,14 +39,13 @@
             :data="tableData"
             row-key="sort"
             :header-row-style="{
-              backgroundColor: '#f5f7fa',
               color: '#000',
               fontSize: '14px',
               fontWeight: 'bold',
             }"
           >
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="UpdatedAt" label="日期" min-width="80px">
+            <el-table-column type="selection" min-width="20" />
+            <el-table-column prop="UpdatedAt" label="日期" min-width="60px">
               <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
             </el-table-column>
             <el-table-column prop="label" label="展示值" min-width="50px"> </el-table-column>
@@ -66,9 +66,9 @@
             v-model:current-page="page"
             v-model:page-size="pageSize"
             :page-sizes="[10, 30, 50, 100]"
-            :size="size"
+            size="small"
+            background
             :disabled="disabled"
-            :background="background"
             layout="total, sizes, prev, pager, next, jumper"
             :total="tableTotal"
             @size-change="handleSizeChange"
@@ -86,12 +86,10 @@
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerDic = false">取消</el-button>
-          <template v-if="operationDicType === 'addDictionary'">
-            <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
-          </template>
-          <template v-else-if="operationDicType === 'editDictionary'">
-            <el-button type="primary" @click="handleSubmitEdit">确定</el-button>
-          </template>
+          <el-button v-if="operationDicType === 'addDictionary'" type="primary" @click="handleSubmitAdd">
+            确定
+          </el-button>
+          <el-button v-else type="primary" @click="handleSubmitEdit">确定</el-button>
         </div>
       </div>
     </template>
@@ -120,12 +118,10 @@
         <span>{{ tableDrawerTitle }}</span>
         <div>
           <el-button @click="drawerTable = false">取消</el-button>
-          <template v-if="operationDicType === 'addDetails'">
-            <el-button type="primary" @click="handleSubmitAddDetails">确定</el-button>
-          </template>
-          <template v-else-if="operationDicType === 'editDetails'">
-            <el-button type="primary" @click="handleSubmitEditDetails">确定</el-button>
-          </template>
+          <el-button v-if="operationTableType === 'addDetails'" type="primary" @click="handleSubmitAddDetails">
+            确定
+          </el-button>
+          <el-button v-else type="primary" @click="handleSubmitEditDetails">确定</el-button>
         </div>
       </div>
     </template>
@@ -166,8 +162,11 @@ import {
   updateSysDictionaryDetail,
   deleteSysDictionaryDetail,
 } from "@/api/user";
-import { ref, reactive, nextTick } from "vue";
+import { ref, reactive, nextTick, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+// 注意这里用.是不行的，表示相对路径，即当前文件所在目录下的 utils/formatDate
+// @ 通常被定义为项目中某个特定目录的别名（例如 src 目录）。
+import { formatDate } from "@/utils/formatDate";
 
 // activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
 const activeDicIndex = ref(1);
@@ -183,14 +182,22 @@ const tableFormRef = ref(null);
 
 const drawerDic = ref(false);
 const drawerTable = ref(false);
-const dialogTitle = ref("添加字典");
-const tableDrawerTitle = ref("添加字典项");
+// const dialogTitle = ref("添加字典");
+// const tableDrawerTitle = ref("添加字典项");
 const operationDicType = ref("addDictionary");
+const operationTableType = ref("addDetails");
 
+const dialogTitle = computed(() => {
+  return operationDicType.value === "addDictionary" ? "添加字典" : "编辑字典";
+});
+
+const tableDrawerTitle = computed(() => {
+  return operationTableType.value === "addDetails" ? "添加字典项" : "编辑字典项";
+});
 const sysDictionaryDetails = ref([]);
 const dictionaryList = ref([]);
 const dicForm = ref({
-  ID: 0,
+  ID: null,
   desc: "",
   name: "",
   status: true,
@@ -262,17 +269,14 @@ const handleMenuSelect = async (menuId) => {
 // 新增字典
 const onAddDic = async () => {
   drawerDic.value = true;
-  dialogTitle.value = "添加字典";
+  // dialogTitle.value = "添加字典";
   operationDicType.value = "addDictionary";
   await nextTick();
   dicFormRef.value.clearValidate();
-  dicForm.value = {
-    ID: 0,
-    desc: "",
-    name: "",
-    status: true,
-    type: "",
-  };
+  // 重置时,注意这里，dicFormRef是表单实例（Element Plus 表单专用）
+  // 用表单实例时需要搭配使用nextTick()
+  // await nextTick();
+  dicFormRef.value.resetFields(); // 这会重置为表单初始值
 };
 
 // 新增确定
@@ -302,7 +306,7 @@ const handleSubmitAdd = async () => {
 // 编辑字典
 const openDicEditDrawer = async (item) => {
   drawerDic.value = true;
-  dialogTitle.value = "修改字典";
+  // dialogTitle.value = "修改字典";
   operationDicType.value = "editDictionary";
   await nextTick();
   dicFormRef.value.clearValidate();
@@ -364,35 +368,14 @@ const handleDicDelete = async (item) => {
     });
 };
 
-// 表格日期
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 补零
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
 // 新增字典项
 const OnClickAddDetails = async () => {
   drawerTable.value = true;
-  tableDrawerTitle.value = "添加字典项";
-  operationDicType.value = "addDetails";
+  // tableDrawerTitle.value = "添加字典项";
+  operationTableType.value = "addDetails";
   await nextTick();
   tableFormRef.value.clearValidate();
-  tableForm.value = {
-    label: "",
-    sort: null,
-    status: true,
-    sysDictionaryID: null,
-    value: "",
-    extend: "",
-    UpdataAt: "",
-  };
+  tableFormRef.value.resetFields();
 };
 
 // 新增字典项确定按钮
@@ -419,8 +402,8 @@ const handleSubmitAddDetails = async () => {
 // 表格变更
 const handleDetailEdit = async (item) => {
   drawerTable.value = true;
-  tableDrawerTitle.value = "修改字典项";
-  operationDicType.value = "editDetails";
+  // tableDrawerTitle.value = "修改字典项";
+  operationTableType.value = "editDetails";
   await nextTick();
   tableFormRef.value.clearValidate();
   // 赋值,这里是表单对象。ref定义可以整体赋值
@@ -441,10 +424,10 @@ const handleSubmitEditDetails = async () => {
       value: tableForm.value.value,
       extend: tableForm.value.extend,
     });
-    drawerTable.value = false;
     const type = res.code == 0 ? "success" : "error";
     ElMessage({ type: type, message: res.msg });
     if (res.code == 0) {
+      drawerTable.value = false;
       await fetchtableData();
     }
   });
@@ -489,7 +472,45 @@ const handleCurrentChange = async (val) => {
 
 // 新增字典项
 </script>
-<style>
+<style scoped>
+/* 白天/黑夜主题变量 */
+:root {
+  --sidebar-bg: #ffffff;
+  --bg-color: #ffffff;
+  --text-color: #333333;
+}
+
+[data-theme="dark"] {
+  --sidebar-bg: #1a1a1a;
+  --bg-color: #121212;
+  --text-color: #ffffff;
+}
+
+/* 暗黑模式菜单覆盖（全局生效） */
+[data-theme="dark"] .el-menu {
+  background-color: var(--sidebar-bg) !important;
+  border-right: none !important;
+}
+
+[data-theme="dark"] .el-menu-item {
+  background-color: var(--sidebar-bg) !important;
+  color: var(--text-color) !important;
+}
+
+[data-theme="dark"] .el-menu-item:hover {
+  background-color: var(--bg-color) !important;
+}
+
+[data-theme="dark"] .menu-item-wrapper {
+  background-color: var(--sidebar-bg) !important;
+}
+
+/* 原有组件样式，el-aside组件写宽度没用，是因为有全局优先级的280px */
+.el-aside {
+  width: 190px !important;
+  margin-top: 10px;
+}
+
 .menu-name {
   max-width: 90px; /* 设置最大宽度 */
   overflow: hidden; /* 隐藏溢出内容 */
@@ -497,11 +518,12 @@ const handleCurrentChange = async (val) => {
   white-space: nowrap; /* 禁止换行 */
 }
 
+/* 用于包裹每一个菜单项的内容，规定宽度会限制内容布局 */
 .menu-item-wrapper {
   display: flex;
   justify-content: space-between; /* 名称左，图标右 */
   align-items: center; /* 垂直居中 */
-  background-color: #fcfcfc; /* 设置每个菜单项的背景色 */
+  /* background-color: #fcfcfc; 设置每个菜单项的背景色，写死的背景色，暗黑模式下仍是灰色 */
   margin: 5px 0; /* 设置菜单项之间的置菜单项背景颜色 */
 }
 

@@ -3,10 +3,12 @@
   <!-- :default-active="1" 用于设置 el-menu [组件初始化时默认,不对]高亮选中的菜单项 ，需要引入activeMenu计算属性-->
   <!--   unique-opened一次只打开一个菜单 -->
   <el-scrollbar class="scrollbar-container">
+    <!-- 默认垂直菜单，可不写vertical -->
     <el-menu
       class="bottom-left"
       :default-active="activeMenu"
       unique-opened
+      mode="vertical"
       @select="handleMenuSelect"
       @open="menuOpenEvent"
       @click="sendData"

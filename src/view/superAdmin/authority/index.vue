@@ -8,6 +8,7 @@
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center">
           <span>新增角色</span>
+          <!-- 必须包裹起来，否则按钮会平均水平占位 -->
           <div>
             <el-button @click="drawerAdd = false">取消</el-button>
             <el-button type="primary" @click="handleSubmitAdd">确定</el-button>
@@ -38,7 +39,6 @@
     row-key="authorityId"
     :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
     :header-row-style="{
-      backgroundColor: '#f5f7fa',
       color: '#000',
       fontWeight: 'bold',
     }"
@@ -309,9 +309,7 @@ const handleSubmitCopy = async () => {
 
 const handleClickSetting = async (row) => {
   drawerSetting.value = true;
-  form.value.authorityId = row.authorityId;
-  form.value.authorityName = row.authorityName;
-  form.value.parentId = row.parentId;
+  form.value = row;
 };
 
 const handleClickEdit = async (row) => {
