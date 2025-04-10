@@ -319,11 +319,10 @@ select {
 }
 /* ========== 侧边栏样式 ========== */
 .el-aside {
-  /* 这里是el-aside占全部页面的70% */
+  /* 这里是el-aside占全部页面宽度的70% */
   width: var(--menu-width) !important;
-  height: 80%;
+  height: 80%; /* 这里是el-aside占全部页面高度的80% */
   background-color: var(--sidebar-bg) !important;
-  transition: background-color 0.3s; /* 背景色变化时过渡效果 */
   flex-shrink: 0; /* 禁止收缩 */
   overflow-y: auto; /* 允许内容滚动 */
 }
@@ -414,6 +413,11 @@ select {
   padding: 0 0 55px;
 }
 
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 /* ========== 组件样式 ========== */
 .logo-vue {
   margin: 0;
@@ -453,6 +457,11 @@ select {
   border: none;
 }
 
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
 /* ========== 其他样式 ========== */
 .web {
   text-decoration: none;

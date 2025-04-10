@@ -38,7 +38,7 @@
   <!-- 注意层级关系 -->
   <el-drawer v-model="drawerChange" :with-header="true" size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>{{ dialogTitle }}</span>
         <div style="display: flex; gap: 0px">
           <el-button @click="drawerChange = false">取消</el-button>

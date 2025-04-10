@@ -6,7 +6,7 @@
   <!-- :with-header="true"默认true -->
   <el-drawer v-model="drawerAdd" with-header size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>新增角色</span>
         <!-- 必须包裹起来，否则按钮会平均水平占位 -->
         <div>
@@ -59,7 +59,7 @@
   <el-drawer v-model="drawerAddSub" with-header size="700px">
     <template #header>
       <!-- style内联样式布局可以，class工具类布局不对 -->
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>新增子角色</span>
         <div>
           <el-button @click="drawerAddSub = false">取消</el-button>
@@ -82,7 +82,7 @@
   <!-- 拷贝抽屉 -->
   <el-drawer v-model="drawerCopy" with-header size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>拷贝角色</span>
         <div>
           <el-button @click="drawerCopy = false">取消</el-button>
@@ -113,7 +113,7 @@
   <!-- 编辑抽屉 -->
   <el-drawer v-model="drawerEdit" :with-header="true" size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>编辑角色</span>
         <div>
           <el-button @click="drawerEdit = false">取消</el-button>

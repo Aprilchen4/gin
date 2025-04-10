@@ -25,7 +25,7 @@
   </div>
   <el-drawer v-model="drawerChange" :with-header="true" size="800px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerChange = false">取消</el-button>
@@ -85,7 +85,7 @@
   </el-drawer>
   <el-drawer v-model="drawerUpload" :with-header="true" size="800px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span style="font-size: small">{{ dialogTitle }}</span>
       </div>
     </template>
@@ -155,7 +155,7 @@
           </div>
           <div>
             <!-- 上传图片页码 -->
-            <div style="display: flex; justify-content: center; margin-top: 10px; margin-top: 25px">
+            <div class="pagination-container">
               <el-pagination
                 v-model:current-page="pagePic"
                 size="small"
@@ -228,7 +228,7 @@
       </el-table-column>
     </el-table>
   </div>
-  <div style="display: flex; justify-content: flex-end; margin-top: 10px">
+  <div class="pagination-container">
     <el-pagination
       v-model:current-page="page"
       v-model:page-size="pageSize"

@@ -56,7 +56,6 @@
   font-weight: bold;
   text-decoration: none;
   margin: 0 3px;
-  transition: color 0.3s;
 
   .bottom-a:hover {
     color: #000cb6;

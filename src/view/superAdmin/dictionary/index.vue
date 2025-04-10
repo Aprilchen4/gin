@@ -1,27 +1,28 @@
 <template>
   <WarningTip title="获取字典且缓存方法已在前端utils/dictionary 已经封装完成 不必自己书写 使用方法查看文件内注释" />
-  <div style="margin-top: 15px">
+  <!-- 需要外层div，否则字典表格有粗的滚动条 -->
+  <div class="dic-main">
     <el-container>
-      <!-- 这里el-aside组件写宽度没用，是因为有全局优先级的280px -->
       <el-aside>
-        <div style="display: flex; justify-content: space-between">
-          <span style="margin-top: 5px; font-weight: bold">字典列表</span>
-          <el-button type="primary" size="auto" @click="onAddDic">新增</el-button>
+        <div class="dictionary-header">
+          <span class="dictionary-title">字典列表</span>
+          <el-button type="primary" @click="onAddDic">新增</el-button>
         </div>
-        <!--  height="300px"这么写会有一个粗的外层滚动条，很奇怪 -->
-        <el-scrollbar style="height: 300px">
+        <!--  height="300px"这么写会有一个粗的外层滚动条
+          :height 属性绑定到一个动态的 Vue 数据属性或计算属性 -->
+        <el-scrollbar :height="300">
           <!-- activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值） -->
           <el-menu mode="vertical" :default-active="activeDicIndex" @select="handleMenuSelect">
             <el-menu-item
               v-for="item in dictionaryList"
               :key="item.ID"
-              :index="item.ID ? item.ID.toString() : ''"
+              :index="item.ID.toString()"
               class="menu-item-wrapper"
             >
               <span class="menu-name">{{ item.name }}</span>
               <div class="menu-actions">
-                <el-icon style="color: rgb(0, 174, 255)" @click.stop="openDicEditDrawer(item)"><edit /></el-icon>
-                <el-icon style="color: red" @click.stop="handleDicDelete(item)"><delete /></el-icon>
+                <el-icon class="edit-icon" @click.stop="openDicEditDrawer(item)"><edit /></el-icon>
+                <el-icon class="delete-icon" @click.stop="handleDicDelete(item)"><delete /></el-icon>
               </div>
             </el-menu-item>
           </el-menu>
@@ -29,9 +30,9 @@
       </el-aside>
       <!-- 表格 -->
       <el-main style="margin-left: 15px; margin-right: 15px">
-        <div style="display: flex; justify-content: space-between">
-          <span style="margin-top: 5px; font-weight: bold">字典详细内容</span>
-          <el-button type="primary" size="auto" @click="OnClickAddDetails">+ 新增字典项</el-button>
+        <div class="dictionary-header">
+          <span class="dic-title">字典详细内容</span>
+          <el-button type="primary" @click="OnClickAddDetails"> + 新增字典项 </el-button>
         </div>
         <div>
           <el-table v-loading="tableLoading" :data="tableData" row-key="sort">
@@ -39,11 +40,11 @@
             <el-table-column prop="UpdatedAt" label="日期" min-width="60px">
               <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
             </el-table-column>
-            <el-table-column prop="label" label="展示值" min-width="50px"> </el-table-column>
-            <el-table-column prop="value" label="字典值" min-width="50px"> </el-table-column>
-            <el-table-column prop="status" label="启用状态" min-width="50px"> </el-table-column>
-            <el-table-column prop="extend" label="扩展值" min-width="50px"> </el-table-column>
-            <el-table-column prop="sort" label="排序" min-width="50px"> </el-table-column>
+            <el-table-column prop="label" label="展示值" min-width="50px" />
+            <el-table-column prop="value" label="字典值" min-width="50px" />
+            <el-table-column prop="status" label="启用状态" min-width="50px" />
+            <el-table-column prop="extend" label="扩展值" min-width="50px" />
+            <el-table-column prop="sort" label="排序" min-width="50px" />
             <el-table-column label="操作" min-width="50px">
               <template #default="scope">
                 <el-button type="text" @click="handleDetailEdit(scope.row)">变更</el-button>
@@ -52,7 +53,7 @@
             </el-table-column>
           </el-table>
         </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 10px">
+        <div class="pagination-container">
           <el-pagination
             v-model:current-page="page"
             v-model:page-size="pageSize"
@@ -73,7 +74,7 @@
   <!-- 字典抽屉 -->
   <el-drawer v-model="drawerDic" :with-header="true" size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>{{ dialogTitle }}</span>
         <div>
           <el-button @click="drawerDic = false">取消</el-button>
@@ -84,7 +85,7 @@
         </div>
       </div>
     </template>
-    <!-- label-width="100px"保证label长度 -->
+    <!-- label-width="100px"保证label长度，不换行-->
     <el-form ref="dicFormRef" :model="dicForm" :rules="rulesDic" label-width="100px">
       <el-form-item label="字典名(中)" prop="name">
         <el-input v-model="dicForm.name" placeholder="请输入" />
@@ -94,7 +95,7 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <span>停用</span>
-        <el-switch v-model="dicForm.status" style="margin-left: 10px; margin-right: 10px" />
+        <el-switch v-model="dicForm.status" class="switch-dic" />
         <span>开启</span>
       </el-form-item>
       <el-form-item label="描述" prop="desc">
@@ -105,7 +106,7 @@
   <!-- 表格抽屉 -->
   <el-drawer v-model="drawerTable" :with-header="true" size="700px">
     <template #header>
-      <div style="display: flex; justify-content: space-between; align-items: center">
+      <div class="drawer-header">
         <span>{{ tableDrawerTitle }}</span>
         <div>
           <el-button @click="drawerTable = false">取消</el-button>
@@ -129,7 +130,7 @@
       </el-form-item>
       <el-form-item label="启用状态" prop="status">
         <span>停用</span>
-        <el-switch v-model="tableForm.status" style="margin-left: 10px; margin-right: 10px" />
+        <el-switch v-model="tableForm.status" class="switch-dic" />
         <span>开启</span>
       </el-form-item>
       <el-form-item label="排序标记" prop="sort">
@@ -173,10 +174,10 @@ const tableFormRef = ref(null);
 
 const drawerDic = ref(false);
 const drawerTable = ref(false);
-// const dialogTitle = ref("添加字典");
-// const tableDrawerTitle = ref("添加字典项");
 const operationDicType = ref("addDictionary");
 const operationTableType = ref("addDetails");
+const sysDictionaryDetails = ref([]);
+const dictionaryList = ref([]);
 
 const dialogTitle = computed(() => {
   return operationDicType.value === "addDictionary" ? "添加字典" : "编辑字典";
@@ -185,8 +186,7 @@ const dialogTitle = computed(() => {
 const tableDrawerTitle = computed(() => {
   return operationTableType.value === "addDetails" ? "添加字典项" : "编辑字典项";
 });
-const sysDictionaryDetails = ref([]);
-const dictionaryList = ref([]);
+
 const dicForm = ref({
   ID: null,
   desc: "",
@@ -253,20 +253,17 @@ const fetchtableData = async () => {
 // 点击菜单更新表格
 const handleMenuSelect = async (menuId) => {
   activeDicIndex.value = menuId;
-  console.log("activeDicIndex.value", activeDicIndex.value);
   await fetchtableData();
 };
 
 // 新增字典
 const onAddDic = async () => {
   drawerDic.value = true;
-  // dialogTitle.value = "添加字典";
   operationDicType.value = "addDictionary";
   await nextTick();
-  dicFormRef.value.clearValidate();
-  // 重置时,注意这里，dicFormRef是表单实例（Element Plus 表单专用）
-  // 用表单实例时需要搭配使用nextTick()
-  // await nextTick();
+  dicFormRef.value.resetFields();
+  dicFormRef.value.clearValidate(); //清空之前的验证提示
+  // 重置时,注意这里，dicFormRef是表单实例（Element Plus 表单专用）搭配使用 await nextTick();
 };
 
 // 新增确定
@@ -296,14 +293,11 @@ const handleSubmitAdd = async () => {
 // 编辑字典
 const openDicEditDrawer = async (item) => {
   drawerDic.value = true;
-  // dialogTitle.value = "修改字典";
   operationDicType.value = "editDictionary";
   await nextTick();
   dicFormRef.value.clearValidate();
-  // 整体赋值
-  dicForm.value = item;
-  const res = await findSysDictionary(item.ID, item.status);
-  // 返回的详细，用作参数
+  dicForm.value = item; // ref定义整体赋值
+  const res = await findSysDictionary(item.ID, item.status); // 返回的相应数据，用作参数
   sysDictionaryDetails.value = res.data.resysDictionary.sysDictionaryDetails;
 };
 
@@ -340,10 +334,8 @@ const handleDicDelete = async (item) => {
     type: "warning",
   })
     .then(async () => {
-      // 执行删除逻辑
-      const res = await deleteSysDictionary({ ID: item.ID });
+      const res = await deleteSysDictionary({ ID: item.ID }); // 执行删除逻辑
       ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
-      // 三元运算符
       activeDicIndex.value = activeDicIndex.value !== 1 ? 1 : 2;
       if (res.code == 0) {
         await fetchDicData();
@@ -351,17 +343,16 @@ const handleDicDelete = async (item) => {
       }
     })
     .catch(() => {
-      // 用户取消删除操作
-      ElMessage({ type: "info", message: "已取消删除" });
+      ElMessage({ type: "info", message: "已取消删除" }); // 用户取消删除操作
     });
 };
 
 // 新增字典项
 const OnClickAddDetails = async () => {
   drawerTable.value = true;
-  // tableDrawerTitle.value = "添加字典项";
   operationTableType.value = "addDetails";
   await nextTick();
+  tableFormRef.value.resetFields();
   tableFormRef.value.clearValidate();
 };
 
@@ -389,7 +380,6 @@ const handleSubmitAddDetails = async () => {
 // 表格变更
 const handleDetailEdit = async (item) => {
   drawerTable.value = true;
-  // tableDrawerTitle.value = "修改字典项";
   operationTableType.value = "editDetails";
   await nextTick();
   tableFormRef.value.clearValidate();
@@ -430,7 +420,6 @@ const handleDetailDelete = async (item) => {
     .then(async () => {
       // 执行删除逻辑
       const res = await deleteSysDictionaryDetail({ ID: item.ID });
-      // 三元运算符+消息提示
       ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
       if (res.code == 0) {
         await fetchtableData();
@@ -454,67 +443,82 @@ const handleCurrentChange = async (val) => {
   console.log(`当前页: ${val}`);
   await fetchtableData();
 };
-
-// 新增字典项
 </script>
+
 <style scoped>
-/* 白天/黑夜主题变量 */
-:root {
-  --sidebar-bg: #ffffff;
-  --bg-color: #ffffff;
-  --text-color: #333333;
-}
-
-[data-theme="dark"] {
-  --sidebar-bg: #1a1a1a;
-  --bg-color: #121212;
-  --text-color: #ffffff;
-}
-
-/* 暗黑模式菜单覆盖（全局生效） */
-[data-theme="dark"] .el-menu {
-  background-color: var(--sidebar-bg) !important;
-  border-right: none !important;
-}
-
-[data-theme="dark"] .el-menu-item {
-  background-color: var(--sidebar-bg) !important;
-  color: var(--text-color) !important;
-}
-
-[data-theme="dark"] .el-menu-item:hover {
-  background-color: var(--bg-color) !important;
-}
-
-[data-theme="dark"] .menu-item-wrapper {
-  background-color: var(--sidebar-bg) !important;
-}
-
-/* 原有组件样式，el-aside组件写宽度没用，是因为有全局优先级的280px */
-.el-aside {
-  width: 190px !important;
-  margin-top: 10px;
-}
-
-.menu-name {
-  max-width: 90px; /* 设置最大宽度 */
-  overflow: hidden; /* 隐藏溢出内容 */
-  text-overflow: ellipsis; /* 使用省略号表示溢出内容 */
-  white-space: nowrap; /* 禁止换行 */
-}
-
-/* 用于包裹每一个菜单项的内容，规定宽度会限制内容布局 */
 .menu-item-wrapper {
   display: flex;
-  justify-content: space-between; /* 名称左，图标右 */
-  align-items: center; /* 垂直居中 */
-  /* background-color: #fcfcfc; 设置每个菜单项的背景色，写死的背景色，暗黑模式下仍是灰色 */
-  margin: 5px 0; /* 设置菜单项之间的置菜单项背景颜色 */
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 0;
 }
 
 .menu-actions {
   display: flex;
-  flex-direction: row; /* 水平排列图标 */
-  gap: 0px; /* 图标间距 */
+  flex-direction: row;
+  gap: 0px;
+}
+
+.menu-name {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.el-aside {
+  margin-top: 10px; /* 组件特有间距 */
+}
+
+.dic-main {
+  margin-top: 15px;
+}
+
+.dictionary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 垂直居中 */
+  margin-bottom: 16px; /* 添加底部间距 */
+}
+
+.dictionary-title {
+  font-weight: 600; /* 使用600替代bold更现代 */
+  font-size: 16px; /* 明确字号 */
+  color: var(--el-text-color-primary); /* 使用Element Plus变量 */
+}
+
+.menu-item-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-icon {
+  color: rgb(0, 174, 255);
+}
+
+.delete-icon {
+  color: red;
+}
+
+.dictionary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dic-title {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.switch-dic {
+  margin-left: 10px;
+  margin-right: 10px;
 }
 </style>

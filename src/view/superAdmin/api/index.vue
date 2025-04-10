@@ -607,12 +607,6 @@ const handleCurrentChange = async (val) => {
   margin-bottom: 10px;
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
 .el-form-item:last-child {
   margin-right: 0;
 }
@@ -620,12 +614,6 @@ const handleCurrentChange = async (val) => {
 .el-input,
 .el-select {
   width: 100%;
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .route-add-container {
