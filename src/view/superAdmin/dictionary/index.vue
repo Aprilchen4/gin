@@ -34,16 +34,7 @@
           <el-button type="primary" size="auto" @click="OnClickAddDetails">+ 新增字典项</el-button>
         </div>
         <div>
-          <el-table
-            v-loading="tableLoading"
-            :data="tableData"
-            row-key="sort"
-            :header-row-style="{
-              color: '#000',
-              fontSize: '14px',
-              fontWeight: 'bold',
-            }"
-          >
+          <el-table v-loading="tableLoading" :data="tableData" row-key="sort">
             <el-table-column type="selection" min-width="20" />
             <el-table-column prop="UpdatedAt" label="日期" min-width="60px">
               <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
@@ -276,7 +267,6 @@ const onAddDic = async () => {
   // 重置时,注意这里，dicFormRef是表单实例（Element Plus 表单专用）
   // 用表单实例时需要搭配使用nextTick()
   // await nextTick();
-  dicFormRef.value.resetFields(); // 这会重置为表单初始值
 };
 
 // 新增确定
@@ -290,8 +280,7 @@ const handleSubmitAdd = async () => {
       statue: dicForm.value.status,
       type: dicForm.value.type,
     });
-    const type = res.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: res.msg });
+    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     if (res.code == 0) {
       drawerDic.value = false;
       await fetchDicData();
@@ -301,6 +290,7 @@ const handleSubmitAdd = async () => {
       }
     }
   });
+  dicFormRef.value.resetFields(); // 这会重置为表单初始值
 };
 
 // 编辑字典
@@ -329,8 +319,7 @@ const handleSubmitEdit = async () => {
       type: dicForm.value.type,
       sysDictionaryDetails: sysDictionaryDetails.value,
     });
-    const type = res.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: res.msg });
+    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     if (res.code == 0) {
       drawerDic.value = false;
       await fetchDicData();
@@ -353,8 +342,7 @@ const handleDicDelete = async (item) => {
     .then(async () => {
       // 执行删除逻辑
       const res = await deleteSysDictionary({ ID: item.ID });
-      const type = res.code == 0 ? "success" : "error";
-      ElMessage({ type: type, message: res.msg });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
       // 三元运算符
       activeDicIndex.value = activeDicIndex.value !== 1 ? 1 : 2;
       if (res.code == 0) {
@@ -375,7 +363,6 @@ const OnClickAddDetails = async () => {
   operationTableType.value = "addDetails";
   await nextTick();
   tableFormRef.value.clearValidate();
-  tableFormRef.value.resetFields();
 };
 
 // 新增字典项确定按钮
@@ -390,13 +377,13 @@ const handleSubmitAddDetails = async () => {
       value: tableForm.value.value,
       extend: tableForm.value.extend,
     });
-    const type = res.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: res.msg });
+    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     if (res.code == 0) {
       drawerTable.value = false;
       await fetchtableData();
     }
   });
+  tableFormRef.value.resetFields();
 };
 
 // 表格变更
@@ -424,8 +411,7 @@ const handleSubmitEditDetails = async () => {
       value: tableForm.value.value,
       extend: tableForm.value.extend,
     });
-    const type = res.code == 0 ? "success" : "error";
-    ElMessage({ type: type, message: res.msg });
+    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     if (res.code == 0) {
       drawerTable.value = false;
       await fetchtableData();
@@ -445,8 +431,7 @@ const handleDetailDelete = async (item) => {
       // 执行删除逻辑
       const res = await deleteSysDictionaryDetail({ ID: item.ID });
       // 三元运算符+消息提示
-      const type = res.code == 0 ? "success" : "error";
-      ElMessage({ message: res.msg, type: type });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
       if (res.code == 0) {
         await fetchtableData();
       }

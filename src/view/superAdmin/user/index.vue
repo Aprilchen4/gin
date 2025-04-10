@@ -174,16 +174,7 @@
     </div>
   </el-drawer>
   <div style="font-size: small">
-    <el-table
-      v-loading="tableLoading"
-      :data="userList"
-      row-key="ID"
-      :header-row-style="{
-        color: '#000',
-        fontSize: '14px',
-        fontWeight: 'bold',
-      }"
-    >
+    <el-table v-loading="tableLoading" :data="userList" row-key="ID">
       <el-table-column align="left" label="头像" min-width="25">
         <template #default="scope">
           <customPic style="margin-top: 8px" :pic-src="scope.row.headerImg" />
@@ -418,7 +409,6 @@ const onClickAdd = async () => {
   userFormRef.value.clearValidate();
   // 这里用实例用户名无法重置
   // 原因：条件渲染字段 (userName/passWord 只在operationType是 addUser 时显示)
-  userFormRef.value.resetFields();
   userForm.value = {
     userName: "",
     passWord: "",
@@ -445,8 +435,7 @@ const handleSubmitAdd = async () => {
   drawerChange.value = false;
   total.value += 1; // 更新总数
   // 防御性编程
-  const type = resAdmin.code == 0 ? "success" : "error";
-  ElMessage({ type: type, message: resAdmin.msg });
+  ElMessage({ message: resAdmin.msg, type: resAdmin.code === 0 ? "success" : "error" });
   if (resAdmin.code == 0) {
     const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
     userList.value = (res.data.list || []).map((user) => ({
@@ -454,6 +443,7 @@ const handleSubmitAdd = async () => {
       authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
     }));
   }
+  userFormRef.value.resetFields();
 };
 
 // 点击“选定”按钮的处理函数
@@ -504,8 +494,7 @@ const onClickDelete = async (row) => {
   })
     .then(async () => {
       const resDelete = await deleteUser({ id: row.ID });
-      const type = resDelete.code == 0 ? "success" : "error";
-      ElMessage({ type: type, message: resDelete.msg });
+      ElMessage({ message: resDelete.msg, type: resDelete.code === 0 ? "success" : "error" });
       // 当且仅当删除成功时执行调用
       if (resDelete.code == 0) {
         const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
@@ -550,8 +539,7 @@ const handleSubmitEdit = async () => {
     authorityIds: userForm.value.authorityIds,
     authorities: userAuthority.value,
   });
-  const type = res.code == 0 ? "success" : "error";
-  ElMessage({ type: type, message: res.msg });
+  ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
   if (res.code == 0) {
     // 这里要用到res，不简化
     const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
@@ -572,8 +560,7 @@ const onClickReset = async (row) => {
   })
     .then(async () => {
       const res = await resetPassword({ id: row.ID });
-      const type = res.code == 0 ? "success" : "error";
-      ElMessage({ message: res.msg, type: type });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     })
     .catch(() => {
       // 处理取消逻辑
@@ -631,8 +618,7 @@ const handleUpload = async (options) => {
 
   // 3. 实际上传到服务器
   const res = await upload(formData); // 调用上传API
-  const type = res.code == 0 ? "success" : "error";
-  ElMessage({ message: res.msg, type: type });
+  ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
   if (res.code == 0) {
     totalUploadPic.value += 1;
   }
@@ -664,8 +650,7 @@ const deleteImage = (item) => {
         tag: item.tag,
         url: item.url,
       });
-      const type = res.code == 7 ? "error:" : "success";
-      ElMessage({ message: res.msg, type: type });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     })
     .catch(() => {
       ElMessage({ type: "info", message: "已取消删除" });

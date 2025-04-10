@@ -17,10 +17,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
-                  ><a
-                    href="https://www.bilibili.com/video/BV1jx4y1s7xx/?vd_source=abd781886b1091b8ba70c44b62286857"
-                    class="web"
-                    target="_blank"
+                  ><a href="https://www.bilibili.com/video/BV1jx4y1s7xx/" class="web" target="_blank"
                     >1.clone项目和安装依赖</a
                   ></el-dropdown-item
                 >
@@ -43,7 +40,7 @@
       <!-- 右侧第二个按钮，UI消息弹出框 -->
       <!-- 永远不要将用户提交的内容赋值给 message 属性 -->
       <el-tooltip content="搜索">
-        <el-button class="right-head-Icons" @click="pump">
+        <el-button class="right-head-Icons" @click="dialogVisible = true">
           <el-icon><Search /></el-icon>
         </el-button>
       </el-tooltip>
@@ -52,18 +49,27 @@
           <el-input class="quick-input" placeholder="请输入你需要快捷到达的功能" v-model="searchQuery" />
           <!-- 样式写在span里面无效,<span> 是一个内联元素（display: inline）-->
           <!-- <div style="margin-top: 20px; margin-bottom: 10px; margin-left: 15px"><span>操作</span></div> -->
-          <span style="margin-top: 20px; margin-bottom: 10px; margin-left: 15px; display: inline-block">操作</span>
+          <span style="margin: 20px 0 10px 15px; display: inline-block">操作</span>
           <el-menu>
-            <el-menu-item @click="toggleMode('dayTime')">亮色主题</el-menu-item>
-            <el-menu-item @click="toggleMode('nightTime')">暗色主题</el-menu-item>
-            <el-menu-item @click="logOut">退出登录</el-menu-item>
+            <!-- <el-menu-item @click="toggleMode('dayTime')" :disabled="mode === 'dayTime'">亮色主题</el-menu-item>
+            <el-menu-item @click="toggleMode('nightTime')" :disabled="mode === 'nightTime'">暗色主题</el-menu-item>
+            <el-menu-item @click="logOut">退出登录</el-menu-item> -->
+            <el-menu-item
+              v-for="menu in filteredMenus"
+              :key="menu.label"
+              @click="menu.action"
+              :disabled="menu.disabled"
+            >
+              {{ menu.label }}
+            </el-menu-item>
           </el-menu>
         </div>
         <template #footer>
-          <el-button @click="debugClick">关闭</el-button>
+          <!-- Vue 的模板编译器会自动识别 ref 变量，并在底层转换成 dialogVisible.value,
+           仅在 <script> 部分 需要用value访问ref变量： -->
+          <el-button @click="dialogVisible = false">关闭</el-button>
         </template>
       </el-dialog>
-
       <el-tooltip content="系统设置">
         <el-button class="right-head-Icons" @click="ToggleDrawer"
           ><el-icon><Setting /></el-icon
@@ -121,6 +127,7 @@
         <el-header>
           <tabMenu />
         </el-header>
+        <!-- 这一行css必须加上。隐藏容器内超出其尺寸的内容（不显示滚动条）。 -->
         <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden">
           <el-main
             ><!-- 预留底部空间 -->
@@ -136,34 +143,25 @@
 <!-- // 一定要有setup,否则会提示函数未定义 -->
 <!-- Action catch((action:Action)）只能用在ts里面 -->
 <script setup>
-// import { ElMessageBox, ElDrawer, ElMessage } from "element-plus";
-import { ElButton } from "element-plus";
-import { ref } from "vue";
-import { watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
+import { ElButton } from "element-plus";
+
 import sideMenu from "@/components/sideMenu.vue";
 import tabMenu from "@/components/tabMenu.vue";
 import bottomIcon from "@/components/bottomIcon.vue";
-import { computed } from "vue";
-import { useStore } from "vuex";
 
 const store = useStore();
-const dialogVisible = ref(false);
-const breadCrumb = computed(() => store.state.breadCrumb);
-// 搜索弹窗
-const pump = () => {
-  dialogVisible.value = true;
-};
+const searchQuery = ref(""); // 搜索查询
+const dialogVisible = ref(false); // 对话框可见性
+const drawer = ref(false); // 抽屉状态
+const breadCrumb = computed(() => store.state.breadCrumb); // 面包屑导航
 
-// 系统设置侧边栏
-// JavaScript 中不需要类型声明，ref<boolean>
 // JavaScript 中，大部分情况下分号是可选的;
-const drawer = ref(false);
-console.log(drawer.value);
 
 function ToggleDrawer() {
   drawer.value = !drawer.value;
-  console.log(drawer.value);
 }
 
 // 刷新
@@ -177,23 +175,50 @@ const refresh = () => {
   store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
 };
 
-// 切换主题
-// const mode = ref("dayTime");
+// const定义，注意调用顺序
+const logOut = () => {
+  mode.value = "dayTime"; //重新登陆未sayTime模式
+  router.push({ path: "/" });
+};
+
+// 搜索重置
+const resetForm = () => {
+  searchQuery.value = "";
+};
+
+// 定义菜单列表，使用函数返回以确保响应性【很重要】
+// 这里响应式用computed 具有缓存机制，用于根据其他响应式数据计算衍生的只读数据。
+// 天然支持动态计算，确保每次访问 menus.value 时都重新评估 disabled
+// ref需要每次 mode.value 变化时，你必须手动更新 menus.value
+const menus = computed(() => [
+  { label: "亮色主题", action: () => toggleMode("dayTime"), disabled: mode.value === "dayTime" },
+  { label: "暗色主题", action: () => toggleMode("nightTime"), disabled: mode.value === "nightTime" },
+  { label: "退出登录", action: logOut, disabled: false },
+]);
+
+// 过滤菜单项，将 menu.label 和 searchQuery 都转为小写，以确保过滤时不区分大小写
+// filteredMenus 绑定el-menu-item,是根据搜索关键字 searchQuery 过滤后的菜单列表。
+const filteredMenus = computed(() => {
+  if (!searchQuery.value) return menus.value;
+  return menus.value.filter((menu) => menu.label.toLowerCase().includes(searchQuery.value.toLowerCase()));
+});
+
+// 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
 const mode = ref(localStorage.getItem("theme") || "dayTime");
-// const toggleMode = (newMode:string)需要在ts里面使用
+// 切换主题
 const toggleMode = (newMode) => {
   mode.value = newMode;
-  // 保存主题到本地存储，确保在页面刷新或重新打开时能保持用户的主题选择
+  // 将新主题写入本地存储，覆盖之前的值确保在页面刷新或重新打开时能保持用户的主题选择
   localStorage.setItem("theme", newMode);
-  // 判断检查传入的新模式是否为 "nightTime"。如果是，则将 dark 类添加到 <html> 根元素（document.documentElement）
-  // 用于控制 CSS 类的添加和移除
-  if (newMode === "nightTime") {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
 
-  // 切换自定义主题，直接设置 <html> 元素的 data-theme 属性
+  // Element Plus 的约定：当 <html> 元素添加 dark 类时，Element Plus 会自动启用其内置的暗黑主题组件样式。
+  // 所以没有定义dark类的具体内容
+
+  // [两套系统]
+  // 1、控制 Element 主题，CSS 类的添加classList.add/remove 和移除(theme.css)
+  document.documentElement.classList.toggle("dark", newMode === "nightTime");
+
+  // 2、切换自定义主题([data-theme="dark"])
   document.documentElement.setAttribute("data-theme", newMode === "nightTime" ? "dark" : "light");
 };
 
@@ -205,16 +230,6 @@ watch(
   },
   { immediate: true }
 );
-
-// 关闭搜索弹窗
-const debugClick = () => {
-  dialogVisible.value = false;
-};
-
-const logOut = () => {
-  mode.value = "dayTime"; //重新登陆未sayTime模式
-  router.push({ path: "/" });
-};
 </script>
 
 <style>
@@ -256,8 +271,6 @@ body,
 .bottom-whole {
   height: calc(100vh - 60px) !important; /* 会受控制台影响 */
   width: 100%;
-  display: flex;
-  flex: 1;
   min-height: 0;
 }
 
@@ -269,7 +282,8 @@ body,
 /* ========== 主题变量定义 ========== */
 :root {
   /* 白天主题变量 */
-  --bg-color: #ffffff;
+  --bg-color: #f4f2f2;
+  --table-bg: #ffffff;
   --text-color: #333333;
   --border-color: #e4e7ed;
   --sidebar-bg: #ffffff;
@@ -281,6 +295,7 @@ body,
   --menu-width: 16%; /* 默认宽度为外部容器宽度的 15% */
 }
 
+/* 一个属性选择器，表示当元素具有 data-theme="dark" 属性时应用样式 */
 [data-theme="dark"] {
   /* 黑夜主题变量 */
   --bg-color: #121212;
@@ -291,9 +306,17 @@ body,
   --menu-hover-bg: #4eafd3;
   --table-header-bg: #1a1a1a;
   --table-border-color: #444444;
+  --table-bg: #000000;
   --dialog-bg: #1a1a1a;
 }
-
+/* ========== 输入框 ========== */
+input,
+select {
+  font-family: "微软雅黑", sans-serif; /* 设置字体为微软雅黑 */
+}
+.english-font {
+  font-family: "Times New Roman", serif; /* 使用 Times New Roman */
+}
 /* ========== 侧边栏样式 ========== */
 .el-aside {
   /* 这里是el-aside占全部页面的70% */
@@ -316,6 +339,9 @@ body,
 .el-menu-item {
   color: var(--text-color) !important;
   background-color: var(--sidebar-bg) !important;
+  /* 设置菜单的高度 /* 直接控制菜单项高度 */
+  height: 50px; /* 设定每个菜单项的固定高度为50像素 */
+  padding: 10px; /* 添加内边距可以增加视觉效果 */
 }
 
 /* 悬浮颜色 */
@@ -328,15 +354,10 @@ body,
   background-color: var(--menu-hover-bg) !important;
 }
 
-/* 设置菜单的高度 /* 直接控制菜单项高度 */
-.el-menu-item {
-  height: 50px; /* 设定每个菜单项的固定高度为50像素 */
-  padding: 10px; /* 添加内边距可以增加视觉效果 */
-}
 /* ========== 表格样式 ========== */
 .el-table {
   --el-table-header-bg-color: var(--table-header-bg) !important;
-  --el-table-tr-bg-color: var(--bg-color) !important;
+  --el-table-tr-bg-color: var(--table-bg) !important;
   --el-table-text-color: var(--text-color) !important;
   --el-table-border-color: var(--table-border-color) !important;
 }
@@ -346,6 +367,10 @@ body,
   color: var(--text-color) !important;
 }
 
+.el-table__header-row {
+  font-size: 12px;
+  font-weight: bold;
+}
 /* ========== 对话框样式 ========== */
 .el-dialog {
   background-color: var(--dialog-bg) !important;
@@ -357,6 +382,23 @@ body,
 }
 
 /* ========== 组件样式 ========== */
+/* 固定头部 */
+.el-header {
+  height: 50px !important; /* 元素本身高度 ,决定了距离warning的距离*/
+  line-height: 40px; /* 定义了元素内文本的行高 */
+  background-color: var(--header-bg);
+  flex-shrink: 0; /* 禁止收缩 */
+}
+
+/* 全局 */
+.placeholder-text {
+  color: rgba(0, 0, 0, 0.409);
+}
+
+.el-drawer {
+  background-color: white !important; /* 设置为不透明的白色 */
+}
+
 .el-container {
   height: 100% !important;
   display: flex;
@@ -365,22 +407,11 @@ body,
   min-height: 0;
 }
 
-/* 固定头部 */
-.el-header {
-  height: 60px !important; /* 元素本身高度 */
-  line-height: 60px; /* 定义了元素内文本的行高 */
-  background-color: var(--header-bg);
-  padding: 0;
-  flex-shrink: 0; /* 禁止收缩 */
-}
-
 .el-main {
   height: calc(100% - 60px) !important;
   overflow: auto;
-  padding: 0;
   flex: 1;
-  min-height: 0;
-  padding-bottom: 55px;
+  padding: 0 0 55px;
 }
 
 /* ========== 组件样式 ========== */

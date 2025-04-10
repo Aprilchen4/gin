@@ -3,7 +3,7 @@
     <el-icon :size="13">
       <warning-filled />
     </el-icon>
-    <span>
+    <span class="warning-title">
       {{ title }}
     </span>
   </div>
@@ -32,16 +32,22 @@ const open = () => {
 
 <style scoped>
 .warning-tip {
-  padding: 2px;
-  background-color: #fdf4d8; /* 浅黄色背景 */
-  border: 1px solid #ffeeba; /* 边框颜色 */
+  height: 40px;
+  padding: 5 0 5px;
+  /* background-color: #fdf6dc; 浅黄色背景*/
+  background: linear-gradient(to bottom, #fdfaf0 0%, #fbf4dd 50%, #fffaee 100% /* 底部颜色 */);
   border-radius: 4px;
-  color: #cc9c0a; /* 文字颜色 */
-  margin-top: 0px;
+  color: #f1b607; /* 文字颜色 */
+  margin: 10 0 5 0px;
   display: flex;
   align-items: center;
-  /* justify-content: space-between; */
   font-size: small;
+}
+
+.warning-title {
+  line-height: 80%; /* 让字体在垂直方向占 60% */
+  flex-grow: 1; /* 使标题占用剩余空间 */
+  margin-left: 3px;
 }
 
 .warning-tip a {

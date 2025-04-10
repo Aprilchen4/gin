@@ -9,12 +9,7 @@
       </div>
       <!-- 左中 -->
       <div class="login-box">
-        <!--"loginForm" 是DOM组件实例的引用名称，开发者自定义的名称-->
-        <!-- 通过 this.$refs.loginForm，可以在 Vue.js 代码中直接访问并操作这个表单组件实例。  -->
-        <!-- 比如,可以通过 this.$refs.loginForm.focus() 来让表单组件获得焦点。
-            或者通过 this.$refs.loginForm.validate() 来手动触发表单验证。 -->
-        <!-- <el-form :model="form" :rules="rules" ref="loginForm"> 原版，下行不加loginForm也可以-->
-        <el-form :model="form" :rules="rules">
+        <el-form :model="form" :rules="rules" :inline="false">
           <!-- prop 是 Element UI 表单组件特有的一个属性绑定 -->
           <!-- 使用了 prop 属性进行绑定，"username" 是表单数据模型中的一个字段名称 -->
           <!-- 为了将这个表单项与表单数据模型中的 username 字段进行关联，让表单验证功能能够正常工作， -->
@@ -29,20 +24,21 @@
               <!-- </template> -->
             </el-input>
           </el-form-item>
+          <!-- 密码应使用 type="password" 隐藏输入内容。 -->
           <el-form-item prop="password">
-            <el-input v-model="form.password" placeholder="请输入密码"> </el-input>
+            <el-input type="password" v-model="form.password" placeholder="请输入密码"> </el-input>
           </el-form-item>
-          <el-form-item prop="usercode">
-            <div class="verify-code">
-              <div>
-                <el-input v-model="form.captcha" placeholder="请输入验证码" />
-              </div>
+          <!-- <el-form-item> 默认使用 Flex 布局，且子元素会 水平排列（flex-direction: row）。即使您在外层添加 verify-code 类，也会被默认样式覆盖。 -->
+          <!-- 要么用！important强制修改form布局，要么写在div里面 -->
+          <el-form-item prop="usercode" class="verify-code-item">
+            <div class="verify-line">
+              <el-input v-model="form.captcha" placeholder="请输入验证码" />
               <!-- 这里v-model要和script-data/setup的数据对应，否则报错 -->
               <!-- <div><VerifyCode/></div> -->
               <!-- v-if="picPath" 只有当 picPath 存在时，才会渲染 <img> 标签 -->
               <!--picPath 是 Vue 组件的一个变量，它存储了图片的路径或 Base64 数据，并绑定到 src 属性上 -->
-              <img v-if="picPath" :src="picPath" style="width: 80px; height: 40px" />
-              <!-- 不在这里修改验证码格式 -->
+              <img v-if="picPath" :src="picPath" class="captcha-image" @click="refreshCaptcha" />
+              <div v-else class="captcha-placeholder">加载中...</div>
             </div>
           </el-form-item>
         </el-form>
@@ -90,15 +86,14 @@
 
 <script>
 // setup写在script里面，后续内容直接定义变量，不需要多层包裹；
-import { ElInput, ElButton } from "element-plus";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { ElInput, ElButton } from "element-plus";
 import { getCode, getlogin } from "@/api/user";
-
 // useRouter 只能在 setup 函数或 <script setup> 中使用，是一个局部工具函数
 // 每次在组件中使用 useRouter，都会返回当前的路由实例，即 router.js 中导出的 router
 // 模块化：每个组件都可以独立访问路由实例，而不需要依赖全局变量。
 // 灵活性：可以在不同的组件中使用不同的路由逻辑。
-import { useRouter } from "vue-router";
 
 //export default 用于导出一个默认值
 export default {
@@ -135,48 +130,40 @@ export default {
       //浏览器-右键-检查-控制台
       // console.log(this.$refs.loginForm);这里会报错， Cannot read '$refs'；
       console.log("按钮点击成功，开始执行登录请求");
-      try {
-        // 返回的responsibl内容和打印的“登陆成功”在一块
-        // 每次调用 getlogin 函数时，返回的 response 都是一个新的对象
+      // 返回的responsibl内容和打印的“登陆成功”在一块
+      // 每次调用 getlogin 函数时，返回的 response 都是一个新的对象
 
-        // 数据隔离：不同组件的 response 应该是独立的，避免数据污染。
-        // 响应式更新：在 Vue 中，数据需要是响应式的，才能触发视图更新。
-        const response = await getlogin(form.value);
+      // 数据隔离：不同组件的 response 应该是独立的，避免数据污染。
+      // 响应式更新：在 Vue 中，数据需要是响应式的，才能触发视图更新。
+      const response = await getlogin(form.value);
 
-        //token 在返回的内容里
-        console.log("登录非常成功:", response);
+      //token 在返回的内容里
+      console.log("登录非常成功:", response);
 
-        // 编程式导航
-        // router.push({ path: "/ginmenu" });
-        // router.push("/ginmenu").then(() => {
-        //   window.location.reload(); // 强制刷新（不推荐长期使用）
-        // });
-        // 导航到目标页面
-        await router.push({ path: "/ginmenu" });
+      // 编程式导航，导航到目标页面
+      // router.push({ path: "/ginmenu" });
+      // router.push("/ginmenu").then(() => {
+      //   window.location.reload(); // 强制刷新（不推荐长期使用）
+      // });
+      await router.push({ path: "/ginmenu" });
 
-        // 强制刷新视图
-        setTimeout(() => {
-          window.dispatchEvent(new Event("resize"));
-        }, 100); // 延迟 100ms 触发 resize 事件，确保布局重新计算
+      // 延迟 100ms 触发 resize 事件，强制浏览器重新计算布局和渲染元素
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 100);
 
-        // 假设返回的数据中有 token，存储在 localStorage
-        // response.token 是响应对象中的一个字段，表示用户的身份验证令牌（Token）
-        // 注意这里respons.token无返回值；数据结构
-        localStorage.setItem("userToken", response.data.token);
+      // 假设返回的数据中有 token，存储在 localStorage
+      // response.token 是响应对象中的一个字段，表示用户的身份验证令牌（Token）
+      // 注意这里respons.token无返回值；数据结构
+      localStorage.setItem("userToken", response.data.token);
 
-        return true; // 登录成功
+      return true; // 登录成功
 
-        // 当 Axios 请求发生错误时,错误信息会被传递到 catch 块中。
-        // 此时,上层组件或页面（这里是request.js响应拦截器部分对错误进行分类），promise给catch反馈错误信息。
+      // 当 Axios 请求发生错误时,错误信息会被传递到 catch 块中。
+      // 此时,上层组件或页面（这里是request.js响应拦截器部分对错误进行分类），promise给catch反馈错误信息。
 
-        // .then() 方法传入的函数就是请求成功时的回调函数,它会接收到服务器返回的响应数据。
-        // .catch() 方法传入的函数就是请求失败时的回调函数,它会接收到错误对象。
-      } catch (error) {
-        // 在报错的时候的打印,所以导航失败会打印登录失败；但其实登陆成功；
-        // 在浏览器控制台（Console）中以红色字体打印错误信息，用于调试和错误排查
-        console.error("登录失败", error);
-        return false; // 登录失败
-      }
+      // .then() 方法传入的函数就是请求成功时的回调函数,它会接收到服务器返回的响应数据。
+      // .catch() 方法传入的函数就是请求失败时的回调函数,它会接收到错误对象。
     };
 
     //定义一个响应式变量，不能放在前面的component里面，那个是form表单
@@ -196,15 +183,8 @@ export default {
       form.value.captchaId = a.data.captchaId;
       console.log(picPath.value);
     });
-
     // 2. 使用数据生成验证码组件
-    return {
-      form,
-      rules,
-      message: "",
-      fetchData,
-      picPath,
-    };
+    return { form, rules, fetchData, picPath };
   },
 };
 </script>
@@ -235,7 +215,7 @@ body,
   text-align: center; /* 水平文本居中 */
   margin-bottom: 100px;
   margin-left: 160px;
-  width: 600px;
+  width: 500px;
   min-width: 40%;
 }
 
@@ -254,7 +234,6 @@ body,
 
 .login-box {
   width: 300px;
-  /* padding: 40px; */
   margin-top: 20px;
   background-color: #fff;
   border-radius: 4px;
@@ -270,13 +249,22 @@ body,
   font-size: 12.25px;
 }
 
-/* 输入框+图片，限制在login-box的宽度 */
-.verify-code {
-  height: 35px;
+/* 覆盖 el-form-item 的默认 flex 布局 */
+.verify-code-item .el-form-item__content {
+  display: block !important; /* 改为块级布局 */
+}
+
+.verify-line {
   display: flex;
-  justify-content: space-between;
+  gap: 10px; /* 间距 */
   align-items: center; /* 垂直居中 */
-  /* vertical-align: middle; 无效，用于行内块元素、表格单元格，调整文本、图片等行内内容*/
+}
+
+/* 输入框+图片，限制在login-box的宽度 */
+.captcha-image {
+  width: 100px;
+  height: 35px;
+  cursor: pointer; /* 可点击刷新 */
 }
 
 .login-button {
@@ -304,13 +292,13 @@ body,
 .picture-line {
   height: 100vh; /* 高度填满 */
   width: auto; /* 宽度自适应 */
-  min-width: 100px; /* 最小宽度防止过小 */
+  min-width: 150px; /* 最小宽度防止过小 */
   object-fit: cover;
   flex-shrink: 1; /* 允许缩放 */
 }
 
 .picture {
-  width: 60%;
+  width: 80%;
   height: 100vh;
   object-fit: cover;
 }
@@ -333,10 +321,10 @@ body,
   font-size: 14px;
   font-family: "Microsoft YaHei", sans-serif; /* 微软雅黑 */
   /* 设置为绝对定位。这样容器就可以相对于它的定位父元素page进行定位。 */
-  position: absolute !important;
+  position: absolute !important; /*和右侧图片重叠,元素脱离正常文档流，相对最近的祖先css定位，这里没有祖先，相对于初始包含块（通常是视口）定位*/
   margin: 0 0px;
-  bottom: 0;
-  left: 0;
+  bottom: 0; /*将其固定在页面底部*/
+  /* left: 0; */
 }
 
 /* 底部图标格式 */

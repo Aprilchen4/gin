@@ -19,16 +19,7 @@
     <!-- 删除按钮 -->
     <el-button style="margin-top: 20px" @click="handleDelete" :disabled="!tableItems.length">删除</el-button>
     <!-- 表格 -->
-    <el-table
-      v-loading="tableLoading"
-      @selection-change="handleSelectionChange"
-      :data="tableData"
-      :header-row-style="{
-        color: '#000',
-        fontSize: '14px',
-        fontWeight: 'bold',
-      }"
-    >
+    <el-table v-loading="tableLoading" @selection-change="handleSelectionChange" :data="tableData">
       <el-table-column type="selection" width="55" />
       <el-table-column align="left" label="操作人" width="140">
         <template #default="scope">
@@ -199,8 +190,7 @@ const handleDelete = async () => {
       const res = await deleteSysOperationRecordByIds({ ids: selectedIds.value });
       // 清空搜索内容
       params.value = "";
-      const type = res.code == 0 ? "success" : "error";
-      ElMessage({ message: res.msg, type: type });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
       if (res.code == 0) {
         await fetchtableData();
       }
@@ -232,8 +222,7 @@ const handleDetailDelete = async (row) => {
       const res = await deleteSysOperationRecord({ id: row.ID });
       // 清空历史搜索内容
       params.value = "";
-      const type = res.code == 0 ? "success" : "error";
-      ElMessage({ message: res.msg, type: type });
+      ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
       if (res.code == 0) {
         await fetchtableData();
       }

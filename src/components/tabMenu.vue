@@ -87,7 +87,7 @@ const deleteTab = (targetName) => {
 .gva-tabs {
   /* 就是这句，组件库内部样式控制组件的外边缘边框线 */
   :deep(.el-tabs__nav) {
-    border: 0;
+    border: 0px;
   }
 
   :deep(.el-tabs__item) {

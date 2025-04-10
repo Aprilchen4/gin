@@ -3,7 +3,7 @@
     <div style="margin-right: 3px">Powered by</div>
     <a href="https://github.com/flipped-aurora/gin-vue-admin" class="bottom-a">Gin-Vue-Admin</a>
     <div style="margin-left: 3px">Copyright</div>
-    <a href="https://github.com/flipped-aurora" class="bottom-a">flipped-aurora团队</a>
+    <a href="https://github.com/flipped-aurora" class="bottom-a">flipped-aurora 团队</a>
   </div>
 </template>
 <style>
