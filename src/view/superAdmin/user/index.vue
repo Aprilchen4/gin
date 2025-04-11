@@ -1,29 +1,25 @@
 <template>
   <WarningTip title="注：右上角头像下拉可切换角色" />
-  <div style="margin-top: 10px">
-    <el-form :inline="true" :model="searchInfo" style="font-size: small" class="search-form">
-      <el-form-item label="用户名">
-        <el-input v-model="searchInfo.userName" placeholder="用户名" />
-      </el-form-item>
-      <el-form-item label="昵称">
-        <el-input v-model="searchInfo.nickName" placeholder="昵称" />
-      </el-form-item>
-      <el-form-item label="手机号">
-        <el-input v-model="searchInfo.phone" placeholder="描述" />
-      </el-form-item>
-      <el-form-item label="邮箱">
-        <el-input v-model="searchInfo.email" placeholder="email" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="search" @click="onSubmit"> 查询 </el-button>
-        <el-button icon="refresh" @click="onReset"> 重置 </el-button>
-      </el-form-item>
-    </el-form>
-  </div>
-  <div style="margin-top: 20px; margin-bottom: 20px">
-    <el-button type="primary" @click="onClickAdd">+ 新增用户</el-button>
-  </div>
-  <el-drawer v-model="drawerChange" :with-header="true" size="800px">
+  <el-form :inline="true" :model="searchInfo" style="font-size: small" class="search-form">
+    <el-form-item label="用户名">
+      <el-input v-model="searchInfo.userName" placeholder="用户名" />
+    </el-form-item>
+    <el-form-item label="昵称">
+      <el-input v-model="searchInfo.nickName" placeholder="昵称" />
+    </el-form-item>
+    <el-form-item label="手机号">
+      <el-input v-model="searchInfo.phone" placeholder="描述" />
+    </el-form-item>
+    <el-form-item label="邮箱">
+      <el-input v-model="searchInfo.email" placeholder="email" />
+    </el-form-item>
+    <el-form-item>
+      <el-button type="primary" icon="search" @click="onSubmit"> 查询 </el-button>
+      <el-button icon="refresh" @click="onReset"> 重置 </el-button>
+    </el-form-item>
+  </el-form>
+  <el-button class="add-Btn" type="primary" @click="onClickAdd">+ 新增用户</el-button>
+  <el-drawer v-model="drawerChange" :with-header="true" size="700px">
     <template #header>
       <div class="drawer-header">
         <span>{{ dialogTitle }}</span>
@@ -52,9 +48,9 @@
       </el-form-item>
       <el-form-item label="用户角色" prop="authorityIds">
         <!-- checkStrictly: true 可以单独勾选任意节点（无需依赖父子关系）。 -->
-        <!-- collapse-tags：多选时，显示一个折叠标签，而不是所有选中项。 -->
+        <!-- collapse-tags：多选时，显示一个折叠标签，而不是所有选中项。选项以标签的方式展示 -->
         <el-cascader
-          style="width: 100%"
+          collapse-tags
           v-model="userForm.authorityIds"
           :options="userAuthority"
           :props="{
@@ -64,15 +60,16 @@
             value: 'authorityId',
             emitPath: false,
           }"
-          collapse-tags
           @change="addUserAuthority"
         />
       </el-form-item>
       <el-form-item v-model="userForm.enable" label="启用">
+        <!-- :active-value 和 :inactive-value 是 <el-switch> 组件的属性。 -->
         <el-switch v-model="userForm.enable" inline-prompt :active-value="1" :inactive-value="2" />
       </el-form-item>
       <el-form-item label="头像">
         <div class="upload-box" @click="openClickUpload">
+          <!-- 检查 userForm.headerImg -->
           <template v-if="userForm.headerImg">
             <img :src="userForm.headerImg" class="upload-image" />
           </template>
@@ -83,101 +80,87 @@
       </el-form-item>
     </el-form>
   </el-drawer>
-  <el-drawer v-model="drawerUpload" :with-header="true" size="800px">
+  <!-- 上传的二次抽屉 -->
+  <el-drawer v-model="drawerUpload" :with-header="true" size="700px">
     <template #header>
-      <div class="drawer-header">
-        <span style="font-size: small">{{ dialogTitle }}</span>
-      </div>
+      <span class="drawer-header">{{ dialogTitle }}</span>
     </template>
-    <div>
-      <el-container>
-        <el-aside
-          style="display: flex; justify-content: center; font-size: small; margin-top: 15px; font-weight: lighter"
-          width="160px"
-        >
-          暂无数据
-        </el-aside>
-        <el-main style="padding: 0px; margin-left: 0px">
-          <div style="padding: 0px; margin-left: 0px">
-            <el-input v-model="keyword" style="width: 280px; height: 28px"></el-input>
-            <el-button type="primary" style="height: 28px" @click="searchPic">
-              <el-icon><search /></el-icon>
-            </el-button>
+    <el-container>
+      <el-aside class="upload-aside-text"> 暂无数据 </el-aside>
+      <el-main>
+        <el-input v-model="keyword" class="search-img" />
+        <el-button type="primary" class="search-btn" @click="searchPic">
+          <el-icon><search /></el-icon>
+        </el-button>
+        <!-- 点击按钮们上传图片 -->
+        <div class="button-group">
+          <el-button type="danger" :disabled="!hasSelected" @click="handleConfirmSelection">
+            <el-icon><ArrowLeft /></el-icon>选定
+          </el-button>
+          <el-button type="primary" @click="triggerUpload">
+            <el-icon><Upload /></el-icon>普通上传
+          </el-button>
+          <el-button type="primary" @click="triggerUpload">
+            <el-icon><Scissor /></el-icon>裁剪上传
+          </el-button>
+          <el-button type="primary" @click="scanUploadFunc">
+            <el-icon><Grid /></el-icon>扫码上传
+          </el-button>
+          <el-button type="primary" @click="triggerUpload">
+            <el-icon><Upload /></el-icon>压缩上传
+          </el-button>
+        </div>
+        <!-- :http-request属性允许你自定义上传逻辑;beforeUpload函数上传文件之前的钩子，参数为上传的文件， -->
+        <!--  ref="uploadRef"实现按钮和el-upload组件的联动 -->
+        <!-- action 请求 URL -->
+        <el-upload
+          ref="uploadRef"
+          action="userForm.headerImg"
+          :show-file-list="false"
+          :before-upload="beforeUpload"
+          :http-request="handleUpload"
+          style="display: none"
+        />
+        <!-- 图片列表,注意v-for是数组，数组里的对象属性写法 -->
+        <!-- item.selected: 这是一个布尔值，表示当前 item 是否被选中。 -->
+        <!-- selected是:class 动态绑定语法中的类名。不是自定义属性。
+             给每个 image-item 条目动态应用一个类 selected，是div部分整体的属性：卡片级"的交互 -->
+        <div class="image-list" v-if="uploadPicFile.length">
+          <div
+            v-for="item in uploadPicFile"
+            :key="item.ID"
+            class="image-item"
+            :class="{ selected: item.selected }"
+            @click="toggleImageSelection(item)"
+          >
+            <img :src="item.url" class="upload-image" />
+            <!-- 新增文件名显示 -->
+            <div class="image-name">{{ item.name }}</div>
+            <el-icon class="delete-icon" @click="deleteImage(item)">
+              <Close />
+            </el-icon>
           </div>
-          <!-- 点击上传图片 -->
-          <div class="button-group" style="margin-top: 20px">
-            <el-button type="danger" :disabled="!hasSelected" @click="handleConfirmSelection">
-              <el-icon><ArrowLeft /></el-icon>选定
-            </el-button>
-            <el-button type="primary" @click="triggerUpload">
-              <el-icon><Upload /></el-icon>普通上传
-            </el-button>
-            <el-button type="primary" @click="triggerUpload">
-              <el-icon><Scissor /></el-icon>裁剪上传
-            </el-button>
-            <el-button type="primary" @click="scanUploadFunc">
-              <el-icon><Grid /></el-icon>扫码上传
-            </el-button>
-            <el-button type="primary" @click="triggerUpload">
-              <el-icon><Upload /></el-icon>压缩上传
-            </el-button>
-            <!-- :http-request属性允许你自定义上传逻辑 -->
-            <el-upload
-              ref="uploadRef"
-              action=""
-              :show-file-list="false"
-              :before-upload="beforeUpload"
-              :http-request="handleUpload"
-              style="display: none"
-            >
-            </el-upload>
-            <!-- 图片列表,注意v-for是对数组，数组里的对象属性写法 -->
-            <!-- item.selected: 这是一个布尔值，表示当前 item 是否被选中。 -->
-            <!-- selected是:class 绑定语法中的动态类名。不是自定义属性。
-             select是div部分整体的属性：卡片级"的交互 -->
-            <!-- item.selected 为 true，则 selected 类将被添加到该 <div> 中。 -->
-            <div class="image-list" v-if="uploadPicFile.length">
-              <div
-                v-for="item in uploadPicFile"
-                :key="item.ID"
-                class="image-item"
-                :class="{ selected: item.selected }"
-                @click="toggleImageSelection(item)"
-              >
-                <img :src="item.url" class="image" />
-                <!-- 新增文件名显示 -->
-                <div class="image-name">{{ item.name }}</div>
-                <el-icon class="delete-icon" @click="deleteImage(item)">
-                  <Close />
-                </el-icon>
-              </div>
-            </div>
-          </div>
-          <div>
-            <!-- 上传图片页码 -->
-            <div class="pagination-container">
-              <el-pagination
-                v-model:current-page="pagePic"
-                size="small"
-                background
-                :disabled="disabled"
-                layout="total,prev, pager, next, jumper"
-                :total="totalUploadPic"
-                @size-change="handleSizeChangePic"
-                @current-change="handleCurrentChangePic"
-              >
-              </el-pagination>
-            </div>
-          </div>
-        </el-main>
-      </el-container>
-    </div>
+        </div>
+        <!-- 上传图片页码 -->
+        <el-pagination
+          class="pagination-container"
+          v-model:current-page="pagePic"
+          size="small"
+          background
+          :disabled="disabled"
+          layout="total,prev, pager, next, jumper"
+          :total="totalUploadPic"
+          @size-change="handleSizeChangePic"
+          @current-change="handleCurrentChangePic"
+        />
+      </el-main>
+    </el-container>
   </el-drawer>
   <div style="font-size: small">
     <el-table v-loading="tableLoading" :data="userList" row-key="ID">
       <el-table-column align="left" label="头像" min-width="25">
         <template #default="scope">
-          <customPic style="margin-top: 8px" :pic-src="scope.row.headerImg" />
+          <customPic :pic-src="scope.row.headerImg" />
         </template>
       </el-table-column>
       <el-table-column prop="ID" label="ID" min-width="30px" />
@@ -188,7 +171,7 @@
       <el-table-column label="用户角色">
         <template #default="scope">
           <!-- v-model绑定一个数组authorityIds(对应数据value)，选中项绑定值，代表默认勾选项-->
-          <!--  emitPath: true // 重要：存储完整路径 ,会返回完整的路径数组-->
+          <!--  emitPath: true // 重要：存储完整路径 ,会返回完整的路径数组 authorityIds [[888], [9528]]-->
           <el-cascader
             v-model="scope.row.authorityIds"
             :options="userAuthority"
@@ -228,26 +211,22 @@
       </el-table-column>
     </el-table>
   </div>
-  <div class="pagination-container">
-    <el-pagination
-      v-model:current-page="page"
-      v-model:page-size="pageSize"
-      :page-sizes="[10, 30, 50, 100]"
-      size="small"
-      background
-      :disabled="disabled"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    >
-    </el-pagination>
-  </div>
+  <el-pagination
+    class="pagination-container"
+    v-model:current-page="page"
+    v-model:page-size="pageSize"
+    :page-sizes="[10, 30, 50, 100]"
+    size="small"
+    background
+    :disabled="disabled"
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="total"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  />
 </template>
 
 <script setup>
-import WarningTip from "@/components/WarningTip.vue";
-import { ref, computed } from "vue"; // 引入 computed
 import {
   getAuthority,
   getUserList,
@@ -259,31 +238,29 @@ import {
   resetPassword,
   upload,
   deleteFile,
-} from "@/api/user";
+} from "@/api/user"; // 引入 API 函数
+import WarningTip from "@/components/WarningTip.vue";
 import customPic from "@/components/customPic.vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import scanUpload from "@/assets/scanUpload.png";
-import { h } from "vue"; // 引入 h 函数，用于创建 VNode
-import { nextTick } from "vue";
+import { ref, computed, h, nextTick } from "vue"; // 引入 ref, computed, h 函数和 nextTick
+
+import { ElMessage, ElMessageBox } from "element-plus"; // 引入 Element Plus 组件
+import scanUpload from "@/assets/scanUpload.png"; // 引入上传图片
 
 const drawerChange = ref(false);
 const drawerUpload = ref(false);
 const totalUploadPic = ref(2);
 const tableLoading = ref(false);
 const operationType = ref("");
-// const dialogTitle = ref("");
 const dialogTitle = computed(() => (operationType.value === "editUser" ? "编辑用户" : "新增用户"));
 
 const total = ref(0);
 const page = ref(1);
 const pageSize = ref(10);
 const pagePic = ref(1);
-// const pageSizePic = ref(10);
 const userAuthority = ref([]);
 const userList = ref([]);
 const uploadPicFile = ref([]);
-// 获取 el-upload 组件的引用
-const uploadRef = ref(null);
+const uploadRef = ref(null); // 获取 el-upload 组件的引用
 const keyword = ref("");
 
 const searchInfo = ref({
@@ -293,8 +270,8 @@ const searchInfo = ref({
   email: "",
 });
 
-const userFormRef = ref(null);
 // 抽屉部分，注意这里 authorityId是数字不是字符串，注意密码是字符串，不是数字
+const userFormRef = ref(null);
 const userForm = ref({
   ID: null,
   userName: "",
@@ -335,6 +312,13 @@ const rules = ref({
   authorityIds: [{ required: true, message: "请选择用户角色", trigger: "blur" }],
 });
 
+function formatUserList(res) {
+  return (res.data.list || []).map((user) => ({
+    ...user,
+    authorityIds: (user.authorities || []).map((auth) => auth.authorityId),
+  }));
+}
+
 getUserList({
   page: 1,
   pageSize: 10,
@@ -343,12 +327,13 @@ getUserList({
   phone: "",
   email: "",
 }).then((res) => {
+  userList.value = formatUserList(res);
   // 直接生成对象的元素authorityIds，user是userList数组元素对象(思路真牛)
-  userList.value = (res.data.list || []).map((user) => ({
-    ...user,
-    authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-  }));
-  console.log("userList.valuepicccc", userList.value.headerImg); //undefined
+  // 1、提取头像，写法不对
+  // console.log("userList.valuepicccc", userList.value.headerImg); undefined,
+  ///2、提取所有头像URL
+  const headerImgs = userList.value.map((user) => user.headerImg);
+  console.log("所有用户头像:", headerImgs);
   total.value = res.data.total;
 });
 
@@ -361,17 +346,13 @@ const fetchTableData = async () => {
     phone: searchInfo.value.phone,
     email: searchInfo.value.email,
   });
-  userList.value = (res.data.list || []).map((user) => ({
-    ...user,
-    authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-  }));
+  userList.value = formatUserList(res);
   total.value = res.data.total;
 };
 
 // 表格用户角色数据
 getAuthority().then((res) => {
   userAuthority.value = res.data; // 数组，普通+子+测试信息
-  console.log("userAuthority.value", userAuthority.value);
 });
 
 // 查询
@@ -393,6 +374,21 @@ const onReset = async () => {
   await fetchTableData();
 };
 
+// 新增用户，注意密码是字符串，不是数字
+const onClickAdd = async () => {
+  drawerChange.value = true;
+  operationType.value = "addUser";
+  await nextTick();
+  userFormRef.value.clearValidate();
+  // 这里用实例用户名无法重置完全，原因：条件渲染字段 (userName/passWord 只在operationType是 addUser 时显示)
+  userFormRef.value.resetFields();
+  userForm.value = {
+    userName: "",
+    passWord: "",
+    headerImg: "",
+  };
+};
+
 // 校验函数
 const validateUserForm = (formRef) => {
   return new Promise((resolve) => {
@@ -400,27 +396,21 @@ const validateUserForm = (formRef) => {
   });
 };
 
-// 新增用户，注意密码是字符串，不是数字
-const onClickAdd = async () => {
-  drawerChange.value = true;
-  operationType.value = "addUser";
-  dialogTitle.value = "用户";
-  await nextTick();
-  userFormRef.value.clearValidate();
-  // 这里用实例用户名无法重置
-  // 原因：条件渲染字段 (userName/passWord 只在operationType是 addUser 时显示)
-  userForm.value = {
-    userName: "",
-    passWord: "",
-  };
-};
-
 // 新增确定按钮
 const handleSubmitAdd = async () => {
+  // 调用验证函数
   const isValid = await validateUserForm(userFormRef.value);
   if (!isValid) return;
-  // 这里传参数，是后台数据库处理getUserList的返回值
+  userForm.value.authorityId = computed(() => {
+    if (userForm.value.authorityIds.length === 1) {
+      return userForm.value.authorityIds[0]; // 如果只有一个元素，返回该元素的值
+    } else {
+      return 888;
+    }
+  });
+  // 发送请求
   const resAdmin = await adminRegister({
+    // 表单数据双向绑定
     ID: total.value + 1,
     email: userForm.value.email,
     nickName: userForm.value.nickName,
@@ -434,90 +424,21 @@ const handleSubmitAdd = async () => {
   });
   drawerChange.value = false;
   total.value += 1; // 更新总数
-  // 防御性编程
   ElMessage({ message: resAdmin.msg, type: resAdmin.code === 0 ? "success" : "error" });
   if (resAdmin.code == 0) {
     const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-    userList.value = (res.data.list || []).map((user) => ({
-      ...user,
-      authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-    }));
+    userList.value = formatUserList(res);
   }
   userFormRef.value.resetFields();
-};
-
-// 点击“选定”按钮的处理函数
-const handleConfirmSelection = () => {
-  // 过滤出数组中 selected 属性为 true 的图片对象，返回一个新数组，selectedImages
-  const selectedImages = uploadPicFile.value.filter((item) => item.selected);
-  if (selectedImages.length > 0) {
-    // 假设只取第一张选中的图片，每次只选一张，取[0]刚好，赋值给表单属性
-    userForm.value.headerImg = selectedImages[0].url || "https://qmplusimg.henrongyi.top/gva_header.jpg";
-    ElMessage.success("头像已选定");
-    drawerUpload.value = false; // 关闭上传抽屉
-  } else {
-    ElMessage.warning("请先选择一张图片");
-  }
-};
-
-// 上传图框
-const openClickUpload = async () => {
-  drawerUpload.value = true;
-  ElMessage({ type: "error", message: `权限不足` });
-  dialogTitle.value = "媒体库 | 点击“文件名”可以编辑，选择的类别即是上传的类别";
-  const res = await getFileList({ page: page.value, pageSize: pageSize.value, keyword: null, classId: 0 });
-  totalUploadPic.value = res.data.total;
-  uploadPicFile.value = res.data.list;
-  await getCategoryList();
-};
-
-// 表格选择器勾选，emitPath: true 会返回完整的路径数组，导致返回的是嵌套数组 [[888], [9528]]。
-// 置了 emitPath: false，所以返回的是扁平数组 [888, 9528]。
-const handleAuthorityChange = async (row) => {
-  await setUserInfo({ ID: row.ID, authorityIds: row.authorityIds });
-};
-
-// 开关,错误的 userForm.value.enable。用 row.enable 判断状态。
-const switchEnable = (row) => {
-  ElMessage({
-    type: "success",
-    message: row.enable === 2 ? `禁用成功` : `启用成功`,
-  });
-};
-
-// 表格删除操作
-const onClickDelete = async (row) => {
-  ElMessageBox.confirm("确定要删除吗?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const resDelete = await deleteUser({ id: row.ID });
-      ElMessage({ message: resDelete.msg, type: resDelete.code === 0 ? "success" : "error" });
-      // 当且仅当删除成功时执行调用
-      if (resDelete.code == 0) {
-        const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-        userList.value = (res.data.list || []).map((user) => ({
-          ...user,
-          authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-        }));
-      }
-    })
-    .catch(() => {
-      ElMessage({ type: "info", message: "已取消删除" });
-    });
 };
 
 // 表格编辑操作
 const onClickEdit = async (row) => {
   drawerChange.value = true;
-  dialogTitle.value = "用户";
   operationType.value = "editUser";
   await nextTick();
   userFormRef.value.clearValidate();
-  // 赋值，ref定义的对象可以整体赋值
-  userForm.value = row;
+  userForm.value = row; // 赋值，ref定义的对象可以整体赋值
 };
 
 // 表格编辑提交
@@ -525,8 +446,6 @@ const handleSubmitEdit = async () => {
   // 调用校验函数
   const isValid = await validateUserForm(userFormRef.value);
   if (!isValid) return;
-  // userFormRef.value.validate(async (valid) => {
-  //   if (!valid) return; // 验证不通过则停止
   const res = await setUserInfo({
     ID: userForm.value.ID,
     email: userForm.value.email,
@@ -540,13 +459,10 @@ const handleSubmitEdit = async () => {
     authorities: userAuthority.value,
   });
   ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
+  // 这里两个res的作用域不同，不会发生冲突
   if (res.code == 0) {
-    // 这里要用到res，不简化
     const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
-    userList.value = (res.data.list || []).map((user) => ({
-      ...user,
-      authorityIds: (user.authorities || []).map((auth) => auth.authorityId), // 初始化 authorityIds
-    }));
+    userList.value = formatUserList(res);
     drawerChange.value = false;
   }
 };
@@ -563,19 +479,80 @@ const onClickReset = async (row) => {
       ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
     })
     .catch(() => {
-      // 处理取消逻辑
       ElMessage({ message: "已取消重置!", type: "info" });
     });
 };
 
-// 搜索图片
+// 表格删除操作
+const onClickDelete = async (row) => {
+  ElMessageBox.confirm("确定要删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const resDelete = await deleteUser({ id: row.ID });
+      ElMessage({ message: resDelete.msg, type: resDelete.code === 0 ? "success" : "error" });
+      if (resDelete.code == 0) {
+        const res = await getUserList({ page: 1, pageSize: 10, username: "", nickname: "", phone: "", email: "" });
+        userList.value = formatUserList(res);
+      }
+    })
+    .catch(() => {
+      ElMessage({ type: "info", message: "已取消删除" });
+    });
+};
+
+// 计算是否有选中的图片 selected属性
+const hasSelected = computed(() => {
+  return uploadPicFile.value.some((item) => item.selected);
+});
+
+// 点击图片切换选中状态,item是 uploadPicFile 数组中每个元素的代表。
+const toggleImageSelection = (item) => {
+  item.selected = !item.selected; // 切换选中状态
+  userForm.value.headerImg = item.url; //赋值给上一个抽屉的表单
+};
+
+// 点击“选定”按钮的处理函数
+const handleConfirmSelection = () => {
+  drawerUpload.value = false;
+  ElMessage.success("头像已选定");
+};
+
+// 上传图框
+const openClickUpload = async () => {
+  drawerUpload.value = true;
+  ElMessage({ type: "error", message: `权限不足` });
+  dialogTitle.value = "媒体库 | 点击“文件名”可以编辑，选择的类别即是上传的类别";
+  const res = await getFileList({ page: page.value, pageSize: pageSize.value, keyword: null, classId: 0 });
+  totalUploadPic.value = res.data.total;
+  uploadPicFile.value = res.data.list;
+  await getCategoryList();
+};
+
+// 表格选择器勾选，emitPath: true 会返回完整的路径数组，导致返回的是嵌套数组authorityIds  [[888], [9528]]。
+// 设置了 emitPath: false，所以返回的是扁平数组 authorityIds [888, 9528]。
+const handleAuthorityChange = async (row) => {
+  await setUserInfo({ ID: row.ID, authorityIds: row.authorityIds });
+};
+
+// 表格开关,用 row.enable 判断状态。错误的 userForm.value.enable。
+const switchEnable = (row) => {
+  ElMessage({
+    type: "success",
+    message: row.enable === 2 ? `禁用成功` : `启用成功`,
+  });
+};
+
+// 搜索图片keyword
 const searchPic = async () => {
   const res = await getFileList({ page: page.value, pageSize: pageSize.value, keyword: keyword.value, classId: 0 });
   uploadPicFile.value = res.data.list;
   totalUploadPic.value = res.data.total;
 };
 
-// 点击图片上传按钮触发上传，关联上传按钮和<upload组件>
+// 点击图片上传按钮触发上传，uploadRef实例关联上传按钮和<upload组件>
 // 通过uploadRef实例访问 <el-upload> 组件的 DOM，找到其内部的 <input type="file"> 并模拟点击
 const triggerUpload = async () => {
   uploadRef.value.$el.querySelector("input").click();
@@ -583,6 +560,8 @@ const triggerUpload = async () => {
 
 // 限制文件类型和大小
 const beforeUpload = (file) => {
+  // file.type 是文件对象的属性，"image/jpeg"、"image/png"、"application/pdf" 等
+  // 所有图片文件都是二进制的
   const isImage = file.type.startsWith("image/");
   const isLt2M = file.size / 1024 / 1024 < 2; // 限制 2MB
 
@@ -597,41 +576,38 @@ const beforeUpload = (file) => {
   return true;
 };
 
-// 自定义上传逻辑，options 是一个对象，包含了与本次上传相关的关键信息。(包括file属性（含文件名、大小、类型)
 const handleUpload = async (options) => {
-  // 类型为 File，继承自 Blob（本地文件
-  const file = options.file;
-  // 1.创建函数参数，FormData对象
-  const formData = new FormData();
-  formData.append("file", file); // 文件字段
-  formData.append("classId", 0); // 其他表单参数
+  let file;
 
-  // 2.模拟上传：将图片转为本地预览 URL
+  // 1. 处理传入的 file（可能是 Blob URL 或 File 对象）
+  if (typeof options.file === "string" && options.file.startsWith("blob:")) {
+    // 1.1 如果是 Blob URL，先转换成 Blob
+    const response = await fetch(options.file);
+    const blob = await response.blob();
+    // 1.2 转换成 File 对象（File 继承自 Blob，可以直接上传）
+    file = new File([blob], "uploaded_image.png", { type: blob.type });
+  } else {
+    // 1.3 如果已经是 File 对象（如 `<input type="file">` 选择的文件），直接使用
+    file = options.file;
+  }
+
+  // 2. 生成预览（可选）
   const imageUrl = URL.createObjectURL(file);
   const newImage = {
-    ID: uploadPicFile.value.length + 1, // 简单生成 ID（实际项目中应由服务器返回）
-    url: imageUrl, // 浏览器会为本地文件生成临时 Blob URL
-    name: file.name, // 添加文件名属性
-    selected: false, // 新增选中状态字段
+    ID: uploadPicFile.value.length + 1,
+    url: imageUrl,
+    name: file.name,
+    selected: false,
   };
-  uploadPicFile.value.push(newImage); // 添加到图片列表，这里只是保存在前端的 uploadPicFile.value，没有上传到服务器
+  URL.revokeObjectURL(imageUrl); // 释放内存
+  uploadPicFile.value.push(newImage);
 
-  // 3. 实际上传到服务器
-  const res = await upload(formData); // 调用上传API
+  // 3. 调用上传 API，参数格式：{ classId: 0, file: binaryData }
+  const res = await upload(0, file); // 直接传对象，符合 API 要求
   ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
-  if (res.code == 0) {
+  if (res.code === 0) {
     totalUploadPic.value += 1;
   }
-};
-
-// 计算是否有选中的图片 hasSelected = computed(() => {
-const hasSelected = computed(() => {
-  return uploadPicFile.value.some((item) => item.selected);
-});
-
-// 点击图片切换选中状态,item是 uploadPicFile 数组中每个元素的代表。
-const toggleImageSelection = (item) => {
-  item.selected = !item.selected; // 切换选中状态
 };
 
 // 删除图片
@@ -658,6 +634,9 @@ const deleteImage = (item) => {
 };
 
 // 扫码上传
+// h一个用于创建虚拟 DOM 节点的函数，通常在 Vue 3 中使用。
+// 它代表 "hyperscript" 或 "createElement" 的简写。
+// 这个函数被用来在 Vue 3 中以编程的方式构建组件的结构和内容。
 const scanUploadFunc = async () => {
   ElMessageBox.confirm(
     h(
@@ -718,13 +697,6 @@ const scanUploadFunc = async () => {
   background-color: #ccd1d5;
 }
 
-.upload-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 图片自适应容器 */
-  border-radius: 4px;
-}
-
 /* 表单头像 */
 .image-name {
   display: flex;
@@ -735,6 +707,7 @@ const scanUploadFunc = async () => {
   word-break: break-all; /* 长文件名自动换行 */
   padding: 0 5px; /* 添加一些内边距 */
 }
+
 /* 上传抽屉按钮 */
 .custom-button {
   height: 28px; /* 统一高度 */
@@ -751,28 +724,30 @@ const scanUploadFunc = async () => {
   font-size: 14px; /* 图标大小 */
 }
 
+.upload-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 图片自适应容器 */
+  border-radius: 4px;
+}
+
 .image-list {
   display: flex;
   flex-wrap: wrap; /* 自动换行 */
   gap: 10px; /* 图片之间的间距 */
   margin-top: 10px; /* 与按钮的间距 */
 }
-.image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 图片自适应 */
-  border-radius: 4px;
-}
 
-/* 以下决定delete图标在图片右上方 */
 .image-item {
-  position: relative; /* 为绝对定位的子元素提供锚点 */
   width: 100px;
   height: 100px;
 }
 
+/* 以下决定delete图标在图片右上方 */
 .delete-icon {
-  position: absolute; /* 根据父元素定位，无视文档流顺序  */
+  /* 绝对定位是将元素相对于其最近的定位父元素进行定位，
+  无视文档流顺序 ，不会占据空间，其他元素会出现在它的位置 */
+  position: absolute;
   top: 5px; /* 相对于父元素顶部定位 */
   right: 5px; /*  删除操作属于高风险操作，放在显眼位置（图片右上角）符合设计惯例*/
   color: #fff;
@@ -784,5 +759,35 @@ const scanUploadFunc = async () => {
 
 .delete-icon:hover {
   background: rgba(255, 0, 0, 0.8);
+}
+
+.add-btn {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.upload-aside-text {
+  display: flex;
+  justify-content: center;
+  font-size: small; /* 或可以根据需要具体定义为 fontsize: 12px; */
+  margin-top: 15px;
+  font-weight: lighter;
+  width: 20% !important; /* 将 width 属性也放入类中 */
+}
+
+.search-img {
+  width: 280px;
+  height: 28px;
+}
+
+.search-btn {
+  height: 28px;
+  margin-left: 10px;
+}
+
+.button-group {
+  margin-top: 20px;
+  display: flex; /* 启用 Flex 布局，让子元素（按钮）排列在一行 */
+  flex-wrap: nowrap; /* 禁止换行 */
 }
 </style>

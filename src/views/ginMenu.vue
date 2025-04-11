@@ -370,6 +370,9 @@ select {
   font-size: 12px;
   font-weight: bold;
 }
+.el-table {
+  margin-top: 20px;
+}
 /* ========== 对话框样式 ========== */
 .el-dialog {
   background-color: var(--dialog-bg) !important;
@@ -378,6 +381,12 @@ select {
 
 .el-dialog__title {
   color: var(--text-color) !important;
+}
+
+/* ========== 表单样式 ========== */
+
+.el-form {
+  margin-top: 20px;
 }
 
 /* ========== 组件样式 ========== */

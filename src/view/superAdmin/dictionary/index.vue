@@ -31,43 +31,40 @@
       <!-- 表格 -->
       <el-main style="margin-left: 15px; margin-right: 15px">
         <div class="dictionary-header">
-          <span class="dic-title">字典详细内容</span>
+          <span class="table-title">字典详细内容</span>
           <el-button type="primary" @click="OnClickAddDetails"> + 新增字典项 </el-button>
         </div>
-        <div>
-          <el-table v-loading="tableLoading" :data="tableData" row-key="sort">
-            <el-table-column type="selection" min-width="20" />
-            <el-table-column prop="UpdatedAt" label="日期" min-width="60px">
-              <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
-            </el-table-column>
-            <el-table-column prop="label" label="展示值" min-width="50px" />
-            <el-table-column prop="value" label="字典值" min-width="50px" />
-            <el-table-column prop="status" label="启用状态" min-width="50px" />
-            <el-table-column prop="extend" label="扩展值" min-width="50px" />
-            <el-table-column prop="sort" label="排序" min-width="50px" />
-            <el-table-column label="操作" min-width="50px">
-              <template #default="scope">
-                <el-button type="text" @click="handleDetailEdit(scope.row)">变更</el-button>
-                <el-button type="text" @click="handleDetailDelete(scope.row)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-        <div class="pagination-container">
-          <el-pagination
-            v-model:current-page="page"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 30, 50, 100]"
-            size="small"
-            background
-            :disabled="disabled"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="tableTotal"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          >
-          </el-pagination>
-        </div>
+        <el-table v-loading="tableLoading" :data="tableData" row-key="sort">
+          <el-table-column type="selection" min-width="20" />
+          <el-table-column prop="UpdatedAt" label="日期" min-width="60px">
+            <template #default="{ row }">{{ formatDate(row.UpdatedAt) }}</template>
+          </el-table-column>
+          <el-table-column prop="label" label="展示值" min-width="50px" />
+          <el-table-column prop="value" label="字典值" min-width="50px" />
+          <el-table-column prop="status" label="启用状态" min-width="50px" />
+          <el-table-column prop="extend" label="扩展值" min-width="50px" />
+          <el-table-column prop="sort" label="排序" min-width="50px" />
+          <el-table-column label="操作" min-width="50px">
+            <template #default="scope">
+              <el-button type="text" @click="handleDetailEdit(scope.row)">变更</el-button>
+              <el-button type="text" @click="handleDetailDelete(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          class="pagination-container"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 30, 50, 100]"
+          size="small"
+          background
+          :disabled="disabled"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="tableTotal"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        >
+        </el-pagination>
       </el-main>
     </el-container>
   </div>
@@ -455,8 +452,7 @@ const handleCurrentChange = async (val) => {
 
 .menu-actions {
   display: flex;
-  flex-direction: row;
-  gap: 0px;
+  flex-direction: row !important;
 }
 
 .menu-name {
@@ -487,17 +483,6 @@ const handleCurrentChange = async (val) => {
   color: var(--el-text-color-primary); /* 使用Element Plus变量 */
 }
 
-.menu-item-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.menu-actions {
-  display: flex;
-  gap: 8px;
-}
-
 .edit-icon {
   color: rgb(0, 174, 255);
 }
@@ -506,13 +491,7 @@ const handleCurrentChange = async (val) => {
   color: red;
 }
 
-.dictionary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dic-title {
+.table-title {
   font-weight: bold;
   margin-top: 5px;
 }

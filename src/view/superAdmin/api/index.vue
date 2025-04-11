@@ -33,49 +33,46 @@
       </el-form-item>
     </el-form>
   </div>
-  <div>
-    <!-- 这里不写内联样式，硬编码的，可能导致不同屏幕尺寸下布局不一致 -->
-    <div class="action-buttons">
-      <el-button type="primary" icon="plus" @click="addApi"> 新增 </el-button>
-      <el-button icon="delete" @click="onDelete" :disabled="!apis.length"> 删除 </el-button>
-      <el-button icon="Refresh" @click="onFresh"> 刷新缓存 </el-button>
-      <el-button icon="Compass" @click="onSync"> 同步API </el-button>
-      <exportTemplate template-id="api" />
-      <exportExcel template-id="api" :limit="9999" />
-      <importExcel template-id="api" @on-success="getTableData" />
-    </div>
-    <!-- 注意这里：表格绑定数组 ，prop对应数组元素===对象的属性-->
-    <el-table :data="tableInfo" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
-      <el-table-column prop="ID" label="id" min-width="35" sortable />
-      <el-table-column prop="path" label="API路径" show-overflow-tooltip sortable />
-      <el-table-column prop="apiGroup" label="API分组" sortable />
-      <el-table-column prop="description" label="API简介" sortable />
-      <el-table-column prop="method" label="请求" sortable />
-      <el-table-column label="操作">
-        <template #default="scope">
-          <authority-table icon="Edit" :label="编辑" :on-click="() => operateClickEdit(scope.row)" />
-          <authority-table icon="Delete" :label="删除" :on-click="() => deleteApiFunc(scope.row)" />
-        </template>
-      </el-table-column>
-    </el-table>
+  <!-- 这里不写内联样式，硬编码的，可能导致不同屏幕尺寸下布局不一致 -->
+  <div class="action-buttons">
+    <el-button type="primary" icon="plus" @click="addApi"> 新增 </el-button>
+    <el-button icon="delete" @click="onDelete" :disabled="!apis.length"> 删除 </el-button>
+    <el-button icon="Refresh" @click="onFresh"> 刷新缓存 </el-button>
+    <el-button icon="Compass" @click="onSync"> 同步API </el-button>
+    <exportTemplate template-id="api" />
+    <exportExcel template-id="api" :limit="9999" />
+    <importExcel template-id="api" @on-success="getTableData" />
   </div>
+  <!-- 注意这里：表格绑定数组 ，prop对应数组元素===对象的属性-->
+  <el-table :data="tableInfo" @selection-change="handleSelectionChange">
+    <el-table-column type="selection" width="55" />
+    <el-table-column prop="ID" label="id" min-width="35" sortable />
+    <el-table-column prop="path" label="API路径" show-overflow-tooltip sortable />
+    <el-table-column prop="apiGroup" label="API分组" sortable />
+    <el-table-column prop="description" label="API简介" sortable />
+    <el-table-column prop="method" label="请求" sortable />
+    <el-table-column label="操作">
+      <template #default="scope">
+        <authority-table icon="Edit" :label="编辑" :on-click="() => operateClickEdit(scope.row)" />
+        <authority-table icon="Delete" :label="删除" :on-click="() => deleteApiFunc(scope.row)" />
+      </template>
+    </el-table-column>
+  </el-table>
   <!-- 注意分页的样式位置,可以写成同意组件调用 -->
-  <div class="pagination-container">
-    <el-pagination
-      v-model:current-page="page"
-      v-model:page-size="pageSize"
-      :page-sizes="[10, 30, 50, 100]"
-      size="small"
-      background
-      :disabled="disabled"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    >
-    </el-pagination>
-  </div>
+  <el-pagination
+    class="pagination-container"
+    v-model:current-page="page"
+    v-model:page-size="pageSize"
+    :page-sizes="[10, 30, 50, 100]"
+    size="small"
+    background
+    :disabled="disabled"
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="total"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
   <!-- 常规抽屉 -->
   <el-drawer v-model="drawerChange" :with-header="true" size="700px">
     <template #header>

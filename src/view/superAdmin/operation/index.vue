@@ -76,26 +76,25 @@
       </template>
     </el-table-column>
   </el-table>
-  <div class="pagination-container">
-    <el-pagination
-      v-model:current-page="page"
-      v-model:page-size="pageSize"
-      :page-sizes="[10, 30, 50, 100]"
-      size="small"
-      background
-      :disabled="disabled"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    >
-    </el-pagination>
-  </div>
+  <el-pagination
+    class="pagination-container"
+    v-model:current-page="page"
+    v-model:page-size="pageSize"
+    :page-sizes="[10, 30, 50, 100]"
+    size="small"
+    background
+    :disabled="disabled"
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="total"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
 </template>
 
 <script setup>
-import { ref } from "vue";
 import { getSysOperationRecordList, deleteSysOperationRecordByIds, deleteSysOperationRecord } from "@/api/user";
+import { ref } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { formatDate } from "@/utils/formatDate";
 
@@ -245,6 +244,7 @@ const handleCurrentChange = async (val) => {
   width: 420px;
   overflow: auto;
 }
+/* 自定义特定浏览器中的滚动条样式 */
 .popover-box::-webkit-scrollbar {
   display: none; /* Chrome Safari */
 }

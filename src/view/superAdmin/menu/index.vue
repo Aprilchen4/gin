@@ -3,12 +3,7 @@
   <el-button type="primary" @click="handleClickRootAdd"> + 新增根菜单 </el-button>
   <!-- 表格：外层得加个块级，否则表格底部有个粗的滚动条-->
   <div>
-    <el-table
-      :data="menuList"
-      style="width: 100%; margin-top: 10px; margin-right: 30px"
-      row-key="ID"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-    >
+    <el-table :data="menuList" row-key="ID" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
       <!-- prop 属性用于指定该列所绑定的数据字段。它与表格的 data 属性中的对象属性相对应。 -->
       <el-table-column prop="ID" label="ID" min-width="60" />
       <el-table-column prop="meta.title" label="展示名称" min-width="120" />
