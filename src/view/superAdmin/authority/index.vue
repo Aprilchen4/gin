@@ -254,8 +254,10 @@ const handleClickCopy = async (row) => {
   copyFormRef.value.clearValidate();
   // 旧的ID
   oldAuthorityId.value = Number(row.authorityId);
-  // 填充表单
-  form.value = row;
+  // 填充表单,需要单独赋值，否则设置首页时收不到参数
+  form.value.authorityId = row.authorityId;
+  form.value.authorityName = row.authorityName;
+  form.value.parentId = row.parentId;
 };
 
 const handleSubmitCopy = async () => {

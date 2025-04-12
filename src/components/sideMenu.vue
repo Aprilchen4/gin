@@ -1,5 +1,4 @@
 <template>
-  <!-- 滚动条 -->
   <!-- :default-active="1" 用于设置 el-menu [组件初始化时默认,不对]高亮选中的菜单项 ，需要引入activeMenu计算属性-->
   <!--   unique-opened一次只打开一个菜单 -->
   <el-scrollbar class="scrollbar-container">
@@ -10,7 +9,6 @@
       unique-opened
       mode="vertical"
       @select="handleMenuSelect"
-      @open="menuOpenEvent"
       @click="sendData"
     >
       <!-- 递归组件，把遍历的值传回子组件，完成递归调用 -->
@@ -37,18 +35,13 @@ const sideData = reactive({
 });
 const receivedMessage = ref("");
 
-// const breadCrumbValue = ref("");
-// 首先调用 getMenu() 函数,这是一个异步操作,所以代码不会等待它完成就继续执行。紧接着,打印 '数据信息', sideData.values。
 getMenu().then((a) => {
-  console.log("侧边栏数据:", a.data.menus);
-  sideData.values = a.data.menus; // 将 a.data.menus 的内容添加到 sideData,使用 ... 将 a.data.menus 数组中的每个元素“展开”
-  console.log("数据信息", sideData.values); //这里是异步函数,
+  sideData.values = a.data.menus;
 });
 
 // 监听b标签页切换事件
 onMounted(() => {
   emitter.on("messageEvent", (msg) => {
-    console.log("msg", msg);
     receivedMessage.value = msg;
     // 面包屑
     const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
@@ -80,16 +73,9 @@ onMounted(() => {
   });
 });
 
-const menuOpenEvent = (key, keyPath) => {
-  console.log("Menu Open Event Triggered", key, keyPath);
-};
-
 // 标签页相关
-
 const store = useStore();
-// const tabs = computed(() => store.state.tabs); // 不需要计算属性，只需要vuex里的数据；
-const activeMenu = computed(() => store.state.activeMenu);
-// const breadCrumb = computed(() => store.state.breadCrumb);//这里使用breadCrumbValue，作为函数返回值；
+const activeMenu = computed(() => store.state.activeMenu); //不需要计算属性，只需要vuex里的数据；
 
 const handleMenuSelect = (menuId) => {
   console.log("Menu Select Event Triggered", menuId); // 检查事件是否触发
@@ -101,20 +87,12 @@ const handleMenuSelect = (menuId) => {
   store.commit("setBreadCrumb", breadCrumbValue);
   store.commit("setTabName", tabNameValue);
 
-  console.log("生成的面包屑:", breadCrumbValue);
-  console.log("标签页名称:", tabNameValue);
-
   // 调用路由生成函数
   const { routePath, routeName, routeComponent } = routeMake(sideData.values, menuId);
-
-  console.log("当前路由信息", routePath);
-  console.log("当前路由名称", routeName);
-  console.log("当前路由组件", routeComponent);
+  emitter.emit("routeMessageEvent", routePath);
+  console.log("trumpLoss", routePath);
 
   // 点击跳转路由
-  // router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
-  // router.push({ path: "/ginmenu/test" });
-  // store.commit("setRoute", { routePath, routeName, routeComponent });
   addRouteOneByOne(routePath, routeName, routeComponent);
   router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
 
@@ -123,8 +101,6 @@ const handleMenuSelect = (menuId) => {
   if (store.state.tabs.some((tab) => tab.label === menuId)) {
     store.commit("setActiveMenu", menuId); //无顺序，保证切换
     console.log("Tab already exists:", activeMenu.value);
-    // console.log("已有菜单tabs", tabs.value);
-    console.log("点击菜单id", menuId);
   } else {
     console.log("Tab not exists:", activeMenu.value);
     store.commit("setActiveMenu", menuId);
@@ -240,14 +216,4 @@ watchEffect(() => {
 });
 </script>
 
-<style>
-.bottom-left {
-  width: 280px;
-  height: 680px;
-}
-
-.scrollbar-container {
-  /* height: 100vh; 限制高度为视口高度 这一行写了就会出现一个粗的滚动条*/
-  background-color: #ffffff; /* 确保滚动条容器背景为白色 */
-}
-</style>
+<style></style>

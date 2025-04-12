@@ -11,6 +11,8 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'; // 引入中文语言包
 import store from './store'
 import 'element-plus/theme-chalk/dark/css-vars.css' // 引入暗黑主题样式，自动为 dark 类下的 Element 组件提供样式
 import '@/assets/theme.css' //引入黑白主题样式
+import '@/assets/global.css'// 引入全局样式
+
 const app = createApp(App)
 
 //UI库

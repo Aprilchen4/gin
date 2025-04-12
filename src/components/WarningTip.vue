@@ -35,7 +35,7 @@ const open = () => {
   height: 40px;
   padding: 5 0 5px;
   /* background-color: #fdf6dc; 浅黄色背景*/
-  background: linear-gradient(to bottom, #fdfaf0 0%, #fbf4dd 50%, #fffaee 100% /* 底部颜色 */);
+  background: var(--warning-bg);
   border-radius: 4px;
   color: #f1b607; /* 文字颜色 */
   margin: 10 0 5 0px;

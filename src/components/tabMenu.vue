@@ -98,11 +98,5 @@ const deleteTab = (targetName) => {
     transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
     height: 34px;
   }
-
-  :deep(.el-tabs__item.is-active) {
-    color: #409eff; /* 文字颜色为蓝色 */
-    border: 1px solid var(--el-color-primary) !important; /*!important保证 四边蓝色边框 */
-    position: relative; /*确保上边框不被遮挡 */
-  }
 }
 </style>

@@ -11,7 +11,10 @@
         <!--  height="300px"这么写会有一个粗的外层滚动条
           :height 属性绑定到一个动态的 Vue 数据属性或计算属性 -->
         <el-scrollbar :height="300">
-          <!-- activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值） -->
+          <!-- activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
+           index 属性绑定了字符串 item.ID.toString()，用于标识菜单项的活跃状态，而key 管理 DOM 的更新，
+           当 activeDicIndex 的值与某个菜单项的 index 属性值（即 item.ID 的字符串形式）相等时，该菜单项会显示为选中状态。 -->
+          <!-- handleMenuSelect(index)错，正确的绑定方式是直接让 handleMenuSelect 接收这个值，而不是手动传入 index（因为 index 在模板中未定义）。 -->
           <el-menu mode="vertical" :default-active="activeDicIndex" @select="handleMenuSelect">
             <el-menu-item
               v-for="item in dictionaryList"
@@ -46,8 +49,8 @@
           <el-table-column prop="sort" label="排序" min-width="50px" />
           <el-table-column label="操作" min-width="50px">
             <template #default="scope">
-              <el-button type="text" @click="handleDetailEdit(scope.row)">变更</el-button>
-              <el-button type="text" @click="handleDetailDelete(scope.row)">删除</el-button>
+              <el-button link type="primary" @click="handleDetailEdit(scope.row)">变更</el-button>
+              <el-button link type="primary" @click="handleDetailDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -158,7 +161,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { formatDate } from "@/utils/formatDate";
 
 // activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
-const activeDicIndex = ref(1);
+const activeDicIndex = ref("1");
 const dicTotal = ref(0);
 const tableTotal = ref(0);
 const page = ref(1);
@@ -247,9 +250,10 @@ const fetchtableData = async () => {
   tableTotal.value = res.data.list.length;
 };
 
-// 点击菜单更新表格
-const handleMenuSelect = async (menuId) => {
-  activeDicIndex.value = menuId;
+// 点击菜单更新表格,
+// @select 事件传递的是 :index 字符串（例如 "1"），但 handleMenuSelect 错误地假设参数是 item 对象，导致 item.ID 为 undefined。
+const handleMenuSelect = async (index) => {
+  activeDicIndex.value = index;
   await fetchtableData();
 };
 
@@ -390,7 +394,7 @@ const handleSubmitEditDetails = async () => {
   await tableFormRef.value.validate(async (valid) => {
     if (!valid) return; // 验证不通过则停止，注意这里和下面的是并列的，后续不可运行
     const res = await updateSysDictionaryDetail({
-      ID: tableData.value.ID,
+      ID: tableForm.value.ID,
       label: tableForm.value.label,
       sort: tableForm.value.sort,
       status: tableForm.value.status,
@@ -443,6 +447,12 @@ const handleCurrentChange = async (val) => {
 </script>
 
 <style scoped>
+/* 激活菜单项样式 */
+.el-menu-item.is-active {
+  background-color: var(--menu-bg) !important; /* 菜单项背景色 */
+  color: var(--primary-color) !important; /* 菜单项文字颜色 */
+}
+
 .menu-item-wrapper {
   display: flex;
   justify-content: space-between;
@@ -451,8 +461,25 @@ const handleCurrentChange = async (val) => {
 }
 
 .menu-actions {
-  display: flex;
+  display: flex !important;
   flex-direction: row !important;
+  gap: 8px !important; /* 关键：添加间距,否则图标会重叠*/
+  align-items: center; /* 垂直居中 */
+}
+
+.menu-actions .el-icon {
+  position: static !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.edit-icon {
+  color: rgb(0, 174, 255) !important;
+}
+
+.delete-icon {
+  color: red !important;
+  background-color: var(--bg-color) !important;
 }
 
 .menu-name {
@@ -481,14 +508,6 @@ const handleCurrentChange = async (val) => {
   font-weight: 600; /* 使用600替代bold更现代 */
   font-size: 16px; /* 明确字号 */
   color: var(--el-text-color-primary); /* 使用Element Plus变量 */
-}
-
-.edit-icon {
-  color: rgb(0, 174, 255);
-}
-
-.delete-icon {
-  color: red;
 }
 
 .table-title {

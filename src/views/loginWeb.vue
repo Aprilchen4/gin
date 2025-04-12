@@ -46,10 +46,10 @@
       <!-- 左下 -->
       <el-form-item class="login-button">
         <div class="login-button">
-          <!-- 一点点对不齐，源于自带的位移，所以单独加div包裹块级元素 -->
-          <el-button type="primary" @click="fetchData">登录</el-button>
+          <el-button type="primary" @click="fetchData" class="el-button-login">登录</el-button>
           <router-view></router-view>
-          <div><el-button type="primary">前往初始化</el-button></div>
+          <!-- 一点点对不齐，源于自带的位移，所以单独加div包裹块级元素 -->
+          <div><el-button type="primary" class="el-button-login">前往初始化</el-button></div>
         </div>
       </el-form-item>
     </div>
@@ -274,11 +274,28 @@ body,
 }
 
 /* 这里scoped，否则会影响全局样式 */
-.el-button {
+.el-button-login {
   width: 300px;
   height: auto;
   margin-top: 20px;
-  background-color: #0059ff; /* 设置背景色为天蓝色 */
+  background-color: #0059ff !important;
+}
+
+/* 提高优先级，明确指定 el-button */
+:deep(.el-button.el-button--primary.el-button-login) {
+  background-color: #0059ff !important;
+  border-color: #0059ff !important;
+  color: white !important;
+}
+
+/* login-box 内的输入框默认边框 */
+.login-box :deep(.el-input__wrapper) {
+  border: 1px solid #e5e6e8 !important; /* 默认边框颜色 */
+}
+
+/* login-box 内的输入框聚焦边框 */
+.login-box :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #0059ff !important; /* 聚焦时深蓝色边框 */
 }
 
 .right {
@@ -341,11 +358,11 @@ body,
 
 /* 两个超链接的格式 */
 .bottom-a {
-  color: #0059ff;
+  color: #0059ff !important;
   font-weight: bold;
   text-decoration: none;
 }
 .bottom-a:hover {
-  color: #000cb6;
+  color: #000cb6 !important;
 }
 </style>

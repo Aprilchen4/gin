@@ -50,13 +50,13 @@
     </template>
     <WarningTip title="新增菜单，需要在角色管理内配置权限才可使用" />
     <el-form ref="menuFormRef" label-position="top" :model="form" :rules="rules">
-      <el-row type="flex" justify="space-between">
-        <el-col span="12" style="flex: 1; margin-right: 20px">
+      <el-row>
+        <el-col span="12">
           <el-form-item label="文件路径" prop="component">
             <!-- 这里按钮和功能是错位的 -->
             <template v-if="isQuickSelect">
               <MenuCascade />
-              <el-button @click="isQuickSelect = false"> 手动输入 </el-button>
+              <el-button size="small" @click="isQuickSelect = false"> 手动输入 </el-button>
             </template>
             <template v-else>
               <el-input
@@ -65,10 +65,10 @@
                 style="width: 320px"
               />
               <!-- 默认值是false -->
-              <el-button @click="isQuickSelect = true"> 快捷选择 </el-button>
+              <el-button size="small" @click="isQuickSelect = true"> 快捷选择 </el-button>
             </template>
             <span style="font-size: xx-small"> 如果菜单包含子菜单，请创建router-view二级路由页面或者 </span>
-            <el-button>点我设置</el-button>
+            <el-button size="small">点我设置</el-button>
           </el-form-item>
         </el-col>
         <el-col :span="8" style="flex-shrink: 0">
@@ -461,5 +461,11 @@ const deleteBtn = (menuBtn, index) => {
 .custom-layout {
   display: flex;
   flex-direction: column; /* 垂直排列 */
+}
+
+.el-row {
+  display: flex;
+  flex-wrap: nowrap; /* 禁止换行 */
+  overflow: hidden; /* 横向滚动（可选） */
 }
 </style>

@@ -8,36 +8,32 @@
     </div>
     <div class="top-right">
       <!-- 右侧第一个按钮 -->
-      <div class="iconSpace">
-        <el-tooltip content="视频教程">
-          <el-dropdown>
-            <el-button class="right-head-Icons">
-              <el-icon><Film /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item
-                  ><a href="https://www.bilibili.com/video/BV1jx4y1s7xx/" class="web" target="_blank"
-                    >1.clone项目和安装依赖</a
-                  ></el-dropdown-item
-                >
-                <el-dropdown-item
-                  ><a href="https://www.bilibili.com/video/BV1sr421K7sv/" class="web" target="_blank"
-                    >2.初始化项目</a
-                  ></el-dropdown-item
-                >
-                <el-dropdown-item
-                  ><a href="https://www.bilibili.com/video/BV1iH4y1c7Na/" class="web" target="_blank"
-                    >3.开启调试工具+创建初始化包</a
-                  ></el-dropdown-item
-                >
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </el-tooltip>
-      </div>
-      <!-- 右侧第一个按钮 -->
-      <!-- 右侧第二个按钮，UI消息弹出框 -->
+      <el-tooltip content="视频教程">
+        <el-dropdown>
+          <el-button class="right-head-Icons">
+            <el-icon><Film /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                ><a href="https://www.bilibili.com/video/BV1jx4y1s7xx/" class="web" target="_blank"
+                  >1.clone项目和安装依赖</a
+                ></el-dropdown-item
+              >
+              <el-dropdown-item
+                ><a href="https://www.bilibili.com/video/BV1sr421K7sv/" class="web" target="_blank"
+                  >2.初始化项目</a
+                ></el-dropdown-item
+              >
+              <el-dropdown-item
+                ><a href="https://www.bilibili.com/video/BV1iH4y1c7Na/" class="web" target="_blank"
+                  >3.开启调试工具+创建初始化包</a
+                ></el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-tooltip>
       <!-- 永远不要将用户提交的内容赋值给 message 属性 -->
       <el-tooltip content="搜索">
         <el-button class="right-head-Icons" @click="dialogVisible = true">
@@ -51,9 +47,6 @@
           <!-- <div style="margin-top: 20px; margin-bottom: 10px; margin-left: 15px"><span>操作</span></div> -->
           <span style="margin: 20px 0 10px 15px; display: inline-block">操作</span>
           <el-menu>
-            <!-- <el-menu-item @click="toggleMode('dayTime')" :disabled="mode === 'dayTime'">亮色主题</el-menu-item>
-            <el-menu-item @click="toggleMode('nightTime')" :disabled="mode === 'nightTime'">暗色主题</el-menu-item>
-            <el-menu-item @click="logOut">退出登录</el-menu-item> -->
             <el-menu-item
               v-for="menu in filteredMenus"
               :key="menu.label"
@@ -75,8 +68,89 @@
           ><el-icon><Setting /></el-icon
         ></el-button>
       </el-tooltip>
-      <el-drawer v-model="drawer" title="I am the title" :with-header="false">
-        <el-button color="pink">Smart!</el-button>
+      <el-drawer v-model="drawer" :with-header="true">
+        <template #header>
+          <div class="drawer-header">
+            <el-title>系统配置</el-title>
+            <el-button type="primary" @click="saveConfig">保存配置</el-button>
+          </div>
+        </template>
+        <div class="sys-setting-drawer">
+          <span class="sys-title">默认主题 </span>
+          <el-segmented v-model="theme" :options="themeOptions">
+            <template #default="scope">
+              <div>{{ scope.item.label }}</div>
+            </template>
+          </el-segmented>
+        </div>
+        <div class="sys-setting-drawer">
+          <span class="sys-title">主题色 </span>
+          <!--:class="{ selected: item.selected }"提示Cannot create property 'selected' on string '#2FEB54'-->
+          <div class="color-grid">
+            <div
+              v-for="color in colors"
+              :key="color"
+              class="color-block"
+              :style="{ backgroundColor: color }"
+              @click="changePrimaryColor(color)"
+            >
+              <el-icon v-if="primaryColor === color" class="color-check">
+                <Select />
+              </el-icon>
+            </div>
+            <el-color-picker v-model="customColor" @change="togglePrimaryColor(color)" class="color-select" />
+          </div>
+        </div>
+        <span class="sys-title">主题配置</span>
+        <div>
+          <div class="theme-setting">
+            <div>展示水印</div>
+            <el-switch v-model="show_watermark" @change="toggleConfigWatermark" />
+          </div>
+          <div class="theme-setting">
+            <div>灰色模式</div>
+            <el-switch v-model="grey" @change="toggleGrey" />
+          </div>
+          <div class="theme-setting">
+            <div>色弱模式</div>
+            <el-switch v-model="weakness" @change="toggleWeakness" />
+          </div>
+          <div class="theme-setting">
+            <div>菜单模式</div>
+            <el-segmented v-model="side_mode" :options="sideModes" size="default" @change="toggleSideMode" />
+          </div>
+
+          <div class="theme-setting">
+            <div>显示标签页</div>
+            <el-switch v-model="showTabs" @change="toggleTabs" />
+          </div>
+          <div class="theme-setting">
+            <div class="flex-shrink-0">页面切换动画</div>
+            <el-select v-model="transition_type" @change="toggleTransition" style="width: 100px">
+              <el-option value="fade" label="淡入淡出" />
+              <el-option value="slide" label="滑动" />
+              <el-option value="zoom" label="缩放" />
+              <el-option value="none" label="无动画" />
+            </el-select>
+          </div>
+        </div>
+        <div>
+          <div class="sys-setting-drawer">layuut 大小配置</div>
+          <div>
+            <div class="theme-setting">
+              <div>侧边栏展开宽度</div>
+              <el-input-number v-model="layout_side_width" :min="150" :max="400" :step="10"></el-input-number>
+            </div>
+            <div class="theme-setting">
+              <div>侧边栏收缩宽度</div>
+              <el-input-number v-model="layout_side_collapsed_width" :min="60" :max="100"></el-input-number>
+            </div>
+            <div class="theme-setting">
+              <div>侧边栏子项高度</div>
+              <el-input-number v-model="layout_side_item_height" :min="30" :max="50"></el-input-number>
+            </div>
+          </div>
+        </div>
       </el-drawer>
       <el-tooltip content="刷新">
         <el-button class="right-head-Icons" @click="refresh"
@@ -143,7 +217,8 @@
 <!-- // 一定要有setup,否则会提示函数未定义 -->
 <!-- Action catch((action:Action)）只能用在ts里面 -->
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
+import { emitter } from "@/utils/eventBus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { ElButton } from "element-plus";
@@ -157,22 +232,125 @@ const searchQuery = ref(""); // 搜索查询
 const dialogVisible = ref(false); // 对话框可见性
 const drawer = ref(false); // 抽屉状态
 const breadCrumb = computed(() => store.state.breadCrumb); // 面包屑导航
+const weakness = ref(true);
+const layout_side_width = ref(250);
+const layout_side_collapsed_width = ref(80);
+const layout_side_item_height = ref(40);
+
+// 监听 layout_side_width 变化，CSS 无法直接读取 JavaScript 变量
+watch(
+  layout_side_width,
+  (newWidth) => {
+    document.documentElement.style.setProperty("--sidebar-width", `${newWidth}px`);
+  },
+  { immediate: true }
+); // 立即执行一次
+
+watch(
+  layout_side_item_height,
+  (newWidth) => {
+    document.documentElement.style.setProperty("--el-menu-item-height", `${newWidth}px`);
+  },
+  { immediate: true }
+); // 立即执行一次
 
 // JavaScript 中，大部分情况下分号是可选的;
-
 function ToggleDrawer() {
   drawer.value = !drawer.value;
 }
 
+const theme = ref("auto");
+
+// 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
+const mode = ref(localStorage.getItem("theme") || "dayTime");
+
+// 监听 theme 变化，同步 mode
+watch(theme, (newVal) => {
+  mode.value = newVal === "dark" ? "nightTime" : "dayTime"; // 同步 mode
+  if (newVal === "auto") {
+    mode.value = "dayTime";
+    primaryColor.value = "#3b82f6";
+  }
+});
+
+const themeOptions = [
+  {
+    label: "dark",
+    value: "dark",
+  },
+  {
+    label: "light",
+    value: "light",
+  },
+  {
+    label: "auto",
+    value: "auto",
+  },
+];
+
+const primaryColor = ref("");
+
+const customColor = ref(""); // 颜色选择器
+const colors = ["#EB2F96", "#3b82f6", "#2FEB54", "#EBEB2F", "#EB2F2F", "#2FEBEB"];
+
+const changePrimaryColor = (color) => {
+  primaryColor.value = color; //赋值给上一个抽屉的表单
+};
+
+const togglePrimaryColor = (color) => {
+  customColor.value = color;
+  primaryColor.value = color;
+};
+
+// 初始化时从 localStorage 读取
+onMounted(() => {
+  const savedColor = localStorage.getItem("primaryColor");
+  if (savedColor) {
+    primaryColor.value = savedColor; // 赋值给 ref
+    document.documentElement.style.setProperty("--primary-color", savedColor); // 应用到 CSS 变量
+  }
+});
+
+// 在 mounted 生命周期钩子中设置样式变量
+watch(primaryColor, (newColor) => {
+  document.documentElement.style.setProperty("--primary-color", newColor);
+  localStorage.setItem("primaryColor", newColor);
+});
+
+const side_mode = ref("正常模式");
+const sideModes = [
+  {
+    label: "正常模式",
+    value: "正常模式",
+  },
+  {
+    label: "顶部菜单栏模式",
+    value: "顶部菜单栏模式",
+  },
+  {
+    label: "组合模式",
+    value: "组合模式",
+  },
+];
+
 // 刷新
 const router = useRouter();
+const receivedRoutePath = ref("");
+
+onMounted(() => {
+  emitter.on("routeMessageEvent", (msg) => {
+    receivedRoutePath.value = msg;
+  });
+});
 
 const refresh = () => {
-  router.push({ path: "/ginmenu" }); // 导航到当前路由，强制重新加载视图
-  store.commit("setActiveMenu", 1);
-  store.commit("setTabName", "首页");
-  store.commit("setBreadCrumb", "仪表盘");
-  store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
+  // router.push({ path: "/ginmenu" }); //导航到当前路由，强制重新加载视图
+  router.push({ path: `/ginmenu/${receivedRoutePath.value}` || "dashboard" });
+
+  store.commit("setActiveMenu", store.state.activeMenu);
+  // store.commit("setTabName", store.state.tabName);
+  store.commit("setBreadCrumb", store.state.breadCrumb);
+  // store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
 };
 
 // const定义，注意调用顺序
@@ -203,8 +381,8 @@ const filteredMenus = computed(() => {
   return menus.value.filter((menu) => menu.label.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
-// 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
-const mode = ref(localStorage.getItem("theme") || "dayTime");
+// // 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
+// const mode = ref(localStorage.getItem("theme") || "dayTime");
 // 切换主题
 const toggleMode = (newMode) => {
   mode.value = newMode;
@@ -231,254 +409,3 @@ watch(
   { immediate: true }
 );
 </script>
-
-<style>
-/* ========== 全局基础样式 ========== */
-html,
-body,
-#app {
-  height: 100vh !important;
-  width: 100vw !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-/* ========== 布局样式 ========== */
-.top-whole {
-  display: flex;
-  justify-content: space-between; /* 改为 space-between，确保左右两侧合理分配空间 */
-  align-items: center;
-  width: 100%;
-  height: 60px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--header-bg);
-  padding: 0 10px; /* 添加内边距，避免内容紧贴边缘 */
-  box-sizing: border-box; /* 确保边框和内边距不影响宽度 */
-}
-
-.top-left {
-  display: flex;
-  align-items: center; /* 垂直居中 */
-}
-
-.top-right {
-  display: flex; /* 改为 flex，确保图标横向排列 */
-  align-items: center;
-  gap: 10px; /* 添加间距，避免图标挤在一起 */
-}
-
-.bottom-whole {
-  height: calc(100vh - 60px) !important; /* 会受控制台影响 */
-  width: 100%;
-  min-height: 0;
-}
-
-.bottom-right {
-  position: relative;
-  margin-left: 10px;
-}
-
-/* ========== 主题变量定义 ========== */
-:root {
-  /* 白天主题变量 */
-  --bg-color: #f4f2f2;
-  --table-bg: #ffffff;
-  --text-color: #333333;
-  --border-color: #e4e7ed;
-  --sidebar-bg: #ffffff;
-  --header-bg: #ffffff;
-  --menu-hover-bg: #d0def4;
-  --table-header-bg: #ffffff;
-  --table-border-color: #ebeef5;
-  --dialog-bg: #ffffff;
-  --menu-width: 16%; /* 默认宽度为外部容器宽度的 15% */
-}
-
-/* 一个属性选择器，表示当元素具有 data-theme="dark" 属性时应用样式 */
-[data-theme="dark"] {
-  /* 黑夜主题变量 */
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --border-color: #444444;
-  --sidebar-bg: #1a1a1a;
-  --header-bg: #1a1a1a;
-  --menu-hover-bg: #4eafd3;
-  --table-header-bg: #1a1a1a;
-  --table-border-color: #444444;
-  --table-bg: #000000;
-  --dialog-bg: #1a1a1a;
-}
-/* ========== 输入框 ========== */
-input,
-select {
-  font-family: "微软雅黑", sans-serif; /* 设置字体为微软雅黑 */
-}
-.english-font {
-  font-family: "Times New Roman", serif; /* 使用 Times New Roman */
-}
-/* ========== 侧边栏样式 ========== */
-.el-aside {
-  /* 这里是el-aside占全部页面宽度的70% */
-  width: var(--menu-width) !important;
-  height: 80%; /* 这里是el-aside占全部页面高度的80% */
-  background-color: var(--sidebar-bg) !important;
-  flex-shrink: 0; /* 禁止收缩 */
-  overflow-y: auto; /* 允许内容滚动 */
-}
-
-/* ========== 菜单样式 ========== */
-.el-menu {
-  /* 这里是菜单占el-aside的100% */
-  width: 100% !important;
-  background-color: var(--sidebar-bg) !important; /* root定义 */
-  border-right: none !important;
-}
-
-.el-menu-item {
-  color: var(--text-color) !important;
-  background-color: var(--sidebar-bg) !important;
-  /* 设置菜单的高度 /* 直接控制菜单项高度 */
-  height: 50px; /* 设定每个菜单项的固定高度为50像素 */
-  padding: 10px; /* 添加内边距可以增加视觉效果 */
-}
-
-/* 悬浮颜色 */
-.el-menu-item:hover {
-  background-color: var(--menu-hover-bg) !important;
-}
-
-/* 带有子菜单的顶级菜单项的悬浮样式 */
-.el-sub-menu__title:hover {
-  background-color: var(--menu-hover-bg) !important;
-}
-
-/* ========== 表格样式 ========== */
-.el-table {
-  --el-table-header-bg-color: var(--table-header-bg) !important;
-  --el-table-tr-bg-color: var(--table-bg) !important;
-  --el-table-text-color: var(--text-color) !important;
-  --el-table-border-color: var(--table-border-color) !important;
-}
-
-.el-table th {
-  background-color: var(--table-header-bg) !important;
-  color: var(--text-color) !important;
-}
-
-.el-table__header-row {
-  font-size: 12px;
-  font-weight: bold;
-}
-.el-table {
-  margin-top: 20px;
-}
-/* ========== 对话框样式 ========== */
-.el-dialog {
-  background-color: var(--dialog-bg) !important;
-  color: var(--text-color) !important;
-}
-
-.el-dialog__title {
-  color: var(--text-color) !important;
-}
-
-/* ========== 表单样式 ========== */
-
-.el-form {
-  margin-top: 20px;
-}
-
-/* ========== 组件样式 ========== */
-/* 固定头部 */
-.el-header {
-  height: 50px !important; /* 元素本身高度 ,决定了距离warning的距离*/
-  line-height: 40px; /* 定义了元素内文本的行高 */
-  background-color: var(--header-bg);
-  flex-shrink: 0; /* 禁止收缩 */
-}
-
-/* 全局 */
-.placeholder-text {
-  color: rgba(0, 0, 0, 0.409);
-}
-
-.el-drawer {
-  background-color: white !important; /* 设置为不透明的白色 */
-}
-
-.el-container {
-  height: 100% !important;
-  display: flex;
-  /* flex: 1; 空间分配；其实是 flex-grow、flex-shrink 和 flex-basis 三个属性的简写 */
-  flex: 1;
-  min-height: 0;
-}
-
-.el-main {
-  height: calc(100% - 60px) !important;
-  overflow: auto;
-  flex: 1;
-  padding: 0 0 55px;
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-/* ========== 组件样式 ========== */
-.logo-vue {
-  margin: 0;
-  width: 42px;
-  height: 42px;
-}
-
-.title-gin-vue-admin {
-  margin-left: 5px;
-  font-size: 22px;
-  font-weight: bold;
-  color: var(--text-color);
-}
-
-.bread-crumb {
-  margin-left: 8px;
-  border-color: transparent;
-  width: 300px;
-  color: var(--text-color);
-}
-
-.right-head-Icons {
-  width: 25px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  margin-left: 12px;
-  background-color: transparent;
-  color: var(--text-color);
-}
-
-.imgUser {
-  margin-left: 12px;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  border: none;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-/* ========== 其他样式 ========== */
-.web {
-  text-decoration: none;
-  color: var(--text-color);
-}
-
-/* ========== 过渡效果 ========== */
-/* * {
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-} */
-</style>

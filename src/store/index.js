@@ -11,7 +11,7 @@ const store = createStore({
       activeMenu:1,  // 当前选中的菜单项
       tabName:'',
       breadCrumb:'仪表盘',
-      activeAuthorityTab:'角色菜单',
+      activeAuthorityTab:'首页',
 
       tabs: [ {
         name: '首页',

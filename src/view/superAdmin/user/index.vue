@@ -204,9 +204,9 @@
       </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
-          <el-button type="text" @click="onClickDelete(scope.row)">删除</el-button>
-          <el-button type="text" @click="onClickEdit(scope.row)">编辑</el-button>
-          <el-button type="text" @click="onClickReset(scope.row)">重置密码</el-button>
+          <authorityTable icon="" label="删除" :on-click="() => onClickDelete(scope.row)" />
+          <el-button link type="primary" @click="onClickEdit(scope.row)">编辑</el-button>
+          <el-button link type="primary" @click="onClickReset(scope.row)">重置密码</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -242,7 +242,7 @@ import {
 import WarningTip from "@/components/WarningTip.vue";
 import customPic from "@/components/customPic.vue";
 import { ref, computed, h, nextTick } from "vue"; // 引入 ref, computed, h 函数和 nextTick
-
+import authorityTable from "@/components/authorityTable.vue";
 import { ElMessage, ElMessageBox } from "element-plus"; // 引入 Element Plus 组件
 import scanUpload from "@/assets/scanUpload.png"; // 引入上传图片
 
