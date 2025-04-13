@@ -149,8 +149,8 @@
       </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
-          <authority-table label="单条新增" :on-click="() => SingleAdd(scope.row)" />
-          <authority-table label="忽略" :on-click="() => handleIgnore(scope.row)" />
+          <authorityTable label="单条新增" :on-click="() => SingleAdd(scope.row)" />
+          <authorityTable label="忽略" :on-click="() => handleIgnore(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
@@ -180,7 +180,7 @@
       </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
-          <authority-table label="取消忽略" :on-click="() => operateIgnore(scope.row)" />
+          <authorityTable label="取消忽略" :on-click="() => operateIgnore(scope.row)" />
         </template>
       </el-table-column>
     </el-table>
