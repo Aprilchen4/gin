@@ -546,7 +546,9 @@ const fetchTableData = async () => {
     tableInfo.value = res.data.list; // 更新表格数据
     total.value = res.data.total; // 更新总数
   }
+  
 };
+
 
 const fetchApiGroups = async () => {
   const res = await getApiGroups(); // 等待请求完成
