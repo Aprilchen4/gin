@@ -195,8 +195,8 @@ select {
 /* ========== 按钮样式 ========== */
 /* 覆盖所有 Element Plus 按钮 普通按钮（非 text、非 top-right 内的按钮） */
 /* button和el-button，确保全部覆盖 */
-button:not(.top-right button, .is-text, .is-link),
-.el-button:not(.top-right .el-button, .is-text, .is-link) {
+button[type="primary"]:not(.top-right button, .is-text, .is-link),
+.el-button--primary:not(.top-right .el-button, .is-text, .is-link) {
   background-color: var(--primary-color) !important;
   color: white !important; /* 文字颜色固定（建议对比色） */
   border-color: var(--primary-color) !important; /* 按钮边框颜色，还是需要的，不然是灰色 */
@@ -205,6 +205,21 @@ button:not(.top-right button, .is-text, .is-link),
 /* text 按钮（仅文字颜色变化，背景透明） */
 .el-button.is-link {
   color: var(--primary-color) !important; /* 文字颜色随主题变化 */
+}
+
+button[type="primary"]:not(.top-right button, .is-text, .is-link),
+.el-button--primary:not(.top-right .el-button, .is-text, .is-link) {
+  background-color: var(--primary-color) !important;
+  color: white !important; /* 文字颜色固定（建议对比色） */
+  border-color: var(--primary-color) !important; /* 按钮边框颜色，还是需要的，不然是灰色 */
+}
+
+/* link 按钮（仅文字颜色变化，背景透明）包括抽屉内的 */
+.el-drawer .el-button.is-link,
+.el-button.is-link {
+  color: var(--primary-color) !important; /* 文字颜色随主题变化 */
+  background-color: transparent !important; /* 完全透明背景 */
+  border: none !important; /* 彻底移除边框 */
 }
 
 /* ========== 标签样式 ========== */
