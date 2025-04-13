@@ -383,7 +383,7 @@ a {
 
 .el-main {
   height: calc(100% - 60px) !important;
-  overflow: auto;
+  overflow: hidden !important; /* 隐藏用户管理表格底部滚动条 */
   flex: 1;
   padding: 0 0 55px;
 }
