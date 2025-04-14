@@ -208,7 +208,7 @@ import {
   freshCasbin,
   deleteApisByIds,
 } from "@/api/user";
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { computed } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { nextTick } from "vue";
@@ -259,12 +259,6 @@ const methodOptions = ref([
   { value: "DELETE", label: "删除", type: "danger" },
 ]);
 
-// 同步抽屉表格，一样的表格行数据逻辑
-const getMethodLabel = (method) => {
-  const found = methodOptions.value.find((item) => item.value === method);
-  return found ? found.label : method; // 如果找不到，返回原始 method
-};
-
 // 用于抽屉部分
 const rules = ref({
   path: [{ required: true, message: "请输入api路径", trigger: "blur" }],
@@ -273,19 +267,57 @@ const rules = ref({
   description: [{ required: true, message: "请输入api介绍", trigger: "blur" }],
 });
 
-// 这里参数是对象，根据请求函数确定的
-getApiList({ page: 1, pageSize: 10 }).then((res) => {
-  tableInfo.value = res.data.list;
-  total.value = res.data.total;
+onMounted(() => {
+  // 这里参数是对象，根据请求函数确定的
+  getApiList({ page: 1, pageSize: 10 }).then((res) => {
+    tableInfo.value = res.data.list;
+    total.value = res.data.total;
+  });
+
+  // 数组元素是对象,绑定选择器需要的格式
+  getApiGroups().then((res) => {
+    apiGroupOptions.value = res.data.groups.map((item) => ({
+      label: item,
+      value: item,
+    }));
+  });
 });
 
-// 数组元素是对象,绑定选择器需要的格式
-getApiGroups().then((res) => {
+//创建函数赋值并统一调用，res 变量在 then 和 catch 中不可见
+// 同时使用await 和 .then().catch()，导致作用域混乱
+const fetchTableData = async () => {
+  // 1、res 是 Promise 对象
+  // const res = getApiList(params);
+  // await 是解包器，Promise 变数据"
+  // 2、这里的 res 已经是响应数据，不是 Promise 对象！await 关键字会 自动解开（unwrap） Promise，直接返回 resolve 的值。
+  const res = await getApiList({
+    page: page.value,
+    pageSize: pageSize.value,
+    orderKey: "method",
+    desc: false,
+  });
+  if (res.code == 0) {
+    tableInfo.value = res.data.list; // 更新表格数据
+    total.value = res.data.total; // 更新总数
+  }
+};
+
+const fetchApiGroups = async () => {
+  const res = await getApiGroups(); // 等待请求完成
   apiGroupOptions.value = res.data.groups.map((item) => ({
     label: item,
     value: item,
   }));
-});
+  if (res.code == 0) {
+    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
+  }
+};
+
+// 同步抽屉表格，一样的表格行数据逻辑
+const getMethodLabel = (method) => {
+  const found = methodOptions.value.find((item) => item.value === method);
+  return found ? found.label : method; // 如果找不到，返回原始 method
+};
 
 // 查询逻辑
 const onSubmit = async () => {
@@ -527,38 +559,6 @@ const operateIgnore = async (row) => {
     path: row.path,
   });
   ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
-};
-
-//创建函数赋值并统一调用，res 变量在 then 和 catch 中不可见
-// 同时使用await 和 .then().catch()，导致作用域混乱
-const fetchTableData = async () => {
-  // 1、res 是 Promise 对象
-  // const res = getApiList(params);
-  // await 是解包器，Promise 变数据"
-  // 2、这里的 res 已经是响应数据，不是 Promise 对象！await 关键字会 自动解开（unwrap） Promise，直接返回 resolve 的值。
-  const res = await getApiList({
-    page: page.value,
-    pageSize: pageSize.value,
-    orderKey: "method",
-    desc: false,
-  });
-  if (res.code == 0) {
-    tableInfo.value = res.data.list; // 更新表格数据
-    total.value = res.data.total; // 更新总数
-  }
-  
-};
-
-
-const fetchApiGroups = async () => {
-  const res = await getApiGroups(); // 等待请求完成
-  apiGroupOptions.value = res.data.groups.map((item) => ({
-    label: item,
-    value: item,
-  }));
-  if (res.code == 0) {
-    ElMessage({ message: res.msg, type: res.code === 0 ? "success" : "error" });
-  }
 };
 
 // 每页条数变化时触发

@@ -136,7 +136,6 @@ select {
   --el-table-text-color: var(--text-color) !important;
   --el-table-border-color: var(--table-border-color) !important;
   margin-top: 20px;
-  overflow: hidden !important; /* 隐藏底部滚动条 */
 }
 
 .el-table th {
@@ -383,9 +382,10 @@ a {
 
 .el-main {
   height: calc(100% - 60px) !important;
-  overflow: hidden !important; /* 隐藏用户管理表格底部滚动条 */
+  /* overflow: hidden !important; 隐藏用户管理表格底部滚动条 */
   flex: 1;
   padding: 0 0 55px;
+  overflow-x: hidden !important; /*隐藏底部滚动条,主要是用户管理页 */
 }
 
 .drawer-header {
@@ -450,7 +450,7 @@ a {
 /* 当前选中页 */
 .pagination-container .el-pager li.is-active {
   background-color: var(--primary-color) !important;
-  color: var(--text-color) !important;
+  color: var(--bg-color) !important;
 }
 
 /* ========== 过渡效果 ========== */

@@ -194,15 +194,16 @@
     <!-- 布局容器 -->
     <el-container direction="horizontal">
       <el-aside>
-        <sideMenu />
+        <!-- 将父组件的 sideData 变量的值传递给 sideMenu 组件的 sideData 属性。在 sideMenu 组件内部，就可以通过 props.sideData 来访问这个传入的值。 -->
+        <sideMenu :sideData="sideData" />
       </el-aside>
       <!-- 布局容器，注意组件名称 -->
-      <el-container class="bottom-right">
+      <el-container>
         <el-header>
           <tabMenu />
         </el-header>
         <!-- 这一行css必须加上。隐藏容器内超出其尺寸的内容（不显示滚动条）。 -->
-        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden">
+        <div class="main-content">
           <el-main
             ><!-- 预留底部空间 -->
             <router-view />
@@ -217,11 +218,12 @@
 <!-- // 一定要有setup,否则会提示函数未定义 -->
 <!-- Action catch((action:Action)）只能用在ts里面 -->
 <script setup>
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, reactive, watch, computed, onMounted } from "vue";
 import { emitter } from "@/utils/eventBus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { ElButton } from "element-plus";
+import { getMenu } from "@/api/user"; // 假设这是你的 API 方法
 
 import sideMenu from "@/components/sideMenu.vue";
 import tabMenu from "@/components/tabMenu.vue";
@@ -236,6 +238,55 @@ const weakness = ref(true);
 const layout_side_width = ref(250);
 const layout_side_collapsed_width = ref(80);
 const layout_side_item_height = ref(40);
+const theme = ref("auto");
+const primaryColor = ref("");
+const customColor = ref(""); // 颜色选择器
+const colors = ["#EB2F96", "#3b82f6", "#2FEB54", "#EBEB2F", "#EB2F2F", "#2FEBEB"];
+const mode = ref(localStorage.getItem("theme") || "dayTime"); // 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
+const side_mode = ref("正常模式");
+const router = useRouter();
+const receivedRoutePath = ref("");
+
+// 保持和子组件相同的响应式数据结构
+const sideData = reactive({
+  values: [], // 初始化 values 数组
+});
+
+const sideModes = [
+  {
+    label: "正常模式",
+    value: "正常模式",
+  },
+  {
+    label: "顶部菜单栏模式",
+    value: "顶部菜单栏模式",
+  },
+  {
+    label: "组合模式",
+    value: "组合模式",
+  },
+];
+
+const themeOptions = [
+  {
+    label: "dark",
+    value: "dark",
+  },
+  {
+    label: "light",
+    value: "light",
+  },
+  {
+    label: "auto",
+    value: "auto",
+  },
+];
+
+const menus = computed(() => [
+  { label: "亮色主题", action: () => toggleMode("dayTime"), disabled: mode.value === "dayTime" },
+  { label: "暗色主题", action: () => toggleMode("nightTime"), disabled: mode.value === "nightTime" },
+  { label: "退出登录", action: logOut, disabled: false },
+]);
 
 // 监听 layout_side_width 变化，CSS 无法直接读取 JavaScript 变量
 watch(
@@ -254,16 +305,6 @@ watch(
   { immediate: true }
 ); // 立即执行一次
 
-// JavaScript 中，大部分情况下分号是可选的;
-function ToggleDrawer() {
-  drawer.value = !drawer.value;
-}
-
-const theme = ref("auto");
-
-// 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
-const mode = ref(localStorage.getItem("theme") || "dayTime");
-
 // 监听 theme 变化，同步 mode
 watch(theme, (newVal) => {
   mode.value = newVal === "dark" ? "nightTime" : "dayTime"; // 同步 mode
@@ -273,25 +314,53 @@ watch(theme, (newVal) => {
   }
 });
 
-const themeOptions = [
-  {
-    label: "dark",
-    value: "dark",
-  },
-  {
-    label: "light",
-    value: "light",
-  },
-  {
-    label: "auto",
-    value: "auto",
-  },
-];
+// 在 mounted 生命周期钩子中设置样式变量
+watch(primaryColor, (newColor) => {
+  document.documentElement.style.setProperty("--primary-color", newColor);
+  localStorage.setItem("primaryColor", newColor);
+});
 
-const primaryColor = ref("");
+// 初始化主题，Vue 会在初始化时主动触发一次 toggleMode，确保存储的主题立即生效。
+watch(
+  () => mode.value,
+  (newVal) => {
+    toggleMode(newVal);
+  },
+  { immediate: true }
+);
 
-const customColor = ref(""); // 颜色选择器
-const colors = ["#EB2F96", "#3b82f6", "#2FEB54", "#EBEB2F", "#EB2F2F", "#2FEBEB"];
+// 执行时机：在组件挂载（组件的 DOM 元素被插入到 DOM 树中，浏览器中的页面显示）到 DOM 后调用，此时可以安全操作 DOM
+onMounted(() => {
+  // 获取侧边栏数据
+  getMenu().then((res) => {
+    sideData.values = res.data.menus;
+  });
+  // 本地获取主题颜色,初始化时从 localStorage 读取
+  const savedColor = localStorage.getItem("primaryColor");
+  if (savedColor) {
+    primaryColor.value = savedColor; // 赋值给 ref
+    document.documentElement.style.setProperty("--primary-color", savedColor); // 应用到 CSS 变量
+  }
+  // 接收路由
+  emitter.on("routeMessageEvent", (msg) => {
+    receivedRoutePath.value = msg;
+  });
+});
+
+// JavaScript 中，大部分情况下分号是可选的;
+function ToggleDrawer() {
+  drawer.value = !drawer.value;
+}
+
+// 刷新
+const refresh = () => {
+  // router.push({ path: "/ginmenu" }); //导航到当前路由，强制重新加载视图
+  router.push({ path: `/ginmenu/${receivedRoutePath.value}` || "dashboard" });
+  store.commit("setActiveMenu", store.state.activeMenu);
+  // store.commit("setTabName", store.state.tabName);
+  store.commit("setBreadCrumb", store.state.breadCrumb);
+  // store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
+};
 
 const changePrimaryColor = (color) => {
   primaryColor.value = color; //赋值给上一个抽屉的表单
@@ -300,57 +369,6 @@ const changePrimaryColor = (color) => {
 const togglePrimaryColor = (color) => {
   customColor.value = color;
   primaryColor.value = color;
-};
-
-// 初始化时从 localStorage 读取
-onMounted(() => {
-  const savedColor = localStorage.getItem("primaryColor");
-  if (savedColor) {
-    primaryColor.value = savedColor; // 赋值给 ref
-    document.documentElement.style.setProperty("--primary-color", savedColor); // 应用到 CSS 变量
-  }
-});
-
-// 在 mounted 生命周期钩子中设置样式变量
-watch(primaryColor, (newColor) => {
-  document.documentElement.style.setProperty("--primary-color", newColor);
-  localStorage.setItem("primaryColor", newColor);
-});
-
-const side_mode = ref("正常模式");
-const sideModes = [
-  {
-    label: "正常模式",
-    value: "正常模式",
-  },
-  {
-    label: "顶部菜单栏模式",
-    value: "顶部菜单栏模式",
-  },
-  {
-    label: "组合模式",
-    value: "组合模式",
-  },
-];
-
-// 刷新
-const router = useRouter();
-const receivedRoutePath = ref("");
-
-onMounted(() => {
-  emitter.on("routeMessageEvent", (msg) => {
-    receivedRoutePath.value = msg;
-  });
-});
-
-const refresh = () => {
-  // router.push({ path: "/ginmenu" }); //导航到当前路由，强制重新加载视图
-  router.push({ path: `/ginmenu/${receivedRoutePath.value}` || "dashboard" });
-
-  store.commit("setActiveMenu", store.state.activeMenu);
-  // store.commit("setTabName", store.state.tabName);
-  store.commit("setBreadCrumb", store.state.breadCrumb);
-  // store.commit("setFirstTab", [{ name: "首页", label: 1, content: "" }]);
 };
 
 // const定义，注意调用顺序
@@ -368,11 +386,6 @@ const resetForm = () => {
 // 这里响应式用computed 具有缓存机制，用于根据其他响应式数据计算衍生的只读数据。
 // 天然支持动态计算，确保每次访问 menus.value 时都重新评估 disabled
 // ref需要每次 mode.value 变化时，你必须手动更新 menus.value
-const menus = computed(() => [
-  { label: "亮色主题", action: () => toggleMode("dayTime"), disabled: mode.value === "dayTime" },
-  { label: "暗色主题", action: () => toggleMode("nightTime"), disabled: mode.value === "nightTime" },
-  { label: "退出登录", action: logOut, disabled: false },
-]);
 
 // 过滤菜单项，将 menu.label 和 searchQuery 都转为小写，以确保过滤时不区分大小写
 // filteredMenus 绑定el-menu-item,是根据搜索关键字 searchQuery 过滤后的菜单列表。
@@ -384,7 +397,7 @@ const filteredMenus = computed(() => {
 // // 从本地存储中获取主题模式，如果没有，初始化为 "dayTime"
 // const mode = ref(localStorage.getItem("theme") || "dayTime");
 // 切换主题
-const toggleMode = (newMode) => {
+function toggleMode(newMode) {
   mode.value = newMode;
   // 将新主题写入本地存储，覆盖之前的值确保在页面刷新或重新打开时能保持用户的主题选择
   localStorage.setItem("theme", newMode);
@@ -398,14 +411,14 @@ const toggleMode = (newMode) => {
 
   // 2、切换自定义主题([data-theme="dark"])
   document.documentElement.setAttribute("data-theme", newMode === "nightTime" ? "dark" : "light");
-};
-
-// 初始化主题，Vue 会在初始化时主动触发一次 toggleMode，确保存储的主题立即生效。
-watch(
-  () => mode.value,
-  (newVal) => {
-    toggleMode(newVal);
-  },
-  { immediate: true }
-);
+}
 </script>
+<style>
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-left: 10px;
+}
+</style>

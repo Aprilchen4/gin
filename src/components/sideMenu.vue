@@ -12,7 +12,8 @@
       @click="sendData"
     >
       <!-- 递归组件，把遍历的值传回子组件，完成递归调用 -->
-      <menuItems :navMenus="sideData.values" class="tight-menu" />
+      <!-- 加v-if有数据时才调用 -->
+      <menuItems v-if="sideData.values" :navMenus="sideData.values" class="tight-menu" />
     </el-menu>
   </el-scrollbar>
   <!-- 布局容器，注意组件名称 -->
@@ -20,35 +21,50 @@
 
 <script setup>
 // 侧边栏相关,编写一个递归函数，将扁平数据转换为树形结构
-import { getMenu } from "@/api/user";
-import { reactive } from "vue";
+// import { getMenu } from "@/api/user";
+// import { reactive } from "vue";
 import menuItems from "@/components/menuItems.vue";
 import { emitter } from "@/utils/eventBus";
 import { ref, onMounted, onUnmounted } from "vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
-import { watchEffect } from "vue";
+// import { watchEffect } from "vue";
 import router from "@/router";
+import { defineProps } from "vue";
 
-const sideData = reactive({
-  values: [], // 初始化 values 数组
-});
 const receivedMessage = ref("");
-
-getMenu().then((a) => {
-  sideData.values = a.data.menus;
+const deleteMessage = ref("");
+const store = useStore();
+const activeMenu = computed(() => store.state.activeMenu); //不需要计算属性，只需要vuex里的数据；
+// 定义 props 接收父组件传递的数据
+const props = defineProps({
+  sideData: {
+    type: Object,
+    required: true,
+    default: () => ({ values: [] }), // 保持和原来相同的默认结构
+  },
 });
 
-// 监听b标签页切换事件
+// 挂载后执行。可在定义前调用（函数提升）
 onMounted(() => {
+  // 监听标签页切换事件
   emitter.on("messageEvent", (msg) => {
     receivedMessage.value = msg;
     // 面包屑
-    const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, msg);
+    const { breadCrumbValue, tabNameValue } = breadMake(props.sideData.values, msg);
     store.commit("setBreadCrumb", breadCrumbValue);
     store.commit("setTabName", tabNameValue);
     // 路由
-    const { routePath, routeName, routeComponent } = routeMake(sideData.values, msg);
+    const { routePath, routeName, routeComponent } = routeMake(props.sideData.values, msg);
+    console.log("当前路由信息", routePath, routeName, routeComponent);
+    // store.commit("setRoute", { routePath, routeName, routeComponent });
+    router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
+  });
+
+  // 监听标签页删除事件
+  emitter.on("deleteEvent", (msg) => {
+    deleteMessage.value = msg;
+    const { routePath, routeName, routeComponent } = routeMake(props.sideData.values, msg);
     console.log("当前路由信息", routePath, routeName, routeComponent);
     // store.commit("setRoute", { routePath, routeName, routeComponent });
     router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
@@ -61,21 +77,11 @@ onUnmounted(() => {
   // 或者使用 emitter.all.clear() 移除所有监听
 });
 
-// 监听标签页删除事件
-const deleteMessage = ref("");
-onMounted(() => {
-  emitter.on("deleteEvent", (msg) => {
-    deleteMessage.value = msg;
-    const { routePath, routeName, routeComponent } = routeMake(sideData.values, msg);
-    console.log("当前路由信息", routePath, routeName, routeComponent);
-    // store.commit("setRoute", { routePath, routeName, routeComponent });
-    router.push({ path: `/ginmenu/${routePath}` || "dashboard" });
-  });
-});
-
-// 标签页相关
-const store = useStore();
-const activeMenu = computed(() => store.state.activeMenu); //不需要计算属性，只需要vuex里的数据；
+// 立即执行 + 依赖追踪，必须在使用前定义
+// watchEffect(() => {
+//   console.log("editableTabsValue changed:", activeMenu.value); //这里也是操作后端
+//   // console.log("监测标签页的tabs", tabs.value); //放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
+// });
 
 const handleMenuSelect = (menuId) => {
   console.log("Menu Select Event Triggered", menuId); // 检查事件是否触发
@@ -83,12 +89,12 @@ const handleMenuSelect = (menuId) => {
   console.log("Menu Select", activeMenu.value);
 
   // 调用面包屑函数
-  const { breadCrumbValue, tabNameValue } = breadMake(sideData.values, menuId);
+  const { breadCrumbValue, tabNameValue } = breadMake(props.sideData.values, menuId);
   store.commit("setBreadCrumb", breadCrumbValue);
   store.commit("setTabName", tabNameValue);
 
   // 调用路由生成函数
-  const { routePath, routeName, routeComponent } = routeMake(sideData.values, menuId);
+  const { routePath, routeName, routeComponent } = routeMake(props.sideData.values, menuId);
   emitter.emit("routeMessageEvent", routePath);
   console.log("trumpLoss", routePath);
 
@@ -209,11 +215,6 @@ const addRouteOneByOne = (routePath, routeName, routeComponent) => {
     console.log("Route already exists:", routePath, routeName);
   }
 };
-
-watchEffect(() => {
-  console.log("editableTabsValue changed:", activeMenu.value); //这里也是操作后端
-  // console.log("监测标签页的tabs", tabs.value); //放到事件外面，没有触发事件时不会打印；但是这里逻辑也不对，打印都是操作后的，不管是删除还是切换；
-});
 </script>
 
 <style></style>

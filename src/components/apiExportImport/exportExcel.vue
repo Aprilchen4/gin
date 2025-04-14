@@ -6,6 +6,7 @@
 // 导入请求函数
 import { exportExcel } from "@/api/exportTemplate.js";
 import { defineProps } from "vue";
+import { ElMessage } from "element-plus";
 
 const props = defineProps({
   templateId: {
@@ -29,8 +30,6 @@ const props = defineProps({
     default: "",
   },
 });
-
-import { ElMessage } from "element-plus";
 
 const exportExcelFunc = async () => {
   if (props.templateId === "") {

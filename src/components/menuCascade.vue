@@ -8,6 +8,10 @@ import pathInfo from "@/utils/pathInfo.json";
 
 const menuPathData = ref([]);
 
+onMounted(() => {
+  menuPathData.value = convertToCascaderOptions(pathInfo);
+});
+
 // 按层级构建一个树状结构
 // 参数的键是路径（像 'src/folder/file'），值是标签（比如 '文件描述'）。
 // 把每个路径按 '/' 分割成部分（比如 ['src', 'folder', 'file']）。
@@ -55,8 +59,4 @@ function convertToCascaderOptions(data) {
 
   return result;
 }
-
-onMounted(() => {
-  menuPathData.value = convertToCascaderOptions(pathInfo);
-});
 </script>

@@ -56,44 +56,56 @@
             <!-- 这里按钮和功能是错位的 -->
             <template v-if="isQuickSelect">
               <MenuCascade />
-              <el-button size="small" @click="isQuickSelect = false"> 手动输入 </el-button>
+              <el-button @click="isQuickSelect = false"> 手动输入 </el-button>
             </template>
             <template v-else>
               <el-input
                 v-model="form.component"
                 placeholder="页面：view/xxx/xx.vue 插件：plugin/xxx/xx.vue"
-                style="width: 320px"
+                style="width: 300px"
               />
               <!-- 默认值是false -->
-              <el-button size="small" @click="isQuickSelect = true"> 快捷选择 </el-button>
+              <el-button style="margin-left: 10px" @click="isQuickSelect = true"> 快捷选择 </el-button>
             </template>
-            <span style="font-size: xx-small"> 如果菜单包含子菜单，请创建router-view二级路由页面或者 </span>
-            <el-button size="small">点我设置</el-button>
+            <div style="margin-top: 5px">
+              <span style="font-size: xx-small"> 如果菜单包含子菜单，请创建router-view二级路由页面或者 </span>
+              <el-button style="margin-left: 10px">点我设置</el-button>
+            </div>
           </el-form-item>
         </el-col>
-        <el-col :span="8" style="flex-shrink: 0">
-          <el-form-item label="展示名称" prop="meta.title">
-            <el-input v-if="operationType === 'edit'" style="width: 200px" v-model="form.meta.title" />
-            <el-input v-else-if="operationType === 'addRoot' || operationType === 'addSub'" v-model="form.meta.title" />
+        <el-col :span="8">
+          <el-form-item label="展示名称" prop="meta.title" style="margin-left: 12px">
+            <el-input v-if="operationType === 'edit'" style="width: 180px" v-model="form.meta.title" />
+            <el-input
+              v-else-if="operationType === 'addRoot' || operationType === 'addSub'"
+              v-model="form.meta.title"
+              style="width: 180px"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row>
         <el-col span="8">
           <el-form-item label="路由Name" prop="name">
-            <el-input v-model="form.name" />
+            <el-input v-model="form.name" style="width: 200px" />
           </el-form-item>
         </el-col>
-        <el-col span="8" style="margin-left: 20px">
-          <el-form-item prop="path">
+        <el-col span="8">
+          <el-form-item prop="path" style="margin-left: 20px">
             <!-- 这句样式保证三个框在同一行 -->
             <div class="custom-layout">
               <div>
                 <span style="color: red">*</span> 路由Path
                 <el-checkbox style="margin-left: 12px; height: auto" v-model="isAddParams"> 添加参数 </el-checkbox>
               </div>
-              <el-input v-if="operationType === 'edit'" v-model="form.path" :disabled="!isAddParams" />
               <el-input
+                style="width: 200px"
+                v-if="operationType === 'edit'"
+                v-model="form.path"
+                :disabled="!isAddParams"
+              />
+              <el-input
+                style="width: 200px"
                 v-else-if="operationType === 'addRoot' || operationType === 'addSub'"
                 v-model="form.path"
                 :disabled="!isAddParams"
@@ -102,9 +114,9 @@
             </div>
           </el-form-item>
         </el-col>
-        <el-col span="8" style="margin-left: 20px">
-          <el-form-item label="是否隐藏" prop="hidden">
-            <el-select v-model="form.hidden" style="width: 200px" placeholder="否">
+        <el-col span="8">
+          <el-form-item label="是否隐藏" prop="hidden" style="margin-left: 20px">
+            <el-select v-model="form.hidden" style="width: 180px" placeholder="否">
               <el-option :value="false" label="否" />
               <el-option :value="true" label="是" />
             </el-select>
@@ -168,12 +180,14 @@
         </el-col>
         <el-col span="8" style="margin-left: 20px">
           <el-form-item label="CloseTab" prop="meta.closeTab">
-            <el-select style="width: 200px" v-model="form.meta.closeTab">
+            <el-select style="width: 180px" v-model="form.meta.closeTab">
               <el-option :value="false" label="否" />
               <el-option :value="true" label="是" />
             </el-select>
           </el-form-item>
         </el-col>
+      </el-row>
+      <el-row>
         <el-col span="8">
           <el-form-item prop="meta.defaultMenu">
             <!-- label 插槽（#label），专门用于自定义标签 -->
@@ -215,7 +229,7 @@
         </el-table-column>
         <el-table-column width="100">
           <!-- $index：当前行的索引（从 0 开始的整数），是解构写法，从插槽的上下文对象中提取 $index。
-           scope.row：当前行的数据对象-->
+            scope.row：当前行的数据对象-->
           <template #default="scope">
             <el-button type="danger" icon="Delete" @click="deleteParameter(form.parameters, scope.$index)"
               >删除</el-button
@@ -252,7 +266,7 @@
 
 <script setup>
 import { getMenuList, getBaseMenuById, addBaseMenu, updateBaseMenu, deleteBaseMenu } from "@/api/user";
-import { ref, reactive, nextTick, computed } from "vue";
+import { ref, reactive, nextTick, computed, onMounted } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 
 // MenuCascade抽屉的级联选择器
@@ -292,18 +306,6 @@ const normalizeMenu = (item) => {
   return result;
 };
 
-getMenuList().then((a) => {
-  menuList.value = a.data.map((item) => normalizeMenu(item));
-  // 这里不用push，会改变原数组
-  menuparentList.value = [
-    {
-      ID: 0,
-      displayTitle: "根目录",
-    },
-    ...menuList.value, // 复制原始数据
-  ];
-});
-
 const form = ref({
   ID: null,
   path: "",
@@ -331,6 +333,20 @@ const rules = reactive({
   "meta.title": [{ required: true, message: "请输入菜单展示名称", trigger: "blur" }],
 });
 
+// 生命周期钩子
+onMounted(() => {
+  getMenuList().then((a) => {
+    menuList.value = a.data.map((item) => normalizeMenu(item));
+    // 这里不用push，会改变原数组
+    menuparentList.value = [
+      {
+        ID: 0,
+        displayTitle: "根目录",
+      },
+      ...menuList.value, // 复制原始数据
+    ];
+  });
+});
 // 计算父节点展示名称，重置表单不能写在新增按钮点击事件里，否则父节点ID始终是根目录
 // 这里计算属性是parentDisplayName，函数手动修改的是form.value.parentId
 const parentDisplayName = computed(() => {
@@ -350,7 +366,10 @@ const handleClickRootAdd = async () => {
   operationType.value = "addRoot";
   form.value.parentId = 0; // 明确设置为根目录
   drawerChange.value = true;
+  form.value.parameters = []; // 清空参数
+  form.value.menuBtn = [];
   await nextTick(); //等待dom加载
+  menuFormRef.value.resetFields(); // 确保每次都有重置表单
   menuFormRef.value.clearValidate(); // 确保每次都清除之前的校验
 };
 
@@ -365,7 +384,6 @@ const handleSubmitAdd = async () => {
       menuList.value = await getMenuList(); // 等待数据加载
     }
   });
-  menuFormRef.value.resetFields(); // 确保每次都有重置表单
 };
 
 // 新增子菜单按钮
@@ -373,14 +391,19 @@ const operateClickAddSub = async (row) => {
   operationType.value = "addSub";
   drawerChange.value = true;
   form.value.parentId = row.ID; // 直接使用 row.ID 作为父节点
+  form.value.parameters = []; // 清空参数
+  form.value.menuBtn = [];
   await nextTick(); //等待 Vue 完成 DOM 更新,组件已挂载（确保抽屉已渲染且表单已挂载）
   menuFormRef.value.clearValidate(); // 确保每次都有清除校验
+  menuFormRef.value.resetFields(); // 确保每次都有重置表单
 };
 
 // 操作-编辑(同步慢未解决)
 const operateClickEdit = async (row) => {
   drawerChange.value = true; // 首先打开抽屉
   operationType.value = "edit";
+  form.value.parameters = []; // 清空参数
+  form.value.menuBtn = [];
   const res = await getBaseMenuById({ id: row.ID });
   // 部分赋值
   form.value = {
@@ -404,7 +427,6 @@ const handleSubmitEdit = async () => {
       });
     }
   });
-  menuFormRef.value.resetFields(); // 确保每次都有重置表单
 };
 
 // 操作栏删除按钮 + 确定

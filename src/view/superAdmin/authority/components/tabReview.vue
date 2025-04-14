@@ -38,12 +38,6 @@ import { ElMessage } from "element-plus";
 import { getBaseMenuTree, getMenuAuthority, updateAuthority, addMenuAuthority } from "@/api/user";
 import { defineProps } from "vue";
 
-const defaultProps = {
-  children: "children",
-  label: (data) => data.meta.title,
-  disabled: (data) => isHomePage(data),
-};
-
 const authorityMenuTree = reactive({ values: [] });
 const authorityMenu = reactive({ values: [] });
 const homePageId = ref(1);
@@ -52,8 +46,14 @@ const searchText = ref("");
 // 父组件传入的数据，用于控制权限
 const props = defineProps({ authorityForm: Object });
 
+const defaultProps = {
+  children: "children",
+  label: (data) => data.meta.title,
+  disabled: (data) => isHomePage(data),
+};
+
 watch(
-  () => props.authorityForm.authorityId,
+  () => props.authorityForm.authorityId, // 数字
   async (id) => {
     if (!id) return;
     // 解构赋值 和 Promise.all 的功能
@@ -99,13 +99,15 @@ const handleSetHome = async (data) => {
     ElMessage({ type: res.code == 0 ? "success" : "error", message: res.msg });
   }
 };
-// 选中菜单提交.虽然 authorityMenu 是响应式的（用 reactive 包裹），
+// 选中菜单确定按钮提交.虽然 authorityMenu 是响应式的（用 reactive 包裹），
 // 但 el-tree 的选中状态并不会自动同步到 authorityMenu.values,手动传参
 const authorityButt = () => {
   addMenuAuthority({
     authorityId: props.authorityForm.authorityId,
     menus: authorityMenu.values,
   });
+  // 这里源码也是手动写的
+  ElMessage({ message: "菜单设置成功", type: "success" });
 };
 
 // 筛选树形结构绑定数据

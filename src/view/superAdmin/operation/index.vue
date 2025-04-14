@@ -94,15 +94,9 @@
 
 <script setup>
 import { getSysOperationRecordList, deleteSysOperationRecordByIds, deleteSysOperationRecord } from "@/api/user";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { formatDate } from "@/utils/formatDate";
-
-const searchForm = ref({
-  method: "",
-  path: "",
-  status: null,
-});
 
 const tableData = ref([]);
 const tableItems = ref([]);
@@ -113,10 +107,18 @@ const pageSize = ref(10);
 const params = ref("");
 const tableLoading = ref(false);
 
-// 页面函数
-getSysOperationRecordList(page.value, pageSize.value, params.value).then((res) => {
-  tableData.value = res.data.list;
-  total.value = res.data.total;
+const searchForm = ref({
+  method: "",
+  path: "",
+  status: null,
+});
+
+onMounted(() => {
+  // 页面函数
+  getSysOperationRecordList(page.value, pageSize.value, params.value).then((res) => {
+    tableData.value = res.data.list;
+    total.value = res.data.total;
+  });
 });
 
 // 调用

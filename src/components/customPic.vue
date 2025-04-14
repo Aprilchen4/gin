@@ -26,6 +26,10 @@ import { useStore } from "vuex";
 import { computed, ref } from "vue";
 import { defineOptions, defineProps } from "vue";
 
+const path = ref(process.env.VUE_APP_BASE_API + "/"); // 服务器地址前缀，比如 http://api.example.com/
+const noAvatar = ref(noAvatarPng); // 默认图片的路径
+const userStore = useStore(); // 获取 Vuex 的用户数据
+
 defineOptions({
   name: "customPic", //组件名叫 customPic
 });
@@ -35,11 +39,6 @@ const props = defineProps({
   picSrc: { type: String, required: false, default: "" }, // 外部传来的图片地址，默认空
   preview: { type: Boolean, default: false }, // 是否支持预览，默认不支持
 });
-
-const path = ref(process.env.VUE_APP_BASE_API + "/"); // 服务器地址前缀，比如 http://api.example.com/
-const noAvatar = ref(noAvatarPng); // 默认图片的路径
-
-const userStore = useStore(); // 获取 Vuex 的用户数据
 
 // 计算头像图片地址
 const avatar = computed(() => {

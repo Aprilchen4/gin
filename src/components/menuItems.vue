@@ -1,6 +1,6 @@
 <template>
   <div class="navMenu">
-    <label v-for="navMenu in navMenus" :key="navMenu.menuId">
+    <label v-for="navMenu in props.navMenus" :key="navMenu.menuId">
       <!--只有一级菜单-->
       <!-- key是唯一标识符，index唯一索引值，index也是select函数返回的值 -->
       <el-menu-item
@@ -32,12 +32,20 @@
 </template>
 
 <script setup>
-import { defineProps, toRefs } from "vue";
+import { defineProps } from "vue";
+// import { toRefs } from "vue";
 
 const props = defineProps({
   navMenus: Array,
 });
-const { navMenus } = toRefs(props);
+// 1、const { navMenus } = toRefs(props);
+// 2、const navMenus = computed(() => props.navMenus);
+// 3、console.log(props.navMenus);
+// 4、const navMenus = ref(props.navMenus);
+// 如果需要同步外部 props 变化
+// watch(() => props.navMenus, (newVal) => {
+//   navMenus.value = newVal;
+// });
 
 // 查看渲染顺序,通过 onMounted 钩子打印,打印每次组件挂载时的 navMenu 数据
 // onMounted(() => {

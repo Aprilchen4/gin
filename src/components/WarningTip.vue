@@ -12,6 +12,7 @@
 <script setup>
 import { WarningFilled } from "@element-plus/icons-vue";
 import { defineProps } from "vue";
+
 const prop = defineProps({
   title: {
     type: String,
@@ -45,7 +46,7 @@ const open = () => {
 }
 
 .warning-title {
-  line-height: 80%; /* 让字体在垂直方向占 60% */
+  line-height: 100%; /* 让字体在垂直方向占 60% */
   flex-grow: 1; /* 使标题占用剩余空间 */
   margin-left: 3px;
 }

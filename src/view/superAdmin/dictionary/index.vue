@@ -154,11 +154,12 @@ import {
   updateSysDictionaryDetail,
   deleteSysDictionaryDetail,
 } from "@/api/user";
-import { ref, reactive, nextTick, computed } from "vue";
+import { ref, reactive, nextTick, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 // 注意这里用.是不行的，表示相对路径，即当前文件所在目录下的 utils/formatDate
 // @ 通常被定义为项目中某个特定目录的别名（例如 src 目录）。
 import { formatDate } from "@/utils/formatDate";
+import cloneDeep from "lodash/cloneDeep";
 
 // activeDicIndex.value 实际上对应的是 dictionaryList 中某个字典项的 ID（转换为字符串后的值）
 const activeDicIndex = ref("1");
@@ -195,6 +196,17 @@ const dicForm = ref({
   type: "",
 });
 
+// 重置表单
+const InitDicForm = () => {
+  Object.assign(dicForm.value, {
+    ID: null,
+    desc: "",
+    name: "",
+    status: true,
+    type: "",
+  });
+};
+
 // 表格抽屉，这里不想写数字，可以写null
 const tableForm = ref({
   ID: null,
@@ -206,6 +218,20 @@ const tableForm = ref({
   extend: "",
   UpdateAt: "",
 });
+
+// 重置表单
+const InitTableForm = () => {
+  Object.assign(tableForm.value, {
+    ID: null,
+    label: "",
+    sort: null,
+    status: true,
+    sysDictionaryID: null,
+    value: "",
+    extend: "",
+    UpdateAt: "",
+  });
+};
 
 // 字典表单规则
 const rulesDic = reactive({
@@ -223,10 +249,18 @@ const rulesTable = reactive({
   sort: [{ required: true, message: "请输入排序标记", trigger: "blur" }],
 });
 
-// 点进页面
-getSysDictionaryList().then((res) => {
-  dictionaryList.value = res.data;
-  dicTotal.value = dictionaryList.value.length;
+// 先挂载后调用
+onMounted(() => {
+  // 点进页面
+  getSysDictionaryList().then((res) => {
+    dictionaryList.value = res.data;
+    dicTotal.value = dictionaryList.value.length;
+  });
+  // 点进页面
+  getSysDictionaryDetailList(1, 10, 1).then((res) => {
+    tableData.value = res.data.list;
+    tableTotal.value = res.data.list.length;
+  });
 });
 
 // 调用
@@ -236,12 +270,6 @@ const fetchDicData = async () => {
     dicTotal.value = dictionaryList.value.length;
   });
 };
-
-// 点进页面
-getSysDictionaryDetailList(1, 10, 1).then((res) => {
-  tableData.value = res.data.list;
-  tableTotal.value = res.data.list.length;
-});
 
 // 调用
 const fetchtableData = async () => {
@@ -262,9 +290,10 @@ const onAddDic = async () => {
   drawerDic.value = true;
   operationDicType.value = "addDictionary";
   await nextTick();
-  dicFormRef.value.resetFields();
-  dicFormRef.value.clearValidate(); //清空之前的验证提示
   // 重置时,注意这里，dicFormRef是表单实例（Element Plus 表单专用）搭配使用 await nextTick();
+  dicFormRef.value.resetFields(); // 只会将表单重置为初始值，搭配重置更彻底。
+  dicFormRef.value.clearValidate(); //清空之前的验证提示
+  InitDicForm();
 };
 
 // 新增确定
@@ -295,11 +324,11 @@ const handleSubmitAdd = async () => {
 const openDicEditDrawer = async (item) => {
   drawerDic.value = true;
   operationDicType.value = "editDictionary";
-  await nextTick();
-  dicFormRef.value.clearValidate();
-  dicForm.value = item; // ref定义整体赋值
+  dicForm.value = cloneDeep(item); // ref定义整体赋值
   const res = await findSysDictionary(item.ID, item.status); // 返回的相应数据，用作参数
   sysDictionaryDetails.value = res.data.resysDictionary.sysDictionaryDetails;
+  await nextTick();
+  dicFormRef.value.clearValidate();
 };
 
 // 编辑字典确定
@@ -353,8 +382,9 @@ const OnClickAddDetails = async () => {
   drawerTable.value = true;
   operationTableType.value = "addDetails";
   await nextTick();
-  tableFormRef.value.resetFields();
+  tableFormRef.value.resetFields(); // 只会将表单重置为初始值，而你的初始值可能包含之前编辑的数据。
   tableFormRef.value.clearValidate();
+  InitTableForm();
 };
 
 // 新增字典项确定按钮
@@ -375,17 +405,16 @@ const handleSubmitAddDetails = async () => {
       await fetchtableData();
     }
   });
-  tableFormRef.value.resetFields();
 };
 
 // 表格变更
 const handleDetailEdit = async (item) => {
   drawerTable.value = true;
   operationTableType.value = "editDetails";
+  // 赋值,这里是表单对象。ref定义可以整体赋值
+  tableForm.value = cloneDeep(item);
   await nextTick();
   tableFormRef.value.clearValidate();
-  // 赋值,这里是表单对象。ref定义可以整体赋值
-  tableForm.value = item;
   await findSysDictionaryDetail(item.ID);
 };
 

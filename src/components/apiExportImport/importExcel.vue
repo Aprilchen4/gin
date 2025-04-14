@@ -22,6 +22,10 @@ import { ElMessage } from "element-plus";
 import { defineProps, defineEmits } from "vue";
 
 let baseUrl = process.env.VUE_APP_BASE_API || "";
+const token = localStorage.getItem("userToken") ? localStorage.getItem("userToken") : null;
+// on-success文件上传成功时的钩子
+const emit = defineEmits(["on-success"]);
+
 if (baseUrl === "/") {
   baseUrl = "";
 }
@@ -32,11 +36,6 @@ const props = defineProps({
     required: true,
   },
 });
-
-const token = localStorage.getItem("userToken") ? localStorage.getItem("userToken") : null;
-
-// on-success文件上传成功时的钩子
-const emit = defineEmits(["on-success"]);
 
 //  动态构建一个完整的API请求URL，用于文件导入功能
 const url = `${baseUrl}/sysExportTemplate/importExcel?templateID=${props.templateId}`;

@@ -156,61 +156,61 @@
       </el-main>
     </el-container>
   </el-drawer>
-  <div style="font-size: small">
-    <el-table v-loading="tableLoading" :data="userList" row-key="ID">
-      <el-table-column align="left" label="头像" min-width="25">
-        <template #default="scope">
-          <customPic :pic-src="scope.row.headerImg" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="ID" label="ID" min-width="30px" />
-      <el-table-column prop="userName" label="用户名" min-width="50px"> </el-table-column>
-      <el-table-column prop="nickName" label="昵称" min-width="40px"> </el-table-column>
-      <el-table-column prop="phone" label="手机号" min-width="50px" />
-      <el-table-column prop="email" label="邮箱" show-overflow-tooltip min-width="50px" />
-      <el-table-column label="用户角色">
-        <template #default="scope">
-          <!-- v-model绑定一个数组authorityIds(对应数据value)，选中项绑定值，代表默认勾选项-->
-          <!--  emitPath: true // 重要：存储完整路径 ,会返回完整的路径数组 authorityIds [[888], [9528]]-->
-          <el-cascader
-            v-model="scope.row.authorityIds"
-            :options="userAuthority"
-            :props="{
-              multiple: true,
-              checkStrictly: true,
-              label: 'authorityName',
-              value: 'authorityId',
-              emitPath: false,
-            }"
-            collapse-tags
-            @change="handleAuthorityChange(scope.row)"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column prop="enable" label="启用状态" min-width="30px">
-        <template #default="scope">
-          <el-switch
-            v-model="scope.row.enable"
-            inline-prompt
-            :active-value="1"
-            :inactive-value="2"
-            @change="
-              () => {
-                switchEnable(scope.row);
-              }
-            "
-          />
-        </template>
-      </el-table-column>
-      <el-table-column label="操作">
-        <template #default="scope">
-          <authorityTable icon="" label="删除" :on-click="() => onClickDelete(scope.row)" />
-          <el-button link type="primary" @click="onClickEdit(scope.row)">编辑</el-button>
-          <el-button link type="primary" @click="onClickReset(scope.row)">重置密码</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
+
+  <el-table v-loading="tableLoading" :data="userList" row-key="ID">
+    <el-table-column align="left" label="头像" min-width="25">
+      <template #default="scope">
+        <customPic :pic-src="scope.row.headerImg" />
+      </template>
+    </el-table-column>
+    <el-table-column prop="ID" label="ID" min-width="20px" />
+    <el-table-column prop="userName" label="用户名" min-width="30px"> </el-table-column>
+    <el-table-column prop="nickName" label="昵称" min-width="30px"> </el-table-column>
+    <el-table-column prop="phone" label="手机号" min-width="40px" />
+    <el-table-column prop="email" label="邮箱" show-overflow-tooltip min-width="30px" />
+    <el-table-column label="用户角色">
+      <template #default="scope">
+        <!-- v-model绑定一个数组authorityIds(对应数据value)，选中项绑定值，代表默认勾选项-->
+        <!--  emitPath: true // 重要：存储完整路径 ,会返回完整的路径数组 authorityIds [[888], [9528]]-->
+        <!-- 多选默认卡片效果 -->
+        <el-cascader
+          v-model="scope.row.authorityIds"
+          :options="userAuthority"
+          :props="{
+            multiple: true,
+            checkStrictly: true,
+            label: 'authorityName',
+            value: 'authorityId',
+            emitPath: false,
+          }"
+          collapse-tags
+          @change="handleAuthorityChange(scope.row)"
+        />
+      </template>
+    </el-table-column>
+    <el-table-column prop="enable" label="启用状态" min-width="30px">
+      <template #default="scope">
+        <el-switch
+          v-model="scope.row.enable"
+          inline-prompt
+          :active-value="1"
+          :inactive-value="2"
+          @change="
+            () => {
+              switchEnable(scope.row);
+            }
+          "
+        />
+      </template>
+    </el-table-column>
+    <el-table-column label="操作">
+      <template #default="scope">
+        <authorityTable icon="" label="删除" :on-click="() => onClickDelete(scope.row)" />
+        <el-button link type="primary" @click="onClickEdit(scope.row)">编辑</el-button>
+        <el-button link type="primary" @click="onClickReset(scope.row)">重置密码</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
   <el-pagination
     class="pagination-container"
     v-model:current-page="page"
@@ -241,10 +241,11 @@ import {
 } from "@/api/user"; // 引入 API 函数
 import WarningTip from "@/components/WarningTip.vue";
 import customPic from "@/components/customPic.vue";
-import { ref, computed, h, nextTick } from "vue"; // 引入 ref, computed, h 函数和 nextTick
+import { ref, computed, h, nextTick, onMounted } from "vue"; // 引入 ref, computed, h 函数和 nextTick
 import authorityTable from "@/components/authorityTable.vue";
 import { ElMessage, ElMessageBox } from "element-plus"; // 引入 Element Plus 组件
 import scanUpload from "@/assets/scanUpload.png"; // 引入上传图片
+import cloneDeep from "lodash/cloneDeep";
 
 const drawerChange = ref(false);
 const drawerUpload = ref(false);
@@ -312,6 +313,47 @@ const rules = ref({
   authorityIds: [{ required: true, message: "请选择用户角色", trigger: "blur" }],
 });
 
+onMounted(() => {
+  getUserList({
+    page: 1,
+    pageSize: 10,
+    username: "",
+    nickname: "",
+    phone: "",
+    email: "",
+  }).then((res) => {
+    userList.value = formatUserList(res);
+    // 直接生成对象的元素authorityIds，user是userList数组元素对象(思路真牛)
+    // 1、提取头像，写法不对
+    // console.log("userList.valuepicccc", userList.value.headerImg); undefined,
+    ///2、提取所有头像URL
+    const headerImgs = userList.value.map((user) => user.headerImg);
+    console.log("所有用户头像:", headerImgs);
+    total.value = res.data.total;
+  });
+  // 表格用户角色数据
+  getAuthority().then((res) => {
+    userAuthority.value = res.data; // 数组，普通+子+测试信息
+  });
+});
+
+// 重置表单
+const InitUserForm = () => {
+  Object.assign(userForm.value, {
+    ID: null,
+    userName: "",
+    nickName: "",
+    phone: "",
+    passWord: "",
+    email: "",
+    headerImg: "",
+    authorityId: null,
+    authorityIds: [],
+    enable: 1,
+  });
+};
+
+// 重复部分单独写一个函数
 function formatUserList(res) {
   return (res.data.list || []).map((user) => ({
     ...user,
@@ -319,24 +361,7 @@ function formatUserList(res) {
   }));
 }
 
-getUserList({
-  page: 1,
-  pageSize: 10,
-  username: "",
-  nickname: "",
-  phone: "",
-  email: "",
-}).then((res) => {
-  userList.value = formatUserList(res);
-  // 直接生成对象的元素authorityIds，user是userList数组元素对象(思路真牛)
-  // 1、提取头像，写法不对
-  // console.log("userList.valuepicccc", userList.value.headerImg); undefined,
-  ///2、提取所有头像URL
-  const headerImgs = userList.value.map((user) => user.headerImg);
-  console.log("所有用户头像:", headerImgs);
-  total.value = res.data.total;
-});
-
+// 方便调用
 const fetchTableData = async () => {
   const res = await getUserList({
     page: page.value,
@@ -349,11 +374,6 @@ const fetchTableData = async () => {
   userList.value = formatUserList(res);
   total.value = res.data.total;
 };
-
-// 表格用户角色数据
-getAuthority().then((res) => {
-  userAuthority.value = res.data; // 数组，普通+子+测试信息
-});
 
 // 查询
 const onSubmit = async () => {
@@ -374,6 +394,13 @@ const onReset = async () => {
   await fetchTableData();
 };
 
+// 校验函数
+const validateUserForm = (formRef) => {
+  return new Promise((resolve) => {
+    formRef.validate(resolve); // 直接使用 resolve 作为回调，// 返回校验结果 (true/false)
+  });
+};
+
 // 新增用户，注意密码是字符串，不是数字
 const onClickAdd = async () => {
   drawerChange.value = true;
@@ -382,18 +409,13 @@ const onClickAdd = async () => {
   userFormRef.value.clearValidate();
   // 这里用实例用户名无法重置完全，原因：条件渲染字段 (userName/passWord 只在operationType是 addUser 时显示)
   userFormRef.value.resetFields();
-  userForm.value = {
-    userName: "",
-    passWord: "",
-    headerImg: "",
-  };
-};
-
-// 校验函数
-const validateUserForm = (formRef) => {
-  return new Promise((resolve) => {
-    formRef.validate(resolve); // 直接使用 resolve 作为回调，// 返回校验结果 (true/false)
-  });
+  InitUserForm(); //这个方法会清除表格行数据(编辑赋值)
+  // 以下这个写法是错的，直接替换了整个 userForm.value 对象
+  // userForm.value = {
+  //   userName: "",
+  //   passWord: "",
+  //   headerImg: "",
+  // };
 };
 
 // 新增确定按钮
@@ -436,9 +458,9 @@ const handleSubmitAdd = async () => {
 const onClickEdit = async (row) => {
   drawerChange.value = true;
   operationType.value = "editUser";
+  userForm.value = cloneDeep(row); // 赋值，直接引用表格行对象，直接修改表格数据，而不是创建副本。
   await nextTick();
   userFormRef.value.clearValidate();
-  userForm.value = row; // 赋值，ref定义的对象可以整体赋值
 };
 
 // 表格编辑提交

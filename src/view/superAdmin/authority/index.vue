@@ -146,16 +146,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from "vue";
+import { ref, reactive, nextTick, onMounted } from "vue";
 import { getAuthority, createAuthority, copyAuthority, updateAuthority, deleteAuthority } from "@/api/user";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { useStore } from "vuex";
-
 import WarningTip from "@/components/WarningTip.vue";
 import authorityTable from "@/components/authorityTable.vue";
 import tabReview from "@/view/superAdmin/authority/components/tabReview.vue";
 import tabApis from "@/view/superAdmin/authority/components/tabApis.vue";
 import tabResource from "@/view/superAdmin/authority/components/tabResource.vue";
+import cloneDeep from "lodash/cloneDeep";
 
 const addFormRef = ref(null);
 const copyFormRef = ref(null);
@@ -171,18 +171,6 @@ const drawerAddSub = ref(false);
 const store = useStore();
 const parentDisplay = ref("");
 const oldAuthorityId = ref(0);
-
-getAuthority().then((a) => {
-  authorityList.value = a.data;
-  // 在 authorityList 的基础上添加新数据
-  authorityOption.value = [
-    {
-      authorityId: 0,
-      authorityName: "根角色(严格模式下为当前用户角色)",
-    },
-    ...authorityList.value, // 展开原始数据
-  ];
-});
 
 // 即使你初始化 form.parentId 为字符串，el-cascader 也会强制将其转换为数组。
 const form = ref({ authorityId: "", authorityName: "", parentId: "" });
@@ -201,6 +189,20 @@ const cascaderProps = {
   children: "children", // 对应数据的 children 字段
   checkStrictly: true, // 关键设置：可以单独选择任意节点，而不强制选中其子节点，注意这里格式前面有个圆形按钮
 };
+
+onMounted(() => {
+  getAuthority().then((a) => {
+    authorityList.value = a.data;
+    // 在 authorityList 的基础上添加新数据
+    authorityOption.value = [
+      {
+        authorityId: 0,
+        authorityName: "根角色(严格模式下为当前用户角色)",
+      },
+      ...authorityList.value, // 展开原始数据
+    ];
+  });
+});
 
 // 新增角色
 const handleClickAdd = async () => {
@@ -232,12 +234,13 @@ const handleSubmitAdd = async () => {
   });
 };
 
+// 取消按钮
 const resetForm = () => {
-  addFormRef.value.resetFields(); //清楚表单
+  addFormRef.value.resetFields(); //重置表单
   drawerAdd.value = false;
 };
 
-// ，注意实例要和表单绑定，否则提示clearValidate属性错误
+// 注意实例要和表单绑定，否则提示clearValidate属性错误
 const handleClickAddSub = async (row) => {
   drawerAddSub.value = true;
   await nextTick();
@@ -288,12 +291,13 @@ const handleClickSetting = async (row) => {
 
 const handleClickEdit = async (row) => {
   drawerEdit.value = true;
+  // 整体赋值，ref定义
+  form.value = cloneDeep(row);
   await nextTick();
   editFormRef.value.clearValidate();
-  // 整体赋值，ref定义
-  form.value = row;
 };
 
+// 编辑确定提交
 const handleSubmitEdit = async () => {
   editFormRef.value.validate(async (valid) => {
     if (!valid) return; // 验证不通过则停止

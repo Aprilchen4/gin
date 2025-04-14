@@ -19,6 +19,7 @@
     "element-plus": "^2.9.3",
     "element-react": "^1.4.34",
     "element-theme-default": "^1.4.13",
+    "lodash": "^4.17.21",
     "mitt": "^3.0.1",
     "vue": "^3.2.13",
     "vue-router": "^4.5.0",
