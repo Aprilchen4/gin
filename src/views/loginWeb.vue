@@ -86,7 +86,7 @@
 
 <script>
 // setup写在script里面，后续内容直接定义变量，不需要多层包裹；
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElInput, ElButton } from "element-plus";
 import { getCode, getlogin } from "@/api/user";
@@ -130,7 +130,7 @@ export default {
       //浏览器-右键-检查-控制台
       // console.log(this.$refs.loginForm);这里会报错， Cannot read '$refs'；
       console.log("按钮点击成功，开始执行登录请求");
-      // 返回的responsibl内容和打印的“登陆成功”在一块
+      // 返回的responsibl内容和打印的"登陆成功"在一块
       // 每次调用 getlogin 函数时，返回的 response 都是一个新的对象
 
       // 数据隔离：不同组件的 response 应该是独立的，避免数据污染。
@@ -177,14 +177,31 @@ export default {
 
     // .then() 方法传入的函数就是请求成功时的回调函数,它会接收到服务器返回的响应数据。
     // .catch() 方法传入的函数就是请求失败时的回调函数,它会接收到错误对象。
-    getCode().then((a) => {
-      picPath.value = a.data.picPath;
-      //一定是form.格式
-      form.value.captchaId = a.data.captchaId;
-      console.log(picPath.value);
+    onMounted(() => {
+      getCode().then((a) => {
+        picPath.value = a.data.picPath;
+        //一定是form.格式
+        form.value.captchaId = a.data.captchaId;
+        console.log(picPath.value);
+      });
     });
+
+    // 刷新验证码的函数
+    const refreshCaptcha = () => {
+      getCode()
+        .then((response) => {
+          picPath.value = response.data.picPath;
+          form.value.captchaId = response.data.captchaId;
+          form.value.captcha = ""; // 清空验证码输入框
+          console.log("验证码已刷新:", picPath.value);
+        })
+        .catch((error) => {
+          console.error("刷新验证码失败:", error);
+        });
+    };
+
     // 2. 使用数据生成验证码组件
-    return { form, rules, fetchData, picPath };
+    return { form, rules, fetchData, picPath, refreshCaptcha };
   },
 };
 </script>
