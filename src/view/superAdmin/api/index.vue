@@ -355,10 +355,16 @@ const addApi = async () => {
   apiFormRef.value.clearValidate(); // 清除校验状态
 };
 
-// 新增按钮取消，点击页面关闭抽屉不清空
-const resetForm = () => {
-  apiFormRef.value.resetFields(); //清空表单
+// 新增+同步按钮取消，点击页面关闭抽屉不清空
+const resetForm = async () => {
+  await nextTick(); // 等待 DOM 更新
+  // 不加这句判断，就会提示resetFields找不到
+  if (apiFormRef.value) {
+    apiFormRef.value.resetFields(); //清空表单
+    apiFormRef.value.clearValidate(); // 清除校验状态
+  }
   drawerChange.value = false;
+  drawerAsync.value = false;
 };
 
 // 新增按钮确认提交

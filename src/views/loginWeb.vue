@@ -145,7 +145,7 @@ export default {
       // router.push("/ginmenu").then(() => {
       //   window.location.reload(); // 强制刷新（不推荐长期使用）
       // });
-      await router.push({ path: "/ginmenu/admin/authority" });
+      await router.push({ path: "/ginmenu" });
 
       // 延迟 100ms 触发 resize 事件，强制浏览器重新计算布局和渲染元素
       setTimeout(() => {
