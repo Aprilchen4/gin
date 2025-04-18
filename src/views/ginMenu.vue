@@ -218,7 +218,7 @@
 <!-- // 一定要有setup,否则会提示函数未定义 -->
 <!-- Action catch((action:Action)）只能用在ts里面 -->
 <script setup>
-import { ref, reactive, watch, computed, onMounted } from "vue";
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { emitter } from "@/utils/eventBus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -335,16 +335,21 @@ onMounted(() => {
   getMenu().then((res) => {
     sideData.values = res.data.menus;
   });
-  // 本地获取主题颜色,初始化时从 localStorage 读取
+  // 本地获取主题颜色,初始化时从 localStorage 读取，一次性操作，不涉及持久引用。
   const savedColor = localStorage.getItem("primaryColor");
   if (savedColor) {
     primaryColor.value = savedColor; // 赋值给 ref
     document.documentElement.style.setProperty("--primary-color", savedColor); // 应用到 CSS 变量
   }
-  // 接收路由
+  // 接收路由，可能导致内存泄漏
   emitter.on("routeMessageEvent", (msg) => {
     receivedRoutePath.value = msg;
   });
+});
+
+onUnmounted(() => {
+  // 清理事件监听器
+  emitter.off("routeMessageEvent");
 });
 
 // JavaScript 中，大部分情况下分号是可选的;

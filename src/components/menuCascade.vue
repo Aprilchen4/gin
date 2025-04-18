@@ -8,6 +8,7 @@ import pathInfo from "@/utils/pathInfo.json";
 
 const menuPathData = ref([]);
 
+// 只是更新了一个响应式状态，没有创建持续运行的资源，不需要清理
 onMounted(() => {
   menuPathData.value = convertToCascaderOptions(pathInfo);
 });

@@ -75,6 +75,7 @@ onMounted(() => {
 onUnmounted(() => {
   emitter.off("messageEvent"); // 移除特定事件监听
   // 或者使用 emitter.all.clear() 移除所有监听
+  emitter.off("deleteEvent");
 });
 
 // 立即执行 + 依赖追踪，必须在使用前定义

@@ -177,6 +177,7 @@ export default {
 
     // .then() 方法传入的函数就是请求成功时的回调函数,它会接收到服务器返回的响应数据。
     // .catch() 方法传入的函数就是请求失败时的回调函数,它会接收到错误对象。
+    // 不会导致内存泄漏
     onMounted(() => {
       getCode().then((a) => {
         picPath.value = a.data.picPath;

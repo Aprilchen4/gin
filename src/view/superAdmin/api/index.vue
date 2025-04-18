@@ -267,6 +267,7 @@ const rules = ref({
   description: [{ required: true, message: "请输入api介绍", trigger: "blur" }],
 });
 
+// 一次性异步请求，不会内存泄漏
 onMounted(() => {
   // 这里参数是对象，根据请求函数确定的
   getApiList({ page: 1, pageSize: 10 }).then((res) => {
