@@ -324,7 +324,7 @@ const handleSubmitAdd = async () => {
 const openDicEditDrawer = async (item) => {
   drawerDic.value = true;
   operationDicType.value = "editDictionary";
-  dicForm.value = cloneDeep(item); // ref定义整体赋值
+  dicForm.value = cloneDeep(item); // ref定义整体赋值,创建 item 对象的深拷贝。确保原始对象和新对象之间没有引用关系。
   const res = await findSysDictionary(item.ID, item.status); // 返回的相应数据，用作参数
   sysDictionaryDetails.value = res.data.resysDictionary.sysDictionaryDetails;
   await nextTick();

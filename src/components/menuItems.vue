@@ -3,6 +3,7 @@
     <label v-for="navMenu in props.navMenus" :key="navMenu.menuId">
       <!--只有一级菜单-->
       <!-- key是唯一标识符，index唯一索引值，index也是select函数返回的值 -->
+      <!--el-menu-item是最小菜单项  -->
       <el-menu-item
         v-if="navMenu.children == null"
         :title="navMenu.meta.title"
@@ -25,6 +26,7 @@
           {{ navMenu.meta.title }}
         </template>
         <!-- {{ console.log('一级菜单:', navMenu.meta.title) }} -->
+        <!-- 这里把子菜单项递归到label 的v-for里面 -->
         <menuItems :navMenus="navMenu.children" />
       </el-sub-menu>
     </label>

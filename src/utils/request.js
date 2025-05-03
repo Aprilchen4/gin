@@ -78,7 +78,6 @@ service.interceptors.response.use(
     // console.log(response.data)在 return 之后，因此永远不会执行。
     // 如果需要打印响应数据，应该将 console.log 放在 return 之前：
     // 请求失败时不会打印，response函数不会执行；
-    console.log('miemiemie')
     return response.data; 
   },
   error => {

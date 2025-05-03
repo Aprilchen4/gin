@@ -178,6 +178,7 @@
       <el-table-column prop="method" label="请求">
         <template #default="{ row }"> {{ row.method }}/{{ getMethodLabel(row.method) }} </template>
       </el-table-column>
+      <!-- <el-table-column> 相当于一个子组件，它内部定义了插槽（如 default 插槽） -->
       <el-table-column label="操作">
         <template #default="scope">
           <authorityTable label="取消忽略" :on-click="() => operateIgnore(scope.row)" />

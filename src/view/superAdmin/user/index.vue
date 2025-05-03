@@ -603,10 +603,10 @@ const handleUpload = async (options) => {
 
   // 1. 处理传入的 file（可能是 Blob URL 或 File 对象）
   if (typeof options.file === "string" && options.file.startsWith("blob:")) {
-    // 1.1 如果是 Blob URL，先转换成 Blob
+    // 1.1 如果是 Blob URL，先转换成 Blob(二进制数据对象)
     const response = await fetch(options.file);
     const blob = await response.blob();
-    // 1.2 转换成 File 对象（File 继承自 Blob，可以直接上传）
+    // 1.2 转换成 File 对象（File 继承自 Blob，可以直接上传），二进制数据格式
     file = new File([blob], "uploaded_image.png", { type: blob.type });
   } else {
     // 1.3 如果已经是 File 对象（如 `<input type="file">` 选择的文件），直接使用

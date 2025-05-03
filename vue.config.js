@@ -15,7 +15,7 @@ module.exports = defineConfig({
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       '': {
       // 需要代理的路径例如 '/api'
-      target: `https://demo.gin-vue-admin.com`, // 代理到 目标路径
+      target: `https://demo.gin-vue-admin.com`, // 被代理的对象,真实后端地址
       changeOrigin: true,
       // rewrite: (path) =>
       // path.replace(new RegExp('^' + process.env.VITE_BASE_API), '')

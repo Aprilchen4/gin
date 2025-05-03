@@ -5,6 +5,7 @@
 :multiple="false"：禁止多文件上传
 触发按钮：<el-button> 显示为带上传图标的"导入"按钮 -->
 
+<!-- 请求头携带令牌，跨站伪造 -->
 <template>
   <el-upload
     :action="url"
