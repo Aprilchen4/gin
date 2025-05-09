@@ -71,7 +71,7 @@ onMounted(() => {
   });
 });
 
-// 组件卸载时清理监听器
+// 组件卸载时清理监听器,属于第三方库--事件总线，需要手动移除
 onUnmounted(() => {
   emitter.off("messageEvent"); // 移除特定事件监听
   // 或者使用 emitter.all.clear() 移除所有监听

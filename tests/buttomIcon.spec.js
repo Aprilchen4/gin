@@ -5,7 +5,6 @@ import { describe, it, expect,  beforeEach} from '@jest/globals'; // 导入 Jest
   // describe 是用来组织和分组相关的测试用例，通常针对一个特定的组件、函数或模块。
 describe('bottomIcon.vue', () => {
   let wrapper;
-
   //  Jest 提供的一个钩子函数 (hook function)。它定义了一个在每个 it 测试用例运行之前都会执行的函数。
   // 为每个测试用例创建一个新的 bottomIcon 组件实例并将其挂载。确保每个测试用例都在一个干净的、相同的组件实例上运行，避免了测试之间的相互影响。
   //  mount 的作用是将 bottomIcon 组件挂载到一个虚拟的 DOM 结构中s
